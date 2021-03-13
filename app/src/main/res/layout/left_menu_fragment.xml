@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="157dp"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="bottom"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/header_phone"
+            style="@style/TextSubTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginBottom="14dp"
+            tools:text="+7 777 777 7777"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <TextView
+            android:id="@+id/header_name"
+            style="@style/TextDesc.Orange"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginBottom="24dp"
+            android:text="@string/drawer_menu_profile"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/header_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/app_divider"
+        app:layout_constraintTop_toBottomOf="@+id/header" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/menu_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@+id/logout"
+        app:layout_constraintTop_toBottomOf="@+id/header_divider"
+        tools:listitem="@layout/list_item_drawer" />
+
+    <TextView
+        android:id="@+id/logout"
+        style="@style/TextDesc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:drawablePadding="10dp"
+        android:paddingStart="24dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="34dp"
+        android:text="@string/drawer_menu_logout"
+        app:drawableStartCompat="@drawable/ic_logout_drawer"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

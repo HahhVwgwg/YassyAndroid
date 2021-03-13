@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ConstraintSet android:id="@+id/start">
+        <Constraint android:id="@id/btn_home">
+            <PropertySet android:visibility="visible" />
+        </Constraint>
+        <Constraint android:id="@id/btn_work">
+            <PropertySet android:visibility="visible" />
+        </Constraint>
+        <Constraint android:id="@id/addresses">
+            <PropertySet android:visibility="invisible" />
+        </Constraint>
+        <Constraint android:id="@id/form_dash">
+            <Layout
+                android:layout_width="33dp"
+                android:layout_height="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/pick_location_layout" />
+            <PropertySet android:alpha="0" />
+        </Constraint>
+        <Constraint android:id="@id/form_background">
+            <Layout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/pick_location_layout" />
+            <PropertySet android:alpha="0" />
+        </Constraint>
+        <Constraint android:id="@id/pick_location_layout">
+            <Layout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="10dp"
+                app:layout_constraintBottom_toTopOf="@+id/btn_home"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+            <Transform android:elevation="6dp" />
+        </Constraint>
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/end">
+        <Constraint android:id="@id/btn_home">
+            <PropertySet android:visibility="invisible" />
+        </Constraint>
+        <Constraint android:id="@id/btn_work">
+            <PropertySet android:visibility="invisible" />
+        </Constraint>
+        <Constraint android:id="@id/addresses">
+            <PropertySet android:visibility="visible" />
+        </Constraint>
+        <Constraint android:id="@id/form_dash">
+            <Layout
+                android:layout_width="33dp"
+                android:layout_height="4dp"
+                android:layout_marginTop="26dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/menu_app" />
+            <PropertySet android:alpha="1" />
+        </Constraint>
+        <Constraint android:id="@id/form_background">
+            <Layout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="10dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/menu_app" />
+            <PropertySet android:alpha="1" />
+        </Constraint>
+        <Constraint android:id="@id/pick_location_layout">
+            <Layout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="26dp"
+                android:layout_marginEnd="24dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/form_dash" />
+            <Transform android:elevation="26dp" />
+        </Constraint>
+    </ConstraintSet>
+
+    <Transition
+        android:id="@+id/tr"
+        app:constraintSetEnd="@id/end"
+        app:constraintSetStart="@id/start"
+        app:duration="400">
+
+        <OnSwipe
+            app:dragDirection="dragUp"
+            app:touchAnchorId="@id/addresses"
+            app:touchAnchorSide="top"
+            app:touchRegionId="@id/addresses" />
+    </Transition>
+
+    <ConstraintSet android:id="@+id/start_service">
+        <Constraint android:id="@id/container">
+            <Layout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/form_background" />
+            <PropertySet android:visibility="invisible" />
+        </Constraint>
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/end_service">
+        <Constraint android:id="@id/container">
+            <Layout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+            <PropertySet android:visibility="invisible" />
+        </Constraint>
+    </ConstraintSet>
+
+    <Transition
+        android:id="@+id/tr_to_service"
+        app:constraintSetEnd="@id/end_service"
+        app:constraintSetStart="@id/start_service"
+        app:duration="400" />
+</MotionScene>

@@ -1,0 +1,48 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <group>
+        <clip-path
+            android:pathData="M0,0h24v24h-24z"/>
+        <path
+            android:pathData="M8.5,8.1C8.5,6.9402 9.4402,6 10.6,6H13.75C14.9098,6 15.85,6.9402 15.85,8.1V8.8H8.5V8.1Z"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.2"
+            android:fillColor="#00000000"
+            android:strokeColor="@color/app_orange"
+            android:strokeLineCap="round"/>
+        <path
+            android:strokeWidth="1"
+            android:pathData="M18.3,8.8H5.7C5.3134,8.8 5,9.1135 5,9.5V16.5C5,16.8866 5.3134,17.2 5.7,17.2H18.3C18.6866,17.2 19,16.8866 19,16.5V9.5C19,9.1135 18.6866,8.8 18.3,8.8Z"
+            android:strokeLineJoin="round"
+            android:fillColor="#00000000"
+            android:strokeColor="@color/app_orange"
+            android:strokeLineCap="round"/>
+        <path
+            android:strokeWidth="1"
+            android:pathData="M5,11.95L12,13.7L19,11.95"
+            android:strokeLineJoin="round"
+            android:fillColor="#00000000"
+            android:strokeColor="@color/app_orange"
+            android:strokeLineCap="round"/>
+        <path
+            android:strokeWidth="1"
+            android:pathData="M19,11.25V13.35"
+            android:strokeLineJoin="round"
+            android:fillColor="#00000000"
+            android:strokeColor="@color/app_orange"
+            android:strokeLineCap="round"/>
+        <path
+            android:strokeWidth="1"
+            android:pathData="M5,11.25V13.35"
+            android:strokeLineJoin="round"
+            android:fillColor="#00000000"
+            android:strokeColor="@color/app_orange"
+            android:strokeLineCap="round"/>
+        <path
+            android:pathData="M12.7044,11.8209C12.7044,12.1363 12.4488,12.3919 12.1334,12.3919C11.8181,12.3919 11.5625,12.1363 11.5625,11.8209C11.5625,11.5056 11.8181,11.25 12.1334,11.25C12.4488,11.25 12.7044,11.5056 12.7044,11.8209Z"
+            android:fillColor="@color/app_orange"/>
+    </group>
+</vector>

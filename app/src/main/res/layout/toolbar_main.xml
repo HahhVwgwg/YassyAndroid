@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:background="@color/colorPrimary"
+    android:elevation="1dp"
+    android:minHeight="?attr/actionBarSize"
+    app:popupTheme="@style/AppTheme.PopupOverlay">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center|left"
+        android:orientation="horizontal">
+
+
+        <ImageView
+            android:id="@+id/menu_app"
+            android:layout_width="@dimen/_15sdp"
+            android:layout_height="@dimen/_15sdp"
+            android:src="@drawable/ic_menu" />
+
+        <TextView
+            android:layout_width="336dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textSize="@dimen/_18ssp"
+            android:textColor="@color/white"
+            android:text="@string/daily_ride" />
+
+        <!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:gravity="center|left"-->
+<!--            android:orientation="horizontal">-->
+
+<!--            <RadioGroup-->
+<!--                android:id="@+id/toggle"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:checkedButton="@+id/offer"-->
+<!--                android:orientation="horizontal">-->
+
+<!--                <RadioButton-->
+<!--                    android:id="@+id/rdDaily"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_margin="@dimen/_10sdp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:background="@drawable/toggle_widget_background"-->
+<!--                    android:button="@null"-->
+<!--                    android:checked="true"-->
+<!--                    android:fontFamily="@font/clanpro_narrnews"-->
+<!--                    android:gravity="center"-->
+<!--                    android:padding="8dp"-->
+<!--                    android:singleLine="true"-->
+<!--                    android:text="@string/rides"-->
+<!--                    android:textColor="@drawable/text_selector"-->
+<!--                    android:textSize="@dimen/_10ssp" />-->
+
+
+<!--                <RadioButton-->
+<!--                    android:id="@+id/rdOutstation"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_margin="@dimen/_10sdp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:background="@drawable/toggle_widget_background"-->
+<!--                    android:button="@null"-->
+<!--                    android:fontFamily="@font/clanpro_narrnews"-->
+<!--                    android:gravity="center"-->
+<!--                    android:padding="8dp"-->
+<!--                    android:singleLine="true"-->
+<!--                    android:text="@string/outstation"-->
+<!--                    android:textColor="@drawable/text_selector"-->
+<!--                    android:textSize="@dimen/_10ssp" />-->
+
+<!--                <RadioButton-->
+<!--                    android:id="@+id/rdRentals"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_margin="@dimen/_10sdp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:background="@drawable/toggle_widget_background"-->
+<!--                    android:button="@null"-->
+<!--                    android:fontFamily="@font/clanpro_narrnews"-->
+<!--                    android:gravity="center"-->
+<!--                    android:padding="8dp"-->
+<!--                    android:singleLine="true"-->
+<!--                    android:text="@string/rental"-->
+<!--                    android:textColor="@drawable/text_selector"-->
+<!--                    android:textSize="@dimen/_10ssp" />-->
+
+
+<!--            </RadioGroup>-->
+
+
+<!--        </LinearLayout>-->
+    </LinearLayout>
+
+</androidx.appcompat.widget.Toolbar>

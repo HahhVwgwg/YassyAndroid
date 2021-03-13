@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/auth_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/auth_pic"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        app:layout_constraintBottom_toTopOf="@+id/auth_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_logo" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/line"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <TextView
+        android:id="@+id/auth_title"
+        style="@style/TextTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_24sdp"
+        android:layout_marginEnd="@dimen/_24sdp"
+        android:layout_marginBottom="14dp"
+        android:gravity="center"
+        android:text="@string/auth_code_title"
+        app:layout_constraintBottom_toTopOf="@+id/auth_desc" />
+
+    <TextView
+        android:id="@+id/auth_desc"
+        style="@style/TextDesc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_24sdp"
+        android:layout_marginEnd="@dimen/_24sdp"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:text="@string/auth_code_desc"
+        app:layout_constraintBottom_toTopOf="@+id/line" />
+
+    <TextView
+        android:id="@+id/auth_code_hint"
+        style="@style/TextPhone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:singleLine="true"
+        android:text="@string/auth_code_hint"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/line" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/auth_code"
+        style="@style/TextPhoneInput"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@null"
+        android:inputType="number"
+        android:maxLines="1"
+        app:layout_constraintBottom_toBottomOf="@+id/auth_code_hint"
+        app:layout_constraintEnd_toEndOf="@+id/auth_code_hint"
+        app:layout_constraintStart_toStartOf="@+id/auth_code_hint"
+        app:layout_constraintTop_toTopOf="@+id/auth_code_hint" />
+
+    <TextView
+        android:id="@+id/auth_error"
+        style="@style/TextDesc.Error"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_24sdp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="@dimen/_24sdp"
+        android:gravity="center"
+        android:text="@string/auth_code_error"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/auth_code_hint" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/next"
+        android:layout_width="0dp"
+        android:layout_height="58dp"
+        android:layout_marginStart="@dimen/_24sdp"
+        android:layout_marginEnd="@dimen/_24sdp"
+        android:layout_marginBottom="@dimen/_68sdp"
+        android:text="@string/auth_code_btn"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:backgroundTint="@color/color_btn_simple_bg"
+        app:cornerRadius="@dimen/_8sdp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
