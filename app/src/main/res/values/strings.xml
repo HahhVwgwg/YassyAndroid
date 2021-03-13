@@ -62,7 +62,7 @@
     <string name="distance_fare">Distance Fare</string>
     <string name="tax">Tax</string>
     <string name="total">Total</string>
-    <string name="cash">Cash</string>
+    <string name="cash">Наличные</string>
     <string name="payment">Payment</string>
     <string name="estimated_payment">Payment :</string>
     <string name="your_trips">Your Trips</string>
@@ -147,7 +147,7 @@
     <string name="eta">ETA</string>
     <string name="model">Model</string>
     <string name="schedule_ride">Schedule Ride</string>
-    <string name="ride_now">Ride now</string>
+    <string name="ride_now">Заказать</string>
     <string name="due_to_high_demand_price_may_vary">Due to high demand price may vary</string>
     <string name="choose_an_account">Choose an account</string>
     <string name="facebook">Facebook</string>

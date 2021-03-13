@@ -36,6 +36,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -190,7 +191,7 @@ public class MainActivity extends BaseActivity implements
     @BindView(R.id.llChangeLocation)
     LinearLayout llChangeLocation;
     @BindView(R.id.container)
-    ConstraintLayout container;
+    FrameLayout container;
     @BindView(R.id.menu_back)
     ImageView menuBack;
     @BindView(R.id.menu_app)
@@ -449,6 +450,8 @@ public class MainActivity extends BaseActivity implements
                         LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
                         LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
                         drawRoute(origin, destination);
+                        motionLayout.setTransition(R.id.tr_to_service);
+                        motionLayout.transitionToEnd();
                     }
                     if (RIDE_REQUEST.containsKey(SRC_ADD) && RIDE_REQUEST.get(SRC_ADD) != sourceTxt.getText().toString()) {
                         isEditable = false;
@@ -470,6 +473,11 @@ public class MainActivity extends BaseActivity implements
                     }
                 } else if (i == R.id.end) {
 
+                } else if (i == R.id.start_service) {
+                    motionLayout.setTransition(R.id.tr);
+                    CURRENT_STATUS = EMPTY;
+                    changeFlow(CURRENT_STATUS);
+                    returnToInitial();
                 }
             }
 
@@ -564,12 +572,9 @@ public class MainActivity extends BaseActivity implements
                 pickLocationLayout.setVisibility(View.VISIBLE);
                 mGoogleMap.clear();
                 providersMarker.clear();
-
                 hideLoading();
                 addAllProviders(SharedHelper.getProviders(this));
-//                displayCurrentAddress();
                 changeFragment(null);
-                //destinationTxt.setText("");
                 btnHomeValue.setText(home != null ? R.string.home : R.string.add_home);
                 btnWorkValue.setText(work != null ? R.string.work : R.string.add_work);
                 mProviderLocation = null;
@@ -698,10 +703,7 @@ public class MainActivity extends BaseActivity implements
             getSupportFragmentManager().popBackStack();
             if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
                 mainPresenter.checkStatus();
-                changeFlow(EMPTY);
-                RIDE_REQUEST.remove(DEST_ADD);
-                RIDE_REQUEST.remove(DEST_LAT);
-                RIDE_REQUEST.remove(DEST_LONG);
+                topLayout.transitionToStart();
             }
         } else {
             if (isDoubleBackPressed) {
@@ -713,6 +715,13 @@ public class MainActivity extends BaseActivity implements
         }
 
         new Handler().postDelayed(() -> isDoubleBackPressed = false, 2000);
+    }
+
+    private void returnToInitial() {
+        destinationTxt.setText("");
+        RIDE_REQUEST.remove(DEST_ADD);
+        RIDE_REQUEST.remove(DEST_LAT);
+        RIDE_REQUEST.remove(DEST_LONG);
     }
 
     public void ShowLogoutPopUp() {
@@ -773,7 +782,7 @@ public class MainActivity extends BaseActivity implements
 
                 break;
             case R.id.menu_back:
-                //onBackPressed();
+                topLayout.transitionToStart();
                 break;
             case R.id.erase_src:
                 sourceTxt.setText("");
@@ -855,7 +864,7 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     public void onCameraMove() {
-        
+
     }
 
     @Override
@@ -1091,7 +1100,9 @@ public class MainActivity extends BaseActivity implements
 
         if (fragment != null) {
             findViewById(R.id.con_out_rental).setVisibility(View.GONE);
-            if (fragment instanceof BookRideFragment || fragment instanceof ServiceTypesFragment ||
+            if (fragment instanceof BookRideFragment) {
+
+            } else if (fragment instanceof ServiceTypesFragment ||
                     fragment instanceof ServiceFlowFragment || fragment instanceof RateCardFragment)
                 container.setBackgroundColor(getResources().getColor(android.R.color.transparent));
             else container.setBackgroundColor(getResources().getColor(R.color.white));

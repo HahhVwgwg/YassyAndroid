@@ -9,8 +9,11 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
+
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -79,9 +82,11 @@ import static com.thinkincab.app.MvpApplication.isDebitMachine;
 import static com.thinkincab.app.common.Constants.BroadcastReceiver.INTENT_FILTER;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.CARD_ID;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.CARD_LAST_FOUR;
+import static com.thinkincab.app.common.Constants.RIDE_REQUEST.DEST_ADD;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.DISTANCE_VAL;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.PAYMENT_MODE;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.SERVICE_TYPE;
+import static com.thinkincab.app.common.Constants.RIDE_REQUEST.SRC_ADD;
 import static com.thinkincab.app.data.SharedHelper.getKey;
 import static com.thinkincab.app.data.SharedHelper.getProviders;
 import static com.thinkincab.app.data.SharedHelper.putKey;
@@ -102,6 +107,10 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
     TextView tv_fixedrate;
     @BindView(R.id.textView12)
     TextView time;
+    @BindView(R.id.source)
+    TextView source;
+    @BindView(R.id.destination)
+    TextView destination;
 
     @BindView(R.id.use_wallet)
     CheckBox useWallet;
@@ -137,10 +146,10 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
 
 
                 if (discountFare > promoList.getMaxAmount()) {
-                    tvEstimatedFare.setText(String.format("%s", SharedHelper.getKey(getContext(), "currency") + " " +(ii - (int) promoList.getMaxAmount())));
+                    tvEstimatedFare.setText(String.format("%s", SharedHelper.getKey(getContext(), "currency") + " " + (ii - (int) promoList.getMaxAmount())));
 
                 } else {
-                    tvEstimatedFare.setText(String.format("%s", SharedHelper.getKey(getContext(), "currency") + " " +(ii - i)));
+                    tvEstimatedFare.setText(String.format("%s", SharedHelper.getKey(getContext(), "currency") + " " + (ii - i)));
                 }
             } else {
                 scaleView(viewCoupons, 0f, 0.9f);
@@ -148,14 +157,10 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                 viewCoupons.setBackgroundResource(R.drawable.button_round_accent);
                 viewCoupons.setTextColor(getResources().getColor(R.color.white));
                 mCouponStatus = viewCoupons.getText().toString();
-                tvEstimatedFare.setText(String.format("%s", String.format("%s", SharedHelper.getKey(getContext(), "currency")+ " " + ii)));
+                tvEstimatedFare.setText(String.format("%s", String.format("%s", SharedHelper.getKey(getContext(), "currency") + " " + ii)));
             }
         }
     };
-
-    public BookRideFragment(){
-
-    }
 
     @Override
     public int getLayoutId() {
@@ -164,29 +169,29 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
 
     @SuppressLint("SetTextI18n")
     @Override
-    public View initView(View view)
-    {
+    public View initView(View view) {
         unbinder = ButterKnife.bind(this, view);
         presenter.attachView(this);
         Bundle args = getArguments();
         presenter.services();
-        customDialog=new CustomDialog(getContext());
+        customDialog = new CustomDialog(getContext());
         hideLoading();
         scaleView(viewCoupons, 0f, 0.9f);
+        destination.setText((String) RIDE_REQUEST.get(DEST_ADD));
+        source.setText((String) RIDE_REQUEST.get(SRC_ADD));
         return view;
     }
 
-    private void setDataOnUi(String servicename,Service serviy, EstimateFare fare)
-    {
+    private void setDataOnUi(String servicename, Service serviy, EstimateFare fare) {
         if (servicename != null) {
             String serviceName = servicename;
             Service service = serviy;
             EstimateFare estimateFare = fare;
 
 
-            tv_baserate.setText(SharedHelper.getKey(getContext(), "currency") + " " +fare.getBasePrice()+"");
-            tv_fixedrate.setText(fare.getDistance()+" km");
-            time.setText(fare.getTime()+"");
+            tv_baserate.setText(SharedHelper.getKey(getContext(), "currency") + " " + fare.getBasePrice() + "");
+            tv_fixedrate.setText(fare.getDistance() + " km");
+            time.setText(fare.getTime() + "");
             double walletAmount = Objects.requireNonNull(estimateFare).getWalletBalance();
             if (serviceName != null && !serviceName.isEmpty()) {
                 Glide
@@ -200,14 +205,14 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                         .into(estimatedImage);
                 estimatedFare = estimateFare.getEstimatedFare();
                 int ii = estimatedFare.intValue();
-                tvEstimatedFare.setText(SharedHelper.getKey(getContext(), "currency") + " " +(ii));
+                tvEstimatedFare.setText(SharedHelper.getKey(getContext(), "currency") + " " + (ii));
 
                 if (walletAmount == 0) {
                     useWallet.setVisibility(View.GONE);
                     walletBalance.setVisibility(View.GONE);
                 } else {
-                    useWallet.setVisibility(View.VISIBLE);
-                    walletBalance.setVisibility(View.VISIBLE);
+                    useWallet.setVisibility(View.GONE);
+                    walletBalance.setVisibility(View.GONE);
                     Double d = Double.parseDouble(String.valueOf(walletAmount));
                     int i = d.intValue();
                     walletBalance.setText(SharedHelper.getKey(getContext(), "currency") + " " + i);
@@ -362,9 +367,11 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                 && !promoResponse.getPromoList().isEmpty()) couponDialog(promoResponse).show();
         else Toast.makeText(baseActivity(), "Coupons Unavailable", Toast.LENGTH_SHORT).show();
     }
+
     ServiceAdapter adapter;
     List<Service> mServices = new ArrayList<>();
     CustomDialog customDialog;
+
     @Override
     public void onSuccess(List<Service> serviceList) {
         try {
@@ -386,7 +393,7 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                                 Bitmap b = ((BaseActivity) getActivity()).getBitmapFromURL(s.getMarker());
                                 Log.e("get image", String.valueOf(b));
                                 if (b != null)
-                                    putKey(Objects.requireNonNull(this.getContext()), key,  encodeBase64(b));
+                                    putKey(Objects.requireNonNull(this.getContext()), key, encodeBase64(b));
                             }
                     }
                 });
@@ -396,7 +403,7 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
 
             adapter = new ServiceAdapter(getActivity(), mServices, mListener, null, mEstimateFare);
             serviceRv.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
-           // serviceRv.setItemAnimator(new DefaultItemAnimator());
+            // serviceRv.setItemAnimator(new DefaultItemAnimator());
             serviceRv.addItemDecoration(new EqualSpacingItemDecoration(16, EqualSpacingItemDecoration.HORIZONTAL));
             serviceRv.setAdapter(adapter);
 
@@ -406,8 +413,9 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
             }
             mListener.whenClicked(0);
 
+        }
     }
-    }
+
     private EstimateFare mEstimateFare;
     private boolean isFromAdapter = true;
     private int servicePos = 0;
@@ -427,6 +435,7 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
 
     };
     private double walletAmount;
+
     private void estimatedApiCall() {
         Call<EstimateFare> call = APIClient.getAPIClient().estimateFare(RIDE_REQUEST);
         call.enqueue(new Callback<EstimateFare>() {
@@ -446,23 +455,22 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                             putKey(getContext(), "wallet", String.valueOf(estimateFare.getWalletBalance()));
 
 
-                            Service service = adapter.getSelectedService();
-                            if (service != null)
-                            {
-                                RIDE_REQUEST.put(SERVICE_TYPE, service.getId());
+                        Service service = adapter.getSelectedService();
+                        if (service != null) {
+                            RIDE_REQUEST.put(SERVICE_TYPE, service.getId());
 
-                                    isFromAdapter = false;
-                                    Bundle bundle = new Bundle();
-                                     bundle.putString("service_name", service.getName());
-                                     bundle.putSerializable("mService", service);
-                                bundle.putSerializable("estimate_fare", estimateFare);
-                                bundle.putDouble("use_wallet", walletAmount);
-                                BookRideFragment bookRideFragment = new BookRideFragment();
-                                bookRideFragment.setArguments(bundle);
-                                setDataOnUi(service.getName(),service,estimateFare);
+                            isFromAdapter = false;
+                            Bundle bundle = new Bundle();
+                            bundle.putString("service_name", service.getName());
+                            bundle.putSerializable("mService", service);
+                            bundle.putSerializable("estimate_fare", estimateFare);
+                            bundle.putDouble("use_wallet", walletAmount);
+                            BookRideFragment bookRideFragment = new BookRideFragment();
+                            bookRideFragment.setArguments(bundle);
+                            setDataOnUi(service.getName(), service, estimateFare);
 
 
-                            }
+                        }
 
                     } else if (response.raw().code() == 500) try {
                         JSONObject object = new JSONObject(response.errorBody().string());
@@ -484,11 +492,12 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
     @BindView(R.id.service_rv)
     RecyclerView serviceRv;
 
-        public String encodeBase64(Bitmap image) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            image.compress(Bitmap.CompressFormat.PNG, 100, baos);
-            return Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
-        }
+    public String encodeBase64(Bitmap image) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        return Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

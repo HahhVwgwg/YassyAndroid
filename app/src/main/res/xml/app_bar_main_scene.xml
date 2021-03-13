@@ -3,6 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ConstraintSet android:id="@+id/start">
+        <Constraint android:id="@id/container">
+            <Layout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/form_background" />
+            <PropertySet android:visibility="invisible" />
+        </Constraint>
+        <Constraint android:id="@id/menu_app">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
+        <Constraint android:id="@id/menu_back">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
         <Constraint android:id="@id/btn_home">
             <PropertySet android:visibility="visible" />
         </Constraint>
@@ -46,6 +60,20 @@
     </ConstraintSet>
 
     <ConstraintSet android:id="@+id/end">
+        <Constraint android:id="@id/container">
+            <Layout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/form_background" />
+            <PropertySet android:visibility="invisible" />
+        </Constraint>
+        <Constraint android:id="@id/menu_app">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
+        <Constraint android:id="@id/menu_back">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
         <Constraint android:id="@id/btn_home">
             <PropertySet android:visibility="invisible" />
         </Constraint>
@@ -112,6 +140,52 @@
                 app:layout_constraintTop_toTopOf="@+id/form_background" />
             <PropertySet android:visibility="invisible" />
         </Constraint>
+        <Constraint android:id="@id/menu_app">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
+        <Constraint android:id="@id/menu_back">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
+        <Constraint android:id="@id/btn_home">
+            <PropertySet android:visibility="visible" />
+        </Constraint>
+        <Constraint android:id="@id/btn_work">
+            <PropertySet android:visibility="visible" />
+        </Constraint>
+        <Constraint android:id="@id/addresses">
+            <PropertySet android:visibility="invisible" />
+        </Constraint>
+        <Constraint android:id="@id/form_dash">
+            <Layout
+                android:layout_width="33dp"
+                android:layout_height="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/pick_location_layout" />
+            <PropertySet android:alpha="0" />
+        </Constraint>
+        <Constraint android:id="@id/form_background">
+            <Layout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/pick_location_layout" />
+            <PropertySet android:alpha="0" />
+        </Constraint>
+        <Constraint android:id="@id/pick_location_layout">
+            <Layout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="10dp"
+                app:layout_constraintBottom_toTopOf="@+id/btn_home"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+            <Transform android:elevation="6dp" />
+        </Constraint>
     </ConstraintSet>
 
     <ConstraintSet android:id="@+id/end_service">
@@ -120,7 +194,53 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"/>
+            <PropertySet android:visibility="visible" />
+        </Constraint>
+        <Constraint android:id="@id/menu_app">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
+        <Constraint android:id="@id/menu_back">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
+        <Constraint android:id="@id/btn_home">
+            <PropertySet android:visibility="visible" />
+        </Constraint>
+        <Constraint android:id="@id/btn_work">
+            <PropertySet android:visibility="visible" />
+        </Constraint>
+        <Constraint android:id="@id/addresses">
             <PropertySet android:visibility="invisible" />
+        </Constraint>
+        <Constraint android:id="@id/form_dash">
+            <Layout
+                android:layout_width="33dp"
+                android:layout_height="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/pick_location_layout" />
+            <PropertySet android:alpha="0" />
+        </Constraint>
+        <Constraint android:id="@id/form_background">
+            <Layout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/pick_location_layout" />
+            <PropertySet android:alpha="0" />
+        </Constraint>
+        <Constraint android:id="@id/pick_location_layout">
+            <Layout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="10dp"
+                app:layout_constraintBottom_toTopOf="@+id/btn_home"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+            <Transform android:elevation="6dp" />
         </Constraint>
     </ConstraintSet>
 
