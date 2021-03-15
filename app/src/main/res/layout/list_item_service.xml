@@ -1,81 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_view"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_margin="@dimen/_5sdp"
-    android:gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="82dp"
+    android:layout_marginEnd="12dp"
+    android:background="@drawable/service_bg_active"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:outlineAmbientShadowColor="#B0B0B0"
+    android:outlineSpotShadowColor="#B0B0B0"
+    tools:ignore="UnusedAttribute">
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="43dp"
+        android:layout_height="56dp"
+        android:layout_marginEnd="0.5dp"
+        android:layout_marginBottom="1dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/car_standard"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/info"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="18dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/ic_information_icon"
+        app:layout_constraintStart_toEndOf="@+id/name"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/estimated_fixed"
-        android:layout_width="match_parent"
+        android:id="@+id/name"
+        style="@style/TextService"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginStart="21dp"
+        android:layout_marginTop="19dp"
         android:ellipsize="end"
-        android:fontFamily="@font/clanpro_narrnews"
-        android:gravity="center"
-        android:maxLines="1"
-        android:text="@string/estimated_fare"
-        android:textColor="@color/colorPrimaryText"
-        android:textSize="12sp" />
-
-    <FrameLayout
-        android:id="@+id/frame_service"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="@dimen/_2sdp">
-
-        <ImageView
-            android:id="@+id/image"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center"
-            android:contentDescription="@string/app_name"
-            android:padding="@dimen/_8sdp"
-
-            android:src="@drawable/ic_user_placeholder" />
-
-        <ImageView
-            android:id="@+id/imageView10"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_15sdp"
-            android:layout_gravity="bottom"
-            android:visibility="gone"
-            android:background="@color/white"
-             />
-
-    </FrameLayout>
+        android:singleLine="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Стандарт" />
 
     <TextView
         android:id="@+id/price"
+        style="@style/TextServicePrice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_2sdp"
-        android:drawablePadding="4dp"
+        android:layout_marginStart="21dp"
+        android:layout_marginTop="4dp"
         android:ellipsize="end"
-        android:fontFamily="@font/clanpro_narrnews"
-        android:gravity="center"
         android:singleLine="true"
-        android:text="@string/estimated_fare"
-        android:textAllCaps="false"
-        android:textColor="@color/colorSecondaryText"
-        android:textSize="12sp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/name"
+        tools:text="400 ₸" />
 
-    <TextView
-        android:id="@+id/service_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:fontFamily="@font/clanpro_narrnews"
-        android:gravity="center"
-        android:singleLine="true"
-        android:text="@string/estimated_fare"
-        android:textAllCaps="false"
-        android:textColor="@color/colorAccent"
-        android:textSize="12sp" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

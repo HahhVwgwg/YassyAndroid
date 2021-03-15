@@ -430,4 +430,8 @@
     <string name="drawer_menu_help">Помощь</string>
     <string name="drawer_menu_payments">Способы оплаты</string>
 
+    <string name="sos_btn">SOS</string>
+    <string name="sos_title">Экстренная ситуация</string>
+    <string name="sos_desc">При нажатии на кнопку SOS будет отправлено СМС уведомление ближайшим водителям о вашей просьбе помощи! Нажмите и удерживайте для активации функции SOS</string>
+
 </resources>

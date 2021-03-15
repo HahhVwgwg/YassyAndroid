@@ -6,6 +6,8 @@
     android:layout_height="wrap_content"
     android:clickable="true"
     android:focusable="true"
+    android:clipToPadding="false"
+    android:clipChildren="false"
     android:orientation="vertical">
 
     <View
@@ -99,7 +101,6 @@
         android:layout_height="82dp"
         android:clipToPadding="false"
         android:clipChildren="false"
-        android:layout_gravity="center"
         android:layout_marginTop="20dp"
         android:orientation="horizontal"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
@@ -219,20 +220,8 @@
                 android:gravity="center_vertical"
                 android:maxLines="1"
                 android:text="@string/cash"
+                app:drawableEndCompat="@drawable/ic_dropdown_dark"
                 app:drawableStartCompat="@drawable/ic_money_grey" />
-
-            <TextView
-                android:id="@+id/tv_change"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.2"
-                android:fontFamily="@font/clanpro_medium"
-                android:gravity="end"
-                android:padding="@dimen/_5sdp"
-                android:text="@string/change"
-                android:textAllCaps="true"
-                android:textColor="@color/blue"
-                android:textSize="@dimen/text_12" />
 
         </LinearLayout>
 

@@ -2,29 +2,25 @@ package com.thinkincab.app.ui.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.daimajia.androidanimations.library.Techniques;
-import com.daimajia.androidanimations.library.YoYo;
 import com.thinkincab.app.R;
 import com.thinkincab.app.common.Constants;
 import com.thinkincab.app.data.SharedHelper;
 import com.thinkincab.app.data.network.model.EstimateFare;
 import com.thinkincab.app.data.network.model.Service;
-import com.thinkincab.app.ui.activity.main.MainActivity;
 import com.thinkincab.app.ui.fragment.RateCardFragment;
 import com.thinkincab.app.ui.fragment.service.ServiceTypesFragment;
 
@@ -40,6 +36,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHo
     private ServiceTypesFragment.ServiceListener mListener;
     private EstimateFare estimateFare;
     private boolean canNotifyDataSetChanged = true;
+    private int itemWidth;
 
     public ServiceAdapter(Context context, List<Service> list,
                           ServiceTypesFragment.ServiceListener listener,
@@ -49,6 +46,19 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHo
         this.capacity = capacity;
         this.mListener = listener;
         this.estimateFare = fare;
+        zoomIn = AnimationUtils.loadAnimation(this.context, R.anim.zoom_in_animation);
+        zoomIn.setFillAfter(true);
+    }
+
+    public ServiceAdapter(Context context, List<Service> list,
+                          ServiceTypesFragment.ServiceListener listener,
+                          TextView capacity, EstimateFare fare, int itemWidth) {
+        this.context = context;
+        this.list = list;
+        this.capacity = capacity;
+        this.mListener = listener;
+        this.estimateFare = fare;
+        this.itemWidth = itemWidth;
         zoomIn = AnimationUtils.loadAnimation(this.context, R.anim.zoom_in_animation);
         zoomIn.setFillAfter(true);
     }
@@ -71,12 +81,13 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHo
     public void onBindViewHolder(@NonNull MyViewHolder holder,
                                  @SuppressLint("RecyclerView") int position) {
         Service obj = list.get(position);
+        if (itemWidth > 0) {
+            holder.itemView.getLayoutParams().width = itemWidth;
+        }
         if (obj != null)
             holder.serviceName.setText(obj.getName());
         if (estimateFare != null) {
-            holder.estimated_fixed.setVisibility(View.VISIBLE);
             holder.price.setVisibility(View.VISIBLE);
-            holder.estimated_fixed.setText(SharedHelper.getKey(context, "currency")+""+Double.parseDouble(String.valueOf(estimateFare.getEstimatedFare())));
             if (SharedHelper.getKey(context, "measurementType").equalsIgnoreCase(Constants.MeasurementType.KM)) {
                 if (estimateFare.getDistance() > 1 || estimateFare.getDistance() > 1.0) {
                     holder.price.setText(estimateFare.getDistance() + " " + context.getString(R.string.kms));
@@ -91,25 +102,17 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHo
                 }
             }
         }
-        Glide.with(context)
-                .load(obj.getImage())
-                .apply(RequestOptions.placeholderOf(R.drawable.ic_car).dontAnimate().error(R.drawable.ic_car))
-                .into(holder.image);
 
         if (position == lastCheckedPos && canNotifyDataSetChanged) {
             canNotifyDataSetChanged = true;
-            if(capacity!=null){
-            capacity.setText(String.valueOf(obj.getCapacity()));
+            if (capacity != null) {
+                capacity.setText(String.valueOf(obj.getCapacity()));
             }
-            holder.mFrame_service.setBackground(context.getResources().getDrawable(R.drawable.yellowstrokegerysolid));
-            holder.serviceName.setTextColor(context.getResources().getColor(R.color.colorAccent));
-
+            holder.serviceName.setTextColor(context.getResources().getColor(R.color.text_black));
+            holder.itemView.setElevation(24f);
+            holder.itemView.setBackgroundResource(R.drawable.service_bg_active);
             holder.itemView.setAlpha(1);
 
-            if(capacity!=null){
-            holder.estimated_fixed.setVisibility(View.VISIBLE);
-                holder.price.setVisibility(View.VISIBLE);
-            }
             if (estimateFare != null) {
                 if (SharedHelper.getKey(context, "measurementType").equalsIgnoreCase(Constants.MeasurementType.KM)) {
                     if (estimateFare.getDistance() > 1 || estimateFare.getDistance() > 1.0)
@@ -122,16 +125,13 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHo
                     else
                         holder.price.setText(estimateFare.getDistance() + " " + context.getString(R.string.mile));
                 }
-                holder.estimated_fixed.setText(SharedHelper.getKey(context, "currency")+""+Double.parseDouble(String.valueOf(estimateFare.getEstimatedFare())));
 
             }
-            //holder.itemView.startAnimation(zoomIn);
         } else {
-            holder.mFrame_service.setBackground(context.getResources().getDrawable(R.drawable.service_bkg));
-            holder.serviceName.setTextColor(context.getResources().getColor(R.color.colorPrimaryText));
-            holder.itemView.setAlpha((float) 1.0);
-            holder.estimated_fixed.setVisibility(View.INVISIBLE);
-            holder.price.setVisibility(View.INVISIBLE);
+            holder.serviceName.setTextColor(context.getResources().getColor(R.color.text_service_grey));
+            holder.itemView.setBackgroundResource(R.drawable.service_bg_inactive);
+            holder.itemView.setElevation(0f);
+            holder.itemView.setAlpha((float) 0.5);
         }
 
         holder.itemView.setOnClickListener(view -> {
@@ -145,16 +145,6 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHo
                     lastCheckedPos = position;
                     notifyDataSetChanged();
                 }
-
-
-
-
-                YoYo.with(Techniques.BounceInRight)
-                        .duration(1000)
-                        .pivot(YoYo.CENTER_PIVOT, YoYo.CENTER_PIVOT)
-                        .interpolate(new AccelerateDecelerateInterpolator())
-                        .playOn(holder.image);
-                mListener.whenClicked(position);
             }
         });
     }
@@ -169,19 +159,19 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHo
         else return null;
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder {
-        private LinearLayout itemView;
-        private TextView serviceName, price, estimated_fixed;
-        private ImageView image;
-        private FrameLayout mFrame_service;
+    static class MyViewHolder extends RecyclerView.ViewHolder {
+        private final View itemView;
+        private final View info;
+        private final TextView serviceName;
+        private final TextView price;
+        private final ImageView image;
 
         MyViewHolder(View view) {
             super(view);
-            mFrame_service = view.findViewById(R.id.frame_service);
-            estimated_fixed = view.findViewById(R.id.estimated_fixed);
-            serviceName = view.findViewById(R.id.service_name);
+            serviceName = view.findViewById(R.id.name);
             price = view.findViewById(R.id.price);
             image = view.findViewById(R.id.image);
+            info = view.findViewById(R.id.info);
             itemView = view.findViewById(R.id.item_view);
         }
     }

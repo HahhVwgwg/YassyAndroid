@@ -112,6 +112,10 @@
         <item name="android:fontFamily">@string/font_family_medium_500</item>
     </style>
 
+    <style name="TextSubTitle.20">
+        <item name="android:textSize">20sp</item>
+    </style>
+
     <style name="TextSmallDesc">
         <item name="android:textColor">@color/text_black</item>
         <item name="android:textSize">14sp</item>
@@ -137,6 +141,18 @@
         <item name="android:fontFamily">@string/font_family_regular_400</item>
     </style>
 
+    <style name="TextService">
+        <item name="android:textColor">@color/text_black</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@string/font_family_regular_400</item>
+    </style>
+
+    <style name="TextServicePrice">
+        <item name="android:textColor">@color/app_black</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">@string/font_family_medium_500</item>
+    </style>
+
     <style name="TextDesc.Dark" parent="TextDesc">
         <item name="android:textColor">@color/text_dark_black</item>
     </style>
@@ -147,6 +163,10 @@
 
     <style name="TextDesc.Grey" parent="TextDesc">
         <item name="android:textColor">@color/text_dark_grey</item>
+    </style>
+
+    <style name="TextDesc.ServiceGrey" parent="TextDesc">
+        <item name="android:textColor">@color/text_service_grey</item>
     </style>
 
     <style name="TextDesc.Orange" parent="TextDesc">

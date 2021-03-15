@@ -58,6 +58,8 @@ import com.thinkincab.app.ui.adapter.ServiceAdapter;
 import com.thinkincab.app.ui.fragment.RateCardFragment;
 import com.thinkincab.app.ui.fragment.schedule.ScheduleFragment;
 import com.thinkincab.app.ui.fragment.service.ServiceTypesFragment;
+import com.thinkincab.app.ui.utils.DisplayUtils;
+import com.thinkincab.app.ui.utils.ListOffset;
 
 import org.json.JSONObject;
 
@@ -120,8 +122,6 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
     TextView viewCoupons;
     @BindView(R.id.estimated_payment_mode)
     TextView estimatedPaymentMode;
-    @BindView(R.id.tv_change)
-    TextView tvChange;
     @BindView(R.id.wallet_balance)
     TextView walletBalance;
     @BindView(R.id.llEstimatedFareContainer)
@@ -241,8 +241,7 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
         super.onDestroyView();
     }
 
-    @OnClick({R.id.schedule_ride, R.id.ride_now, R.id.view_coupons, R.id.tv_change})
-//    @OnClick({R.id.ride_now, R.id.view_coupons, R.id.tv_change})
+    @OnClick({R.id.schedule_ride, R.id.ride_now, R.id.view_coupons, R.id.estimated_payment_mode})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.schedule_ride:
@@ -275,7 +274,7 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                     }
                 }
                 break;
-            case R.id.tv_change:
+            case R.id.estimated_payment_mode:
                 ((MainActivity) Objects.requireNonNull(getActivity())).updatePaymentEntities();
                 startActivityForResult(new Intent(getActivity(), PaymentActivity.class), PICK_PAYMENT_METHOD);
                 break;
@@ -401,10 +400,9 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                 e.printStackTrace();
             }
 
-            adapter = new ServiceAdapter(getActivity(), mServices, mListener, null, mEstimateFare);
+            adapter = new ServiceAdapter(getActivity(), mServices, mListener, null, mEstimateFare, DisplayUtils.getCustomWidth(getActivity(), 2, 60));
             serviceRv.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
-            // serviceRv.setItemAnimator(new DefaultItemAnimator());
-            serviceRv.addItemDecoration(new EqualSpacingItemDecoration(16, EqualSpacingItemDecoration.HORIZONTAL));
+            serviceRv.addItemDecoration(new ListOffset(DisplayUtils.dpToPx(24), ListOffset.START));
             serviceRv.setAdapter(adapter);
 
             if (adapter != null) {
@@ -519,7 +517,6 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
     public void onResume() {
         super.onResume();
         initPayment(estimatedPaymentMode);
-        tvChange.setVisibility((!isCard && !isDebitMachine) && isCash ? View.GONE : View.VISIBLE);
     }
 
     public interface CouponListener {

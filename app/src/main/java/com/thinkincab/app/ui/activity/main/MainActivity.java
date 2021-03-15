@@ -44,7 +44,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.motion.widget.MotionLayout;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
@@ -56,8 +55,6 @@ import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.akexorcist.googledirection.DirectionCallback;
-import com.akexorcist.googledirection.GoogleDirection;
-import com.akexorcist.googledirection.constant.TransportMode;
 import com.akexorcist.googledirection.model.Direction;
 import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
@@ -78,7 +75,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -108,9 +104,7 @@ import com.thinkincab.app.data.network.model.User;
 import com.thinkincab.app.data.network.model.UserAddress;
 import com.thinkincab.app.ui.activity.help.HelpActivity;
 import com.thinkincab.app.ui.activity.location_pick.LocationPickActivity;
-import com.thinkincab.app.ui.activity.outstation.OutstationBookingActivity;
 import com.thinkincab.app.ui.activity.payment.PaymentActivity;
-import com.thinkincab.app.ui.activity.rental.RentalActivity;
 import com.thinkincab.app.ui.activity.setting.SettingsActivity;
 import com.thinkincab.app.ui.activity.your_trips.YourTripActivity;
 import com.thinkincab.app.ui.adapter.EmptyAddressAdapter;
@@ -124,6 +118,7 @@ import com.thinkincab.app.ui.fragment.schedule.ScheduleFragment;
 import com.thinkincab.app.ui.fragment.searching.SearchingFragment;
 import com.thinkincab.app.ui.fragment.service.ServiceTypesFragment;
 import com.thinkincab.app.ui.fragment.service_flow.ServiceFlowFragment;
+import com.thinkincab.app.ui.fragment.sos.SosFragment;
 import com.thinkincab.app.ui.utils.DisplayUtils;
 import com.thinkincab.app.ui.utils.KeyboardUtils;
 import com.thinkincab.app.ui.utils.ListOffset;
@@ -169,6 +164,7 @@ import static com.thinkincab.app.common.Constants.Status.EMPTY;
 import static com.thinkincab.app.common.Constants.Status.PICKED_UP;
 import static com.thinkincab.app.common.Constants.Status.RATING;
 import static com.thinkincab.app.common.Constants.Status.SEARCHING;
+import static com.thinkincab.app.common.Constants.Status.SOS;
 import static com.thinkincab.app.common.Constants.Status.SERVICE;
 import static com.thinkincab.app.common.Constants.Status.STARTED;
 import static com.thinkincab.app.data.SharedHelper.key.PROFILE_IMG;
@@ -227,13 +223,10 @@ public class MainActivity extends BaseActivity implements
 
     private Boolean isEditable = true;
 
-
-    //SETAR ID DOS TIPOS DE SERVIÇO
     private static final Integer serviceMototaxiID = 10;
     private static final Integer serviceMotoboyID = 20;
 
-    private final long REQUEST_PLACES_DELAY = 1000; // delay de x segundos
-    private final long REQUEST_PLACES_CHARACTER_LIMIT = 7; // delay de x segundos
+    private static final long REQUEST_PLACES_DELAY = 1000;
     private Timer timer = new Timer();
     private TimerTask timerTask = new TimerTask() {
         @Override
@@ -274,7 +267,7 @@ public class MainActivity extends BaseActivity implements
 
     private int selectedEditText;
 
-    private TextWatcher filterTextWatcher = new TextWatcher() {
+    private final TextWatcher filterTextWatcher = new TextWatcher() {
 
         private boolean userIsTyping;
 
@@ -347,26 +340,6 @@ public class MainActivity extends BaseActivity implements
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        findViewById(R.id.imageView5).setOnClickListener(view -> {
-            if (getSupportFragmentManager().getBackStackEntryCount() > 0)
-                getSupportFragmentManager().popBackStack();
-            if (RIDE_REQUEST.containsKey("s_address") && RIDE_REQUEST.containsKey("d_address")) {
-                changeFlow("SERVICE");
-                LatLng origin = new LatLng((Double) RIDE_REQUEST.get("s_latitude"), (Double) RIDE_REQUEST.get("s_longitude"));
-                LatLng destination = new LatLng((Double) RIDE_REQUEST.get("d_latitude"), (Double) RIDE_REQUEST.get("d_longitude"));
-                drawRoute(origin, destination);
-            } else {
-                changeFlow("EMPTY");
-            }
-        });
-
-
-        findViewById(R.id.imageView3).setOnClickListener(view -> startActivity(new Intent(MainActivity.this, RentalActivity.class)));
-
-
-        findViewById(R.id.imageView4).setOnClickListener(view -> startActivity(new Intent(MainActivity.this, OutstationBookingActivity.class)));
-
 
         h = new Handler();
         r = () -> {
@@ -765,7 +738,7 @@ public class MainActivity extends BaseActivity implements
 
     }
 
-    @OnClick({R.id.erase_src, R.id.erase_dest, R.id.btn_home, R.id.btn_work, R.id.menu_app, R.id.gps, R.id.source, R.id.destination, R.id.changeDestination, R.id.menu_back})
+    @OnClick({R.id.sos, R.id.erase_src, R.id.erase_dest, R.id.btn_home, R.id.btn_work, R.id.menu_app, R.id.gps, R.id.source, R.id.destination, R.id.changeDestination, R.id.menu_back})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.menu_app:
@@ -780,6 +753,10 @@ public class MainActivity extends BaseActivity implements
                     drawerLayout.openDrawer(GravityCompat.START);
                 }
 
+                break;
+            case R.id.sos:
+                SosFragment sosFragment = new SosFragment();
+                sosFragment.show(getSupportFragmentManager(), SOS);
                 break;
             case R.id.menu_back:
                 topLayout.transitionToStart();
@@ -1099,7 +1076,6 @@ public class MainActivity extends BaseActivity implements
         if (isFinishing()) return;
 
         if (fragment != null) {
-            findViewById(R.id.con_out_rental).setVisibility(View.GONE);
             if (fragment instanceof BookRideFragment) {
 
             } else if (fragment instanceof ServiceTypesFragment ||
@@ -1115,7 +1091,6 @@ public class MainActivity extends BaseActivity implements
                 fragmentTransaction.addToBackStack(fragment.getTag());
             else if (fragment instanceof ServiceTypesFragment) {
                 fragmentTransaction.addToBackStack(fragment.getTag());
-                findViewById(R.id.con_out_rental).setVisibility(View.GONE);
 
             } else if (fragment instanceof BookRideFragment)
                 fragmentTransaction.addToBackStack(fragment.getTag());
@@ -1131,14 +1106,12 @@ public class MainActivity extends BaseActivity implements
             for (Fragment fragmentd : getSupportFragmentManager().getFragments()) {
                 if (fragmentd instanceof ServiceFlowFragment) {
                     getSupportFragmentManager().beginTransaction().remove(fragmentd).commitAllowingStateLoss();
-                    findViewById(R.id.con_out_rental).setVisibility(View.GONE);
                 }
                 if (fragmentd instanceof InvoiceFragment)
                     getSupportFragmentManager().beginTransaction().remove(fragmentd).commitAllowingStateLoss();
             }
             container.removeAllViews();
             getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-            findViewById(R.id.con_out_rental).setVisibility(View.VISIBLE);
         }
     }
 
@@ -1660,23 +1633,8 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     public void onSuccess(SettingsResponse response) {
-        if (!drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            findViewById(R.id.grprent).setVisibility(View.GONE);
-            findViewById(R.id.grpout).setVisibility(View.GONE);
-            findViewById(R.id.con_out_rental).setVisibility(View.GONE);
-        }
         if (response.getReferral().getOnline().equals("1")) {
             online = true;
-        }
-        if ((response.getReferral().getRental().equals("0")) && (response.getReferral().getOutstation().equals("0"))) {
-            findViewById(R.id.con_out_rental).setVisibility(View.GONE);
-        } else if ((response.getReferral().getRental().equals("1")) && (response.getReferral().getOutstation().equals("1"))) {
-            findViewById(R.id.grprent).setVisibility(View.VISIBLE);
-            findViewById(R.id.grpout).setVisibility(View.VISIBLE);
-        } else if (response.getReferral().getRental().equals("1")) {
-            findViewById(R.id.grpout).setVisibility(View.VISIBLE);
-        } else if (response.getReferral().getOutstation().equals("1")) {
-            findViewById(R.id.grprent).setVisibility(View.VISIBLE);
         }
         if (response.getReferral().getReferral().equalsIgnoreCase("1")) navMenuVisibility(true);
         else navMenuVisibility(false);

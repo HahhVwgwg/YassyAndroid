@@ -9,6 +9,7 @@
     <color name="window_background">#F7F7F8</color>
 
     <color name="white">#FFFFFF</color>
+    <color name="white50">#80FFFFFF</color>
     <color name="blue">#2B65EC</color>
     <color name="yellow">#fdc928</color>
     <color name="grey">#EBEBF1</color>
@@ -22,6 +23,7 @@
     <color name="close_word">#ee1b50</color>
 
     <color name="app_status">#888888</color>
+    <color name="app_black">#000000</color>
     <color name="app_orange">#FC7822</color>
     <color name="app_grey">#D4D4D4</color>
     <color name="app_grey_disabled">#D9D9D9</color>
@@ -30,11 +32,13 @@
     <color name="text_light_black">#404040</color>
     <color name="text_dark_grey">#686868</color>
     <color name="text_grey">#C8C8C8</color>
+    <color name="text_service_grey">#999999</color>
     <color name="text_error">#ED3636</color>
     <color name="text_hint">#BEBEBE</color>
     <color name="app_divider">#EEEEEE</color>
     <color name="app_divider_form">#F6F6F6</color>
     <color name="app_divider_list">#F2F2F2</color>
+    <color name="app_border_grey">#F0F0F0</color>
 
 
 </resources>
