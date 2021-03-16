@@ -35,6 +35,7 @@ public interface Constants {
         String EMPTY = "EMPTY";
         String SERVICE = "SERVICE";
         String SEARCHING = "SEARCHING";
+        String PAYMENT = "PAYMENT";
         String SOS = "SOS";
         String STARTED = "STARTED";
         String ARRIVED = "ARRIVED";

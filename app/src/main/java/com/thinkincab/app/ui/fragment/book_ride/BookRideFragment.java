@@ -56,6 +56,7 @@ import com.thinkincab.app.ui.activity.payment.PaymentActivity;
 import com.thinkincab.app.ui.adapter.CouponAdapter;
 import com.thinkincab.app.ui.adapter.ServiceAdapter;
 import com.thinkincab.app.ui.fragment.RateCardFragment;
+import com.thinkincab.app.ui.fragment.payment.PaymentFragment;
 import com.thinkincab.app.ui.fragment.schedule.ScheduleFragment;
 import com.thinkincab.app.ui.fragment.service.ServiceTypesFragment;
 import com.thinkincab.app.ui.utils.DisplayUtils;
@@ -89,6 +90,7 @@ import static com.thinkincab.app.common.Constants.RIDE_REQUEST.DISTANCE_VAL;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.PAYMENT_MODE;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.SERVICE_TYPE;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.SRC_ADD;
+import static com.thinkincab.app.common.Constants.Status.PAYMENT;
 import static com.thinkincab.app.data.SharedHelper.getKey;
 import static com.thinkincab.app.data.SharedHelper.getProviders;
 import static com.thinkincab.app.data.SharedHelper.putKey;
@@ -275,8 +277,10 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                 }
                 break;
             case R.id.estimated_payment_mode:
-                ((MainActivity) Objects.requireNonNull(getActivity())).updatePaymentEntities();
-                startActivityForResult(new Intent(getActivity(), PaymentActivity.class), PICK_PAYMENT_METHOD);
+                PaymentFragment paymentFragment = new PaymentFragment();
+                paymentFragment.show(getChildFragmentManager(), PAYMENT);
+                //((MainActivity) Objects.requireNonNull(getActivity())).updatePaymentEntities();
+                //startActivityForResult(new Intent(getActivity(), PaymentActivity.class), PICK_PAYMENT_METHOD);
                 break;
         }
     }

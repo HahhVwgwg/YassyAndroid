@@ -34,6 +34,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -82,6 +83,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
+import com.hold1.keyboardheightprovider.KeyboardHeightProvider;
 import com.thinkincab.app.BuildConfig;
 import com.thinkincab.app.MvpApplication;
 import com.thinkincab.app.R;
@@ -220,6 +222,10 @@ public class MainActivity extends BaseActivity implements
     TextView btnHomeValue;
     @BindView(R.id.addresses)
     RecyclerView addressesList;
+    @BindView(R.id.on_map)
+    FrameLayout onMap;
+
+    private KeyboardHeightProvider keyboardHeightProvider;
 
     private Boolean isEditable = true;
 
@@ -328,6 +334,12 @@ public class MainActivity extends BaseActivity implements
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 
         ButterKnife.bind(this);
+        keyboardHeightProvider = new KeyboardHeightProvider(this);
+        keyboardHeightProvider.addKeyboardListener(height -> {
+            addressesList.setPadding(0, 0, 0, height);
+            ((ViewGroup.MarginLayoutParams) onMap.getLayoutParams()).bottomMargin = height + DisplayUtils.dpToPx(16);
+            onMap.requestLayout();
+        });
         drawerFragment = (DrawerFragment) getSupportFragmentManager().findFragmentById(R.id.drawer);
 
         registerReceiver(myReceiver, new IntentFilter(INTENT_FILTER));
@@ -411,6 +423,7 @@ public class MainActivity extends BaseActivity implements
             @Override
             public void onTransitionCompleted(MotionLayout motionLayout, int i) {
                 if (i == R.id.start) {
+                    onMap.setVisibility(View.GONE);
                     KeyboardUtils.hideKeyboard(MainActivity.this, sourceTxt, destinationTxt);
                     pickLocationLayout.requestFocus();
                     topLayout.enableTransition(R.id.tr, false);
@@ -445,8 +458,9 @@ public class MainActivity extends BaseActivity implements
                         isEditable = true;
                     }
                 } else if (i == R.id.end) {
-
+                    onMap.setVisibility(View.VISIBLE);
                 } else if (i == R.id.start_service) {
+                    onMap.setVisibility(View.GONE);
                     motionLayout.setTransition(R.id.tr);
                     CURRENT_STATUS = EMPTY;
                     changeFlow(CURRENT_STATUS);
@@ -638,10 +652,12 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
-
     @Override
     public void onResume() {
         super.onResume();
+        if (keyboardHeightProvider != null) {
+            keyboardHeightProvider.onResume();
+        }
         mainPresenter.getNavigationSettings();
         registerReceiver(myReceiver, new IntentFilter(INTENT_FILTER));
         mapFragment.onResume();
@@ -738,9 +754,11 @@ public class MainActivity extends BaseActivity implements
 
     }
 
-    @OnClick({R.id.sos, R.id.erase_src, R.id.erase_dest, R.id.btn_home, R.id.btn_work, R.id.menu_app, R.id.gps, R.id.source, R.id.destination, R.id.changeDestination, R.id.menu_back})
+    @OnClick({R.id.on_map, R.id.sos, R.id.erase_src, R.id.erase_dest, R.id.btn_home, R.id.btn_work, R.id.menu_app, R.id.gps, R.id.source, R.id.destination, R.id.changeDestination, R.id.menu_back})
     public void onViewClicked(View view) {
         switch (view.getId()) {
+            case R.id.on_map:
+                break;
             case R.id.menu_app:
                 if (drawerLayout.isDrawerOpen(GravityCompat.START))
                     drawerLayout.closeDrawer(GravityCompat.START);
@@ -1662,6 +1680,9 @@ public class MainActivity extends BaseActivity implements
     @Override
     protected void onPause() {
         super.onPause();
+        if (keyboardHeightProvider != null) {
+            keyboardHeightProvider.onPause();
+        }
         mapFragment.onPause();
     }
 

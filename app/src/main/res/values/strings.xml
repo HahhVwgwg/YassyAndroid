@@ -434,4 +434,8 @@
     <string name="sos_title">Экстренная ситуация</string>
     <string name="sos_desc">При нажатии на кнопку SOS будет отправлено СМС уведомление ближайшим водителям о вашей просьбе помощи! Нажмите и удерживайте для активации функции SOS</string>
 
+    <string name="payment_title">Способы оплаты</string>
+    <string name="payment_btn">Готово</string>
+
+    <string name="find_on_map">Указать на карте</string>
 </resources>
