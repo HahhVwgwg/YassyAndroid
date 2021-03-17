@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.thinkincab.app">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -22,6 +23,7 @@
         android:name="com.thinkincab.app.MvpApplication"
         android:allowBackup="true"
         android:configChanges="locale"
+        android:debuggable="true"
         android:fullBackupContent="@xml/backup_descriptor"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
@@ -29,7 +31,8 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        tools:ignore="HardcodedDebugMode">
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
@@ -41,7 +44,7 @@
             android:resource="@color/colorAccent" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="@string/default_notification_channel_id" />
+            android:value="${applicationId}" />
         <meta-data
             android:name="firebase_crashlytics_collection_enabled"
             android:value="false" />

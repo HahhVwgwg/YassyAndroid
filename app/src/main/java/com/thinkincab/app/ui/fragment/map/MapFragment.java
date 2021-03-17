@@ -18,7 +18,9 @@ import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.android.gestures.AndroidGesturesManager;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.android.gestures.StandardScaleGestureDetector;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdate;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.LocationComponent;
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
@@ -75,6 +77,16 @@ public class MapFragment extends Fragment implements
             this.mapBoxMap = mapBoxMap;
             this.markerViewManager = new MarkerViewManager(mapView, mapBoxMap);
             mapBoxMap.setStyle(Style.MAPBOX_STREETS, style -> {
+                mapBoxMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+                        .target(new LatLng(43.2973300, 68.2517500))
+                        .padding(
+                                0.0,
+                                0.0,
+                                0.0,
+                                DisplayUtils.dpToPx(0) // current padding
+                        )
+                        .zoom(15)
+                        .build()));
                 mapBoxMap.addOnMapClickListener(MapFragment.this);
                 mapBoxMap.addOnMapLongClickListener(MapFragment.this);
                 mapBoxMap.addOnScaleListener(MapFragment.this);
