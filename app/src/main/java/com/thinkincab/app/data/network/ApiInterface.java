@@ -1,7 +1,5 @@
 package com.thinkincab.app.data.network;
 
-//import com.appoets.paytmpayment.PaytmObject;
-import com.thinkincab.app.R;
 import com.thinkincab.app.data.network.model.AddWallet;
 import com.thinkincab.app.data.network.model.AddressResponse;
 import com.thinkincab.app.data.network.model.BrainTreeResponse;
@@ -26,7 +24,6 @@ import com.thinkincab.app.data.network.model.RegisterResponse;
 import com.thinkincab.app.data.network.model.Rental;
 import com.thinkincab.app.data.network.model.Service;
 import com.thinkincab.app.data.network.model.SettingsResponse;
-import com.thinkincab.app.data.network.model.TimerResponse;
 import com.thinkincab.app.data.network.model.Token;
 import com.thinkincab.app.data.network.model.TokenOtp;
 import com.thinkincab.app.data.network.model.User;
@@ -54,11 +51,6 @@ import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
 
 public interface ApiInterface {
-
-    @GET("nearbysearch/json?key="+ (R.string.google_map_key) +"&sensor=true&radius=50")
-    Observable<Object> doPlaces(@Query(value = "type", encoded = true) String type,
-                                @Query(value = "location", encoded = true) String location,
-                                @Query(value = "keyword", encoded = true) String key);
 
     @FormUrlEncoded
     @POST("api/user/checkversion")
@@ -88,10 +80,6 @@ public interface ApiInterface {
     @FormUrlEncoded
     @POST("api/user/signup")
     Observable<TokenOtp> loginByOtp(@FieldMap HashMap<String, Object> params);
-
-    @FormUrlEncoded
-    @POST("/oauth/token")
-    Observable<Token> refreshLogin(@FieldMap HashMap<String, Object> params);
 
     @FormUrlEncoded
     @POST("api/user/forgot/password")
@@ -135,9 +123,6 @@ public interface ApiInterface {
 
     @GET("api/user/rental/logic")
     Observable<List<Rental>> rentals();
-
-    /*@GET("api/user/estimated/fare")
-    Observable<EstimateFare> estimateFare(@QueryMap Map<String, Object> params);*/
 
     @GET("api/user/estimated/fare")
     Call<EstimateFare> estimateFare(@QueryMap Map<String, Object> params);

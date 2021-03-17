@@ -3,9 +3,9 @@ package com.thinkincab.app.data;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.thinkincab.app.BuildConfig;
 import com.thinkincab.app.data.network.model.Provider;
 
@@ -86,8 +86,8 @@ public class SharedHelper {
     public static void putCurrentLocation(Context context, LatLng latLng) {
         sharedPreferences = context.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
-        editor.putFloat("current_lat", (float) latLng.latitude);
-        editor.putFloat("current_lng", (float) latLng.longitude);
+        editor.putFloat("current_lat", (float) latLng.getLatitude());
+        editor.putFloat("current_lng", (float) latLng.getLongitude());
         editor.apply();
     }
 

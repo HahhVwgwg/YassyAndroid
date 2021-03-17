@@ -25,11 +25,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chaos.view.PinView;
-import com.facebook.accountkit.Account;
-import com.facebook.accountkit.AccountKit;
-import com.facebook.accountkit.AccountKitCallback;
-import com.facebook.accountkit.AccountKitError;
-import com.facebook.accountkit.PhoneNumber;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.thinkincab.app.BuildConfig;
 import com.thinkincab.app.R;
@@ -373,25 +368,6 @@ public class RegisterActivity extends BaseActivity implements RegisterIView {
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_ACCOUNT_KIT && data != null && resultCode == RESULT_OK) {
-            AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
-                @Override
-                public void onSuccess(Account account) {
-                    Log.d("AccountKit", "onSuccess: Account Kit" + AccountKit.getCurrentAccessToken().getToken());
-                    if (AccountKit.getCurrentAccessToken().getToken() != null) {
-                        PhoneNumber phoneNumber = account.getPhoneNumber();
-                        SharedHelper.putKey(RegisterActivity.this, "countryCode", "+" + phoneNumber.getCountryCode());
-                        SharedHelper.putKey(RegisterActivity.this, "mobile", phoneNumber.getPhoneNumber());
-                        register();
-                    }
-                }
-
-                @Override
-                public void onError(AccountKitError accountKitError) {
-                    Log.e("AccountKit", "onError: Account Kit" + accountKitError);
-                }
-            });
-        }
     }
 
     @Override

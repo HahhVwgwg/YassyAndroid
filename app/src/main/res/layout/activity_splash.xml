@@ -75,7 +75,7 @@
         android:fontFamily="@font/clanpro_narrnews"
         android:padding="@dimen/_8sdp"
         android:text="@string/change_language"
-        android:textColor="@color/quantum_black_100"
+        android:textColor="@color/text_black"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

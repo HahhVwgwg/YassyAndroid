@@ -4,22 +4,13 @@ import android.app.Application;
 import android.content.Context;
 import androidx.multidex.MultiDex;
 
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.core.CrashlyticsCore;
 import com.facebook.stetho.Stetho;
+import com.mapbox.mapboxsdk.Mapbox;
 import com.thinkincab.app.common.ConnectivityReceiver;
 import com.thinkincab.app.common.LocaleHelper;
-import com.thinkincab.app.data.SharedHelper;
 import com.thinkincab.app.data.network.model.Datum;
 
-import java.text.NumberFormat;
-import java.util.Currency;
 import java.util.HashMap;
-import java.util.Locale;
-
-import io.fabric.sdk.android.Fabric;
-
-//import com.facebook.stetho.Stetho;
 
 public class MvpApplication extends Application {
 
@@ -36,7 +27,6 @@ public class MvpApplication extends Application {
     public static boolean isPaytm;
     public static boolean isPaypalAdaptive;
     public static boolean isBraintree;
-    public static boolean openChatFromNotification = true;
 
     //TODO ALLAN - Alterações débito na máquina e voucher
     public static boolean isDebitMachine;
@@ -59,13 +49,9 @@ public class MvpApplication extends Application {
 
         mInstance = this;
 
-        CrashlyticsCore core = new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build();
-        Crashlytics crashlytics = new Crashlytics.Builder().core(core).build();
-        Fabric.with(this, crashlytics);
-
         if (BuildConfig.DEBUG)
             Stetho.initializeWithDefaults(this);
-
+        Mapbox.getInstance(getApplicationContext(), getString(R.string.mapbox_access_token));
         MultiDex.install(this);
     }
 

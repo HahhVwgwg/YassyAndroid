@@ -286,7 +286,7 @@
                 android:layout_marginTop="8dp"
                 android:fontFamily="@font/clanpro_narrnews"
                 android:text="Time"
-                android:textColor="@color/quantum_black_100"
+                android:textColor="@color/text_black"
 
                 app:layout_constraintStart_toStartOf="@+id/textView9"
                 app:layout_constraintTop_toBottomOf="@+id/textView9" />

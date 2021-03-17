@@ -73,11 +73,26 @@
             app:layout_constraintBottom_toTopOf="@+id/container"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <fragment
+        <FrameLayout
             android:id="@+id/map"
-            android:name="com.google.android.gms.maps.MapFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"/>
+
+        <FrameLayout
+            android:id="@+id/map_marker"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/main_pin"
+                android:elevation="4dp"
+                android:layout_gravity="center"
+                android:paddingBottom="45dp"
+                app:srcCompat="@drawable/ic_pin_big"
+                android:layout_width="wrap_content"
+                android:layout_height="90dp"/>
+
+        </FrameLayout>
 
         <View
             android:id="@+id/form_background"
@@ -283,49 +298,6 @@
                 app:drawableStartCompat="@drawable/ic_work_grey" />
 
         </FrameLayout>
-
-        <LinearLayout
-            android:id="@+id/llChangeLocation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:background="#FFF"
-            android:elevation="1dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:visibility="gone">
-
-            <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
-
-                <TextView
-                    android:id="@+id/changeDestination"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:ellipsize="end"
-                    android:fontFamily="@font/clanpro_narrnews"
-                    android:gravity="center_vertical"
-                    android:padding="15dp"
-                    android:singleLine="true"
-                    android:text="@string/where_to"
-                    android:textColor="@color/colorPrimaryText"
-                    android:textSize="@dimen/text_14" />
-
-                <ImageView
-                    android:id="@+id/change_location"
-                    android:layout_width="@dimen/_40sdp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center|end"
-                    android:background="@color/colorPrimary"
-                    android:contentDescription="@string/qr_scan"
-                    android:padding="@dimen/_5sdp"
-                    app:srcCompat="@drawable/ic_change1" />
-            </FrameLayout>
-
-
-        </LinearLayout>
 
         <FrameLayout
             android:id="@+id/container"

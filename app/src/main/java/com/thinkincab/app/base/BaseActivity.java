@@ -31,12 +31,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.facebook.accountkit.PhoneNumber;
-import com.facebook.accountkit.ui.AccountKitActivity;
-import com.facebook.accountkit.ui.AccountKitConfiguration;
-import com.facebook.accountkit.ui.LoginType;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.thinkincab.app.MvpApplication;
 import com.thinkincab.app.R;
 import com.thinkincab.app.common.ConnectivityReceiver;
@@ -292,7 +288,7 @@ public abstract class BaseActivity extends AppCompatActivity
         String address = null;
         try {
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-            List<Address> addresses = geocoder.getFromLocation(currentLocation.latitude, currentLocation.longitude, 1);
+            List<Address> addresses = geocoder.getFromLocation(currentLocation.getLatitude(), currentLocation.getLongitude(), 1);
             if ((addresses != null) && !addresses.isEmpty()) {
                 Address returnedAddress = addresses.get(0);
                 StringBuilder strReturnedAddress = new StringBuilder();
@@ -312,22 +308,6 @@ public abstract class BaseActivity extends AppCompatActivity
         EasyImage.openChooserWithGallery(this, "", 0);
     }
 
-    protected void fbOtpVerify(String strCountryCode, String strCountryISOCode, String strPhoneNumber) {
-        final Intent intent = new Intent(this, AccountKitActivity.class);
-        AccountKitConfiguration.AccountKitConfigurationBuilder configurationBuilder =
-                new AccountKitConfiguration.AccountKitConfigurationBuilder(
-                        LoginType.PHONE,
-                        AccountKitActivity.ResponseType.TOKEN);
-        configurationBuilder.setReadPhoneStateEnabled(true);
-        configurationBuilder.setReceiveSMS(true);
-        PhoneNumber phoneNumber = new PhoneNumber(strCountryISOCode, strPhoneNumber, strCountryCode);
-        configurationBuilder.setInitialPhoneNumber(phoneNumber);
-        intent.putExtra(
-                AccountKitActivity.ACCOUNT_KIT_ACTIVITY_CONFIGURATION,
-                configurationBuilder.build());
-        startActivityForResult(intent, REQUEST_ACCOUNT_KIT);
-    }
-
     @SuppressLint("StringFormatInvalid")
     protected void shareApp() {
         try {
@@ -344,10 +324,10 @@ public abstract class BaseActivity extends AppCompatActivity
 
     protected float bearingBetweenLocations(LatLng latLng1, LatLng latLng2) {
         double PI = 3.14159;
-        double lat1 = latLng1.latitude * PI / 180;
-        double long1 = latLng1.longitude * PI / 180;
-        double lat2 = latLng2.latitude * PI / 180;
-        double long2 = latLng2.longitude * PI / 180;
+        double lat1 = latLng1.getLatitude() * PI / 180;
+        double long1 = latLng1.getLongitude() * PI / 180;
+        double lat2 = latLng2.getLatitude() * PI / 180;
+        double long2 = latLng2.getLongitude() * PI / 180;
 
         double dLon = (long2 - long1);
         double y = Math.sin(dLon) * Math.cos(lat2);

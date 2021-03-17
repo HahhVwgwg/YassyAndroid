@@ -14,7 +14,6 @@ import com.thinkincab.app.common.Constants;
 import com.thinkincab.app.common.LocaleHelper;
 import com.thinkincab.app.data.network.model.AddressResponse;
 import com.thinkincab.app.data.network.model.UserAddress;
-import com.thinkincab.app.ui.activity.location_pick.LocationPickActivity;
 import com.thinkincab.app.ui.activity.main.MainActivity;
 
 import java.util.HashMap;
@@ -157,9 +156,9 @@ public class SettingsActivity extends BaseActivity implements SettingsIView {
             case R.id.home_status:
                 if (home == null) {
                     type = "home";
-                    Intent intent = new Intent(this, LocationPickActivity.class);
-                    intent.putExtra("actionName", Constants.LocationActions.SELECT_HOME);
-                    startActivityForResult(intent, REQUEST_PICK_LOCATION);
+                    //Intent intent = new Intent(this, LocationPickActivity.class);
+                    //intent.putExtra("actionName", Constants.LocationActions.SELECT_HOME);
+                   // startActivityForResult(intent, REQUEST_PICK_LOCATION);
                 } else {
                     new AlertDialog.Builder(this)
                             .setMessage(getString(R.string.are_sure_you_want_to_delete))
@@ -173,9 +172,9 @@ public class SettingsActivity extends BaseActivity implements SettingsIView {
             case R.id.work_status:
                 if (work == null) {
                     type = "work";
-                    Intent workIntent = new Intent(this, LocationPickActivity.class);
-                    workIntent.putExtra("actionName", Constants.LocationActions.SELECT_WORK);
-                    startActivityForResult(workIntent, REQUEST_PICK_LOCATION);
+                   // Intent workIntent = new Intent(this, LocationPickActivity.class);
+                   // workIntent.putExtra("actionName", Constants.LocationActions.SELECT_WORK);
+                   // startActivityForResult(workIntent, REQUEST_PICK_LOCATION);
                 } else {
                     new AlertDialog.Builder(this)
                             .setMessage(getString(R.string.are_sure_you_want_to_delete))

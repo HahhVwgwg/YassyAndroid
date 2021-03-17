@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.mapbox.mapboxsdk.maps.MapView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/map_box"
+    app:mapbox_uiLogoGravity="bottom|center_horizontal"
+    app:mapbox_uiAttributionGravity="bottom|center_horizontal"
+    app:mapbox_uiRotateGestures="false"
+    app:mapbox_uiTiltGestures="false"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"/>

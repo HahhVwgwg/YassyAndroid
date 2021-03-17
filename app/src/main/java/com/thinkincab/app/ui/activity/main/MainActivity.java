@@ -1,9 +1,6 @@
 package com.thinkincab.app.ui.activity.main;
 
 import android.Manifest;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -12,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -35,7 +31,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.LinearInterpolator;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -55,26 +50,9 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.akexorcist.googledirection.DirectionCallback;
-import com.akexorcist.googledirection.model.Direction;
-import com.akexorcist.googledirection.model.Leg;
-import com.akexorcist.googledirection.model.Route;
-import com.akexorcist.googledirection.util.DirectionConverter;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MapStyleOptions;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -84,6 +62,10 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 import com.hold1.keyboardheightprovider.KeyboardHeightProvider;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.thinkincab.app.BuildConfig;
 import com.thinkincab.app.MvpApplication;
 import com.thinkincab.app.R;
@@ -105,7 +87,6 @@ import com.thinkincab.app.data.network.model.SettingsResponse;
 import com.thinkincab.app.data.network.model.User;
 import com.thinkincab.app.data.network.model.UserAddress;
 import com.thinkincab.app.ui.activity.help.HelpActivity;
-import com.thinkincab.app.ui.activity.location_pick.LocationPickActivity;
 import com.thinkincab.app.ui.activity.payment.PaymentActivity;
 import com.thinkincab.app.ui.activity.setting.SettingsActivity;
 import com.thinkincab.app.ui.activity.your_trips.YourTripActivity;
@@ -115,6 +96,7 @@ import com.thinkincab.app.ui.adapter.UserAddressAdapter;
 import com.thinkincab.app.ui.fragment.RateCardFragment;
 import com.thinkincab.app.ui.fragment.book_ride.BookRideFragment;
 import com.thinkincab.app.ui.fragment.invoice.InvoiceFragment;
+import com.thinkincab.app.ui.fragment.map.MapFragment;
 import com.thinkincab.app.ui.fragment.rate.RatingDialogFragment;
 import com.thinkincab.app.ui.fragment.schedule.ScheduleFragment;
 import com.thinkincab.app.ui.fragment.searching.SearchingFragment;
@@ -129,10 +111,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -174,10 +154,6 @@ import static com.thinkincab.app.data.SharedHelper.key.SOS_NUMBER;
 
 @SuppressLint("NonConstantResourceId")
 public class MainActivity extends BaseActivity implements
-        OnMapReadyCallback,
-        GoogleMap.OnCameraMoveListener,
-        GoogleMap.OnCameraIdleListener,
-        DirectionCallback,
         MainIView,
         LocationListener,
         DrawerMenuListener {
@@ -186,8 +162,6 @@ public class MainActivity extends BaseActivity implements
     private static String CURRENT_STATUS = EMPTY;
     private final MainPresenter<MainActivity> mainPresenter = new MainPresenter<>();
 
-    @BindView(R.id.llChangeLocation)
-    LinearLayout llChangeLocation;
     @BindView(R.id.container)
     FrameLayout container;
     @BindView(R.id.menu_back)
@@ -206,8 +180,6 @@ public class MainActivity extends BaseActivity implements
     MotionLayout topLayout;
     @BindView(R.id.pick_location_layout)
     LinearLayout pickLocationLayout;
-    @BindView(R.id.changeDestination)
-    TextView changeDestination;
     @BindView(R.id.btn_work)
     View btnWork;
     @BindView(R.id.btn_home)
@@ -229,9 +201,6 @@ public class MainActivity extends BaseActivity implements
 
     private Boolean isEditable = true;
 
-    private static final Integer serviceMototaxiID = 10;
-    private static final Integer serviceMotoboyID = 20;
-
     private static final long REQUEST_PLACES_DELAY = 1000;
     private Timer timer = new Timer();
     private TimerTask timerTask = new TimerTask() {
@@ -241,7 +210,6 @@ public class MainActivity extends BaseActivity implements
         }
     };
 
-    private GoogleMap mGoogleMap;
     private FusedLocationProviderClient mFusedLocation;
     private MapFragment mapFragment;
     private DatabaseReference mProviderLocation;
@@ -253,10 +221,10 @@ public class MainActivity extends BaseActivity implements
     private boolean canReRoute = true, canCarAnim = true;
     private int getProviderHitCheck;
 
-    private HashMap<Integer, Marker> providersMarker;
+    //private HashMap<Integer, Marker> providersMarker;
     private ArrayList<LatLng> polyLinePoints;
-    private Marker srcMarker, destMarker;
-    private Polyline mPolyline;
+    //private Marker srcMarker, destMarker;
+    //private Polyline mPolyline;
     private LatLng start = null, end = null;
     private Location mLastKnownLocation;
 
@@ -329,10 +297,9 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     public void initView() {
-
-        if (Build.VERSION.SDK_INT >= 21)
+        if (Build.VERSION.SDK_INT >= 21) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-
+        }
         ButterKnife.bind(this);
         keyboardHeightProvider = new KeyboardHeightProvider(this);
         keyboardHeightProvider.addKeyboardListener(height -> {
@@ -347,16 +314,15 @@ public class MainActivity extends BaseActivity implements
 
         mainPresenter.attachView(this);
 
-        providersMarker = new HashMap<>();
+        //providersMarker = new HashMap<>();
 
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);
-        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        mapFragment = new MapFragment();
+        getSupportFragmentManager().beginTransaction().add(R.id.map, mapFragment).commit();
 
         h = new Handler();
         r = () -> {
 
-            //TODO ALLAN - Atualiza localização se o endereço estiver nulo
             if (TextUtils.isEmpty(sourceTxt.getText().toString()) || sourceTxt.getText().toString().equals(getText(R.string.pickup_location).toString())) {
                 getDeviceLocation();
                 displayCurrentAddress();
@@ -378,16 +344,14 @@ public class MainActivity extends BaseActivity implements
                 LatLngBounds.Builder builder = new LatLngBounds.Builder();
                 for (LatLng latLng : polyLinePoints) builder.include(latLng);
                 LatLngBounds bounds = builder.build();
-                try {
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 250));
-                } catch (Exception e) {
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 90));
+                if (mapFragment != null) {
+                    mapFragment.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 90));
                 }
             }
             getProviderHitCheck++;
-            h.postDelayed(r, 5000);
+            h.postDelayed(r, 100);
         };
-        h.postDelayed(r, 5000);
+        h.postDelayed(r, 100);
 
         drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
@@ -557,8 +521,8 @@ public class MainActivity extends BaseActivity implements
                 menuApp.setVisibility(View.VISIBLE);
                 menuBack.setVisibility(View.GONE);
                 pickLocationLayout.setVisibility(View.VISIBLE);
-                mGoogleMap.clear();
-                providersMarker.clear();
+                //  mGoogleMap.clear();
+                // providersMarker.clear();
                 hideLoading();
                 addAllProviders(SharedHelper.getProviders(this));
                 changeFragment(null);
@@ -581,7 +545,7 @@ public class MainActivity extends BaseActivity implements
                 searchingFragment.show(getSupportFragmentManager(), SEARCHING);
                 break;
             case STARTED:
-                mGoogleMap.clear();
+                // mGoogleMap.clear();
                 pickLocationLayout.setVisibility(View.GONE);
                 menuBack.setVisibility(View.GONE);
                 if (DATUM != null)
@@ -595,10 +559,6 @@ public class MainActivity extends BaseActivity implements
             case PICKED_UP:
                 pickLocationLayout.setVisibility(View.GONE);
 
-                if ((DATUM.getServicerequired().equals("rental") || (DATUM.getServicerequired().equals("outstation")))) {
-                } else llChangeLocation.setVisibility(View.VISIBLE);
-                changeDestination.setText(DATUM.getDAddress());
-
                 ServiceFlowFragment flow = new ServiceFlowFragment();
                 Bundle bn = new Bundle();
                 bn.putString("show", "yes");
@@ -608,7 +568,6 @@ public class MainActivity extends BaseActivity implements
             case DROPPED:
             case COMPLETED:
                 pickLocationLayout.setVisibility(View.GONE);
-                llChangeLocation.setVisibility(View.GONE);
                 changeFragment(new InvoiceFragment());
                 break;
             case RATING:
@@ -617,7 +576,7 @@ public class MainActivity extends BaseActivity implements
                     FirebaseMessaging.getInstance().unsubscribeFromTopic(String.valueOf(DATUM.getId()));
                 new RatingDialogFragment().show(getSupportFragmentManager(), RATING);
                 RIDE_REQUEST.clear();
-                mGoogleMap.clear();
+                //    mGoogleMap.clear();
                 pickLocationLayout.setVisibility(View.GONE);
                 sourceTxt.setText("");
                 sourceTxt.setHint(getString(R.string.fetching_current_location));
@@ -660,7 +619,6 @@ public class MainActivity extends BaseActivity implements
         }
         mainPresenter.getNavigationSettings();
         registerReceiver(myReceiver, new IntentFilter(INTENT_FILTER));
-        mapFragment.onResume();
         mainPresenter.getUserInfo();
         mainPresenter.checkStatus();
         if (CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
@@ -674,7 +632,6 @@ public class MainActivity extends BaseActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //mapFragment.onDestroy();
         mainPresenter.onDetach();
         unregisterReceiver(myReceiver);
         if (r != null) h.removeCallbacks(r);
@@ -749,12 +706,7 @@ public class MainActivity extends BaseActivity implements
         startActivity(intent);
     }
 
-    @Override
-    public void onCameraIdle() {
-
-    }
-
-    @OnClick({R.id.on_map, R.id.sos, R.id.erase_src, R.id.erase_dest, R.id.btn_home, R.id.btn_work, R.id.menu_app, R.id.gps, R.id.source, R.id.destination, R.id.changeDestination, R.id.menu_back})
+    @OnClick({R.id.on_map, R.id.sos, R.id.erase_src, R.id.erase_dest, R.id.btn_home, R.id.btn_work, R.id.menu_app, R.id.gps, R.id.source, R.id.destination, R.id.menu_back})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.on_map:
@@ -796,7 +748,18 @@ public class MainActivity extends BaseActivity implements
             case R.id.gps:
                 if (mLastKnownLocation != null) {
                     LatLng currentLatLng = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
-                    mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, DEFAULT_ZOOM));
+                    if (mapFragment != null) {
+                        mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+                                .target(currentLatLng)
+                                .padding(
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        DisplayUtils.dpToPx(0) // current padding
+                                )
+                                .zoom(DEFAULT_ZOOM)
+                                .build()));
+                    }
                     displayCurrentAddress();
                 }
                 break;
@@ -806,9 +769,6 @@ public class MainActivity extends BaseActivity implements
                     topLayout.enableTransition(R.id.tr, true);
                     topLayout.transitionToEnd();
                 }
-                //Intent sourceIntent = new Intent(this, LocationPickActivity.class);
-                //sourceIntent.putExtra("actionName", Constants.LocationActions.SELECT_SOURCE);
-                //startActivityForResult(sourceIntent, REQUEST_PICK_LOCATION);
                 break;
             case R.id.destination:
                 CURRENT_STATUS = EMPTY;
@@ -816,14 +776,6 @@ public class MainActivity extends BaseActivity implements
                     topLayout.enableTransition(R.id.tr, true);
                     topLayout.transitionToEnd();
                 }
-                //Intent intent = new Intent(this, LocationPickActivity.class);
-                //intent.putExtra("actionName", Constants.LocationActions.SELECT_DESTINATION);
-                //startActivityForResult(intent, REQUEST_PICK_LOCATION);
-                break;
-            case R.id.changeDestination:
-                Intent destIntent = new Intent(this, LocationPickActivity.class);
-                destIntent.putExtra("actionName", Constants.LocationActions.CHANGE_DESTINATION);
-                startActivityForResult(destIntent, REQUEST_PICK_LOCATION);
                 break;
             case R.id.btn_home:
                 if (home != null) {
@@ -857,12 +809,7 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
-    @Override
-    public void onCameraMove() {
-
-    }
-
-    @Override
+/*    @Override
     public void onMapReady(GoogleMap googleMap) {
         try {
             googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_json));
@@ -875,7 +822,7 @@ public class MainActivity extends BaseActivity implements
         updateLocationUI();
         getDeviceLocation();
         displayCurrentAddress();
-    }
+    }*/
 
     private void updateDriverNavigation() {
         System.out.println("RRR called : updateDriverNavigation :: ");
@@ -907,7 +854,7 @@ public class MainActivity extends BaseActivity implements
                                         destination = new LatLng(DATUM.getDLatitude(), DATUM.getDLongitude());
                                         break;
                                 }
-                                if (polyLinePoints == null || polyLinePoints.size() < 2 || mPolyline == null)
+                                if (polyLinePoints == null || polyLinePoints.size() < 2)// || mPolyline == null)
                                     drawRoute(source, destination);
                                 else {
                                     int index = checkForReRoute(source);
@@ -923,7 +870,7 @@ public class MainActivity extends BaseActivity implements
                                 if (end != null && canCarAnim) {
                                     if (start != null) {
                                         System.out.println("CAR ANIM ===>>");
-                                        carAnim(srcMarker, end, start);
+                                        //   carAnim(srcMarker, end, start);
                                     }
                                 }
                             }
@@ -952,23 +899,24 @@ public class MainActivity extends BaseActivity implements
         if (index > 0) {
             polyLinePoints.subList(0, index + 1).clear();
             polyLinePoints.add(0, point);
-            mPolyline.remove();
+            //  mPolyline.remove();
 
-            mPolyline = mGoogleMap.addPolyline(DirectionConverter.createPolyline
-                    (this, polyLinePoints, 5, getResources().getColor(R.color.colorAccent)));
+            // mPolyline = mGoogleMap.addPolyline(DirectionConverter.createPolyline
+            //         (this, polyLinePoints, 5, getResources().getColor(R.color.colorAccent)));
 
             System.out.println("RRR mPolyline = " + polyLinePoints.size());
         } else System.out.println("RRR mPolyline = Failed");
     }
 
     private int checkForReRoute(LatLng point) {
-        if (polyLinePoints != null && polyLinePoints.size() > 0) {
-            System.out.println("RRR indexOnEdgeOrPath = " +
-                    new PolyUtil().indexOnEdgeOrPath(point, polyLinePoints, false, true, 100));
-            //      indexOnEdgeOrPath returns -1 if the point is outside the polyline
-            //      returns the index position if the point is inside the polyline
-            return new PolyUtil().indexOnEdgeOrPath(point, polyLinePoints, false, true, 100);
-        } else return -1;
+        // if (polyLinePoints != null && polyLinePoints.size() > 0) {
+        //System.out.println("RRR indexOnEdgeOrPath = " +
+        //        new PolyUtil().indexOnEdgeOrPath(point, polyLinePoints, false, true, 100));
+        //      indexOnEdgeOrPath returns -1 if the point is outside the polyline
+        //      returns the index position if the point is inside the polyline
+        //return new PolyUtil().indexOnEdgeOrPath(point, polyLinePoints, false, true, 100);
+        // } else return -1;
+        return -1;
     }
 
     public void drawRoute(LatLng source, LatLng destination) {
@@ -980,16 +928,15 @@ public class MainActivity extends BaseActivity implements
                 .execute(this);*/
     }
 
-    @Override
-    public void onDirectionSuccess(Direction direction, String rawBody) {
 
-        if (direction.isOK()) {
+
+      /*  if (direction.isOK()) {
             if (!CURRENT_STATUS.equalsIgnoreCase(SERVICE))
-                mGoogleMap.clear();
-            Route route = direction.getRouteList().get(0);
-            if (!route.getLegList().isEmpty()) {
+              //  mGoogleMap.clear();
+            //Route route = direction.getRouteList().get(0);
+          //  if (!route.getLegList().isEmpty()) {
 
-                Leg leg = route.getLegList().get(0);
+               *//* Leg leg = route.getLegList().get(0);
                 InfoWindowData originLeg = new InfoWindowData();
                 originLeg.setAddress(leg.getStartAddress());
                 originLeg.setArrival_time(null);
@@ -1001,9 +948,8 @@ public class MainActivity extends BaseActivity implements
                 destinationLeg.setDistance(leg.getDistance().getText());
 
                 LatLng origin = new LatLng(leg.getStartLocation().getLatitude(), leg.getStartLocation().getLongitude());
-                LatLng destination = new LatLng(leg.getEndLocation().getLatitude(), leg.getEndLocation().getLongitude());
+                LatLng destination = new LatLng(leg.getEndLocation().getLatitude(), leg.getEndLocation().getLongitude());*//*
 
-                //SETA TIPO DE ICONES
                 int serviceIcon;
                 if (DATUM != null) {
 
@@ -1023,23 +969,23 @@ public class MainActivity extends BaseActivity implements
 
 
                 if (CURRENT_STATUS.equalsIgnoreCase(SERVICE))
-                    srcMarker = mGoogleMap.addMarker(new MarkerOptions()
+               //     srcMarker = mGoogleMap.addMarker(new MarkerOptions()
 
-                            .position(origin)
-                            .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView())));
-                else srcMarker = mGoogleMap.addMarker(new MarkerOptions()
-                        .position(origin)
-                        .icon(BitmapDescriptorFactory.fromResource(serviceIcon)));
+               //             .position(origin)
+               //             .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView())));
+               // else srcMarker = mGoogleMap.addMarker(new MarkerOptions()
+               //         .position(origin)
+               //         .icon(BitmapDescriptorFactory.fromResource(serviceIcon)));
 
-                if (destMarker != null) destMarker.remove();
-                destMarker = mGoogleMap.addMarker(new MarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.des_icon))
-                        .position(destination));
+               // if (destMarker != null) destMarker.remove();
+              //  destMarker = mGoogleMap.addMarker(new MarkerOptions()
+              //          .icon(BitmapDescriptorFactory.fromResource(R.drawable.des_icon))
+              //          .position(destination));
             }
 
-            polyLinePoints = route.getLegList().get(0).getDirectionPoint();
+          //  polyLinePoints = route.getLegList().get(0).getDirectionPoint();
 
-            if (CURRENT_STATUS.equalsIgnoreCase(SERVICE)) {
+           *//* if (CURRENT_STATUS.equalsIgnoreCase(SERVICE)) {
                 if (mPolyline != null) mPolyline.remove();
                 mPolyline = mGoogleMap.addPolyline(DirectionConverter.createPolyline
                         (this, polyLinePoints, 5, getResources().getColor(R.color.colorAccent)));
@@ -1053,15 +999,14 @@ public class MainActivity extends BaseActivity implements
                 }
             } else
                 mPolyline = mGoogleMap.addPolyline(DirectionConverter.createPolyline
-                        (this, polyLinePoints, 2, getResources().getColor(R.color.colorAccent)));
+                        (this, polyLinePoints, 2, getResources().getColor(R.color.colorAccent)));*//*
         } else {
             changeFlow(EMPTY);
 
             Toast.makeText(this, getString(R.string.root_not_available), Toast.LENGTH_SHORT).show();
-        }
-    }
+        }*/
 
-    private void carAnim(final Marker marker, final LatLng start, final LatLng end) {
+   /* private void carAnim(final Marker marker, final LatLng start, final LatLng end) {
         System.out.println("RRR MainActivity.carAnim");
         ValueAnimator animator = ValueAnimator.ofFloat(0, 1);
         animator.setDuration(1900);
@@ -1082,13 +1027,7 @@ public class MainActivity extends BaseActivity implements
             }
         });
         animator.start();
-    }
-
-    @Override
-    public void onDirectionFailure(Throwable t) {
-        System.out.println("RRR onDirectionFailure = [" + t.getMessage() + "]");
-        t.printStackTrace();
-    }
+    }*/
 
     public void changeFragment(Fragment fragment) {
         if (isFinishing()) return;
@@ -1175,12 +1114,22 @@ public class MainActivity extends BaseActivity implements
                 locationResult.addOnCompleteListener(this, task -> {
                     if (task.isSuccessful() && task.getResult() != null) {
                         mLastKnownLocation = task.getResult();
-                        mGoogleMap.moveCamera(CameraUpdateFactory
-                                .newLatLngZoom(new LatLng(
-                                        mLastKnownLocation.getLatitude(),
-                                        mLastKnownLocation.getLongitude()
-                                ), DEFAULT_ZOOM));
-
+                        if (mapFragment != null) {
+                            mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+                                    .target(new LatLng(
+                                                    mLastKnownLocation.getLatitude(),
+                                                    mLastKnownLocation.getLongitude()
+                                            )
+                                    )
+                                    .padding(
+                                            0.0,
+                                            0.0,
+                                            0.0,
+                                            DisplayUtils.dpToPx(0) // current padding
+                                    )
+                                    .zoom(DEFAULT_ZOOM)
+                                    .build()));
+                        }
                         SharedHelper.putKey(this, "latitude", String.valueOf(mLastKnownLocation.getLatitude()));
                         SharedHelper.putKey(this, "longitude", String.valueOf(mLastKnownLocation.getLongitude()));
                     } else {
@@ -1188,8 +1137,19 @@ public class MainActivity extends BaseActivity implements
                                 Double.valueOf(SharedHelper.getKey(this, "latitude", "-33.8523341")),
                                 Double.valueOf(SharedHelper.getKey(this, "longitude", "151.2106085"))
                         );
-                        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
-                        mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
+                        if (mapFragment != null) {
+                            mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+                                    .target(mDefaultLocation)
+                                    .padding(
+                                            0.0,
+                                            0.0,
+                                            0.0,
+                                            DisplayUtils.dpToPx(0) // current padding
+                                    )
+                                    .zoom(DEFAULT_ZOOM)
+                                    .build()));
+                            mapFragment.enableMyLocation(false);
+                        }
                     }
                 });
             }
@@ -1209,14 +1169,14 @@ public class MainActivity extends BaseActivity implements
     }
 
     private void updateLocationUI() {
-        if (mGoogleMap == null) return;
+        /*if (mGoogleMap == null) return;
         try {
             if (isLocationPermissionGranted) {
                 mGoogleMap.setMyLocationEnabled(true);
                 mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
                 mGoogleMap.getUiSettings().setCompassEnabled(false);
-                mGoogleMap.setOnCameraMoveListener(this);
-                mGoogleMap.setOnCameraIdleListener(this);
+                //mGoogleMap.setOnCameraMoveListener(this);
+                //mGoogleMap.setOnCameraIdleListener(this);
             } else {
                 mGoogleMap.setMyLocationEnabled(false);
                 mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
@@ -1225,7 +1185,7 @@ public class MainActivity extends BaseActivity implements
             }
         } catch (SecurityException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     @Override
@@ -1295,7 +1255,7 @@ public class MainActivity extends BaseActivity implements
     }
 
     private void addAllProviders(List<Provider> providers) {
-        if (providers != null) for (Provider provider : providers)
+       /* if (providers != null) for (Provider provider : providers)
             if (providersMarker.get(provider.getId()) != null) {
                 Marker marker = providersMarker.get(provider.getId());
                 LatLng startPos = marker.getPosition();
@@ -1303,16 +1263,12 @@ public class MainActivity extends BaseActivity implements
                 marker.setPosition(endPos);
                 carAnim(marker, startPos, endPos);
             } else {
-                //SETA TIPO DE ICONES
                 int serviceIcon;
                 if (provider.getProviderService().getServiceTypeId() == serviceMototaxiID) {
-                    //Se for mototaxi
                     serviceIcon = R.drawable.car_icon_11;
                 } else if (provider.getProviderService().getServiceTypeId() == serviceMotoboyID) {
-                    //Se for motoboy
                     serviceIcon = R.drawable.car_icon_11;
                 } else {
-                    //Se for outro (carro)
                     serviceIcon = R.drawable.car_icon_11;
                 }
 
@@ -1325,7 +1281,7 @@ public class MainActivity extends BaseActivity implements
                         .snippet("" + provider.getId())
                         .icon(BitmapDescriptorFactory.fromResource(serviceIcon));
                 providersMarker.put(provider.getId(), mGoogleMap.addMarker(markerOptions));
-            }
+            }*/
     }
 
     @Override
@@ -1390,7 +1346,7 @@ public class MainActivity extends BaseActivity implements
             super.onPostExecute(result);
 
             if (bmp != null) {
-                MarkerOptions markerOptions = new MarkerOptions();
+               /* MarkerOptions markerOptions = new MarkerOptions();
                 markerOptions.position(new LatLng(lat, lang))
                         .anchor(0.5f, 0.5f)
                         .title(firstname)
@@ -1398,13 +1354,13 @@ public class MainActivity extends BaseActivity implements
                         .icon(BitmapDescriptorFactory.fromBitmap(bmp));
 
                 builder.include(markerOptions.getPosition());
-                providersMarker.put(pos, mGoogleMap.addMarker(markerOptions));
+                providersMarker.put(pos, mGoogleMap.addMarker(markerOptions));*/
 
             } else {
                 int serviceIcon;
                 serviceIcon = R.drawable.car_icon_11;
 
-                MarkerOptions markerOptions = new MarkerOptions();
+                /*MarkerOptions markerOptions = new MarkerOptions();
                 markerOptions.position(new LatLng(lat, lang))
                         .anchor(0.5f, 0.5f)
                         .title(firstname)
@@ -1413,7 +1369,7 @@ public class MainActivity extends BaseActivity implements
 
                 builder.include(markerOptions.getPosition());
 
-                providersMarker.put(pos, mGoogleMap.addMarker(markerOptions));
+                providersMarker.put(pos, mGoogleMap.addMarker(markerOptions));*/
 
 
             }
@@ -1424,7 +1380,7 @@ public class MainActivity extends BaseActivity implements
     }
 
     public void addSpecificProviders(List<Provider> providers, String key) {
-        if (providers != null) {
+       /* if (providers != null) {
             Bitmap b;
             BitmapDescriptor bd;
             try {
@@ -1436,38 +1392,34 @@ public class MainActivity extends BaseActivity implements
                 bd = BitmapDescriptorFactory.fromResource(R.drawable.car_icon_11);
                 e.printStackTrace();
             }
-            Iterator<Map.Entry<Integer, Marker>> it = providersMarker.entrySet().iterator();
+           *//* Iterator<Map.Entry<Integer, Marker>> it = providersMarker.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry<Integer, Marker> pair = it.next();
                 Marker marker = providersMarker.get(pair.getKey());
                 marker.remove();
                 it.remove();
-            }
+            }*//*
             for (Provider provider : providers) {
 
-                //SETA TIPO DE ICONES
                 int serviceIcon;
                 if (provider.getProviderService().getServiceTypeId() == serviceMototaxiID) {
-                    //Se for mototaxi
                     serviceIcon = R.drawable.car_icon_11;
                 } else if (provider.getProviderService().getServiceTypeId() == serviceMotoboyID) {
-                    //Se for motoboy
                     serviceIcon = R.drawable.car_icon_11;
                 } else {
-                    //Se for outro (carro)
                     serviceIcon = R.drawable.car_icon_11;
                 }
 
                 new TheTask(provider.getId(), provider.getLatitude(), provider.getLongitude(), provider.getFirstName(), "", MvpApplication.marker).execute();
-                MarkerOptions markerOptions = new MarkerOptions()
+               *//* MarkerOptions markerOptions = new MarkerOptions()
                         .anchor(0.5f, 0.5f)
                         .position(new LatLng(provider.getLatitude(), provider.getLongitude()))
                         .rotation(0.0f)
                         .snippet("" + provider.getId())
                         .icon(BitmapDescriptorFactory.fromResource(serviceIcon));
-                providersMarker.put(provider.getId(), mGoogleMap.addMarker(markerOptions));
+                providersMarker.put(provider.getId(), mGoogleMap.addMarker(markerOptions));*//*
             }
-        }
+        }*/
     }
 
     @Override
@@ -1518,11 +1470,10 @@ public class MainActivity extends BaseActivity implements
                         map.put("address", RIDE_REQUEST.get(DEST_ADD));
                         map.put("request_id", DATUM.getId());
                         mainPresenter.updateDestination(map);
-                        changeDestination.setText(String.valueOf(RIDE_REQUEST.get(DEST_ADD)));
                         LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
                         LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
                         drawRoute(origin, destination);
-                    } else changeDestination.setText("");
+                    }
                 })
                 .setNegativeButton(getResources().getString(R.string.no), (dialog, which) -> dialog.cancel())
                 .show();
@@ -1573,7 +1524,7 @@ public class MainActivity extends BaseActivity implements
     }
 
     private void displayCurrentAddress() {
-        if (mGoogleMap == null) return;
+        // if (mGoogleMap == null) return;
 
         if (isLocationPermissionGranted) {
             if (mLastKnownLocation == null) {
@@ -1672,10 +1623,6 @@ public class MainActivity extends BaseActivity implements
         searchAddressAdapter.update(o);
     }
 
-    public void onLowMemory() {
-        super.onLowMemory();
-        mapFragment.onLowMemory();
-    }
 
     @Override
     protected void onPause() {
@@ -1683,13 +1630,6 @@ public class MainActivity extends BaseActivity implements
         if (keyboardHeightProvider != null) {
             keyboardHeightProvider.onPause();
         }
-        mapFragment.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mapFragment.onStop();
     }
 
     private interface LatLngInterface {
@@ -1698,10 +1638,10 @@ public class MainActivity extends BaseActivity implements
         class LinearFixed implements LatLngInterface {
             @Override
             public LatLng interpolate(float fraction, LatLng a, LatLng b) {
-                double lat = (b.latitude - a.latitude) * fraction + a.latitude;
-                double lngDelta = b.longitude - a.longitude;
+                double lat = (b.getLatitude() - a.getLatitude()) * fraction + a.getLatitude();
+                double lngDelta = b.getLongitude() - a.getLongitude();
                 if (Math.abs(lngDelta) > 180) lngDelta -= Math.signum(lngDelta) * 360;
-                double lng = lngDelta * fraction + a.longitude;
+                double lng = lngDelta * fraction + a.getLongitude();
                 return new LatLng(lat, lng);
             }
         }

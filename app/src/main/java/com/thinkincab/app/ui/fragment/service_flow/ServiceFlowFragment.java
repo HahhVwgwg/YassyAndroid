@@ -19,15 +19,9 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.akexorcist.googledirection.DirectionCallback;
-import com.akexorcist.googledirection.GoogleDirection;
-import com.akexorcist.googledirection.constant.TransportMode;
-import com.akexorcist.googledirection.model.Direction;
-import com.akexorcist.googledirection.model.Leg;
-import com.akexorcist.googledirection.model.Route;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.google.android.gms.maps.model.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.thinkincab.app.R;
 import com.thinkincab.app.base.BaseFragment;
 import com.thinkincab.app.chat.ChatActivity;
@@ -416,7 +410,7 @@ boolean popupshowed=false;
 
                 System.out.println("RRR src = " + src + " dest = " + des);
 
-                GoogleDirection
+                /*GoogleDirection
                         .withServerKey(getString(R.string.google_map_key))
                         .from(src)
                         .to(des)
@@ -448,7 +442,7 @@ boolean popupshowed=false;
                                 t.printStackTrace();
                                 System.out.println("RRR ServiceFlowFragment.onDirectionFailure");
                             }
-                        });
+                        });*/
                 handler.postDelayed(runnable, delay);
             } catch (Exception e) {
                 handler.postDelayed(runnable, 100);
