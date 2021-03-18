@@ -47,21 +47,7 @@ public class SearchAddressAdapter extends RecyclerView.Adapter<SearchAddressAdap
     public void onBindViewHolder(@NonNull AddressViewHolder holder, int position) {
         SearchAddress item = list.get(position);
         if (item != null) {
-            String shortAddress = "";
-            if (item.getAddress().getAmenity() != null) {
-                shortAddress = item.getAddress().getAmenity();
-            } else if (item.getAddress().getRoad() != null && item.getAddress().getHouse() != null) {
-                shortAddress = item.getAddress().getRoad() + " " + item.getAddress().getHouse();
-            } else if (item.getAddress().getRoad() != null) {
-                shortAddress = item.getAddress().getRoad();
-            } else if (item.getAddress().getTown() != null) {
-                shortAddress = item.getAddress().getTown();
-            } else if (item.getAddress().getCounty() != null) {
-                shortAddress = item.getAddress().getCounty();
-            } else if (item.getAddress().getState() != null) {
-                shortAddress = item.getAddress().getState();
-            }
-            holder.name.setText(shortAddress);
+            holder.name.setText(item.getShortAddress());
             holder.nameSmall.setText(item.getDisplayName());
             holder.click.setOnClickListener(v -> delegate.onClick(item));
         }

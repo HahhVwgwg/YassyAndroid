@@ -33,6 +33,7 @@ public interface Constants {
 
     interface Status {
         String EMPTY = "EMPTY";
+        String MAP = "MAP";
         String SERVICE = "SERVICE";
         String SEARCHING = "SEARCHING";
         String PAYMENT = "PAYMENT";

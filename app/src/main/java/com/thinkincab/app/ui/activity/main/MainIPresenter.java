@@ -11,6 +11,7 @@ public interface MainIPresenter<V extends MainIView> extends MvpPresenter<V> {
     void logout(String id);
 
     void checkStatus();
+
     void payment(HashMap<String, Object> obj);
 
     void getSavedAddress();
@@ -20,6 +21,8 @@ public interface MainIPresenter<V extends MainIView> extends MvpPresenter<V> {
     void getNavigationSettings();
 
     void startSearch(String s);
+
+    void startSearch(double lat, double lon);
 
     void updateDestination(HashMap<String, Object> obj);
 

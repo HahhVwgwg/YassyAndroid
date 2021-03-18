@@ -3,13 +3,18 @@ package com.thinkincab.app.ui.activity.main;
 import com.thinkincab.app.base.BasePresenter;
 import com.thinkincab.app.data.network.APIClient;
 import com.thinkincab.app.data.network.PlaceApiClient;
+import com.thinkincab.app.data.network.model.SearchAddress;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainPresenter<V extends MainIView> extends BasePresenter<V> implements MainIPresenter<V> {
+
+    public final static Map<String, SearchAddress> GEO_CACHE = new HashMap<>();
 
     @Override
     public void getUserInfo() {
@@ -32,6 +37,7 @@ public class MainPresenter<V extends MainIView> extends BasePresenter<V> impleme
                 .subscribe(paymentResponse -> getMvpView().onSuccess(paymentResponse),
                         throwable -> getMvpView().onError(throwable)));
     }
+
     @Override
     public void checkStatus() {
         getCompositeDisposable().add(APIClient
@@ -86,10 +92,29 @@ public class MainPresenter<V extends MainIView> extends BasePresenter<V> impleme
     public void startSearch(String s) {
         getCompositeDisposable().add(PlaceApiClient
                 .getAPIClient()
-                .doPlaces(s, "json", "kz", 1, "assylkhan.@c-link.kz")
+                .doPlaces(s, "json", "kz", 1, 1, "67.3,44,69.6,42.7", "assylkhan.@c-link.kz")
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(getMvpView()::onSuccessSearch, getMvpView()::onSettingError));
+                .subscribe(getMvpView()::onSuccessSearch, getMvpView()::onSearchError));
+    }
+
+    @Override
+    public void startSearch(double lat, double lon) {
+        if (GEO_CACHE.containsKey(lat + "," + lon)) {
+            getMvpView().onSuccessPoint(GEO_CACHE.get(lat + "," + lon));
+            return;
+        }
+        getCompositeDisposable().add(PlaceApiClient
+                .getAPIClient()
+                .doPoint(lat, lon, "json", 1, 18, "assylkhan.@c-link.kz")
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(r -> {
+                    if (!GEO_CACHE.containsKey(lat + "," + lon)) {
+                        GEO_CACHE.put(lat + "," + lon, r);
+                    }
+                    getMvpView().onSuccessPoint(r);
+                }, getMvpView()::onPointError));
     }
 
     @Override

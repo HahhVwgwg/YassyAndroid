@@ -9,18 +9,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,7 +19,6 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -39,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -51,7 +42,6 @@ import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
@@ -74,7 +64,6 @@ import com.thinkincab.app.chat.ChatActivity;
 import com.thinkincab.app.common.Constants;
 import com.thinkincab.app.common.InfoWindowData;
 import com.thinkincab.app.common.LocaleHelper;
-import com.thinkincab.app.common.PolyUtil;
 import com.thinkincab.app.data.SharedHelper;
 import com.thinkincab.app.data.network.model.AddressResponse;
 import com.thinkincab.app.data.network.model.DataResponse;
@@ -96,6 +85,7 @@ import com.thinkincab.app.ui.adapter.UserAddressAdapter;
 import com.thinkincab.app.ui.fragment.RateCardFragment;
 import com.thinkincab.app.ui.fragment.book_ride.BookRideFragment;
 import com.thinkincab.app.ui.fragment.invoice.InvoiceFragment;
+import com.thinkincab.app.ui.fragment.map.IMapView;
 import com.thinkincab.app.ui.fragment.map.MapFragment;
 import com.thinkincab.app.ui.fragment.rate.RatingDialogFragment;
 import com.thinkincab.app.ui.fragment.schedule.ScheduleFragment;
@@ -107,12 +97,9 @@ import com.thinkincab.app.ui.utils.DisplayUtils;
 import com.thinkincab.app.ui.utils.KeyboardUtils;
 import com.thinkincab.app.ui.utils.ListOffset;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -143,6 +130,7 @@ import static com.thinkincab.app.common.Constants.Status.ARRIVED;
 import static com.thinkincab.app.common.Constants.Status.COMPLETED;
 import static com.thinkincab.app.common.Constants.Status.DROPPED;
 import static com.thinkincab.app.common.Constants.Status.EMPTY;
+import static com.thinkincab.app.common.Constants.Status.MAP;
 import static com.thinkincab.app.common.Constants.Status.PICKED_UP;
 import static com.thinkincab.app.common.Constants.Status.RATING;
 import static com.thinkincab.app.common.Constants.Status.SEARCHING;
@@ -155,10 +143,9 @@ import static com.thinkincab.app.data.SharedHelper.key.SOS_NUMBER;
 @SuppressLint("NonConstantResourceId")
 public class MainActivity extends BaseActivity implements
         MainIView,
-        LocationListener,
+        IMapView,
         DrawerMenuListener {
 
-    private static final String TAG = "MainActivity";
     private static String CURRENT_STATUS = EMPTY;
     private final MainPresenter<MainActivity> mainPresenter = new MainPresenter<>();
 
@@ -199,7 +186,10 @@ public class MainActivity extends BaseActivity implements
 
     private KeyboardHeightProvider keyboardHeightProvider;
 
-    private Boolean isEditable = true;
+    private boolean isEditable = true;
+    private boolean isMapMoved = false;
+    private boolean isDragging = false;
+    private boolean isExpanded = false;
 
     private static final long REQUEST_PLACES_DELAY = 1000;
     private Timer timer = new Timer();
@@ -221,10 +211,7 @@ public class MainActivity extends BaseActivity implements
     private boolean canReRoute = true, canCarAnim = true;
     private int getProviderHitCheck;
 
-    //private HashMap<Integer, Marker> providersMarker;
     private ArrayList<LatLng> polyLinePoints;
-    //private Marker srcMarker, destMarker;
-    //private Polyline mPolyline;
     private LatLng start = null, end = null;
     private Location mLastKnownLocation;
 
@@ -280,6 +267,11 @@ public class MainActivity extends BaseActivity implements
                 topLayout.transitionToEnd();
             }
         }
+        if (focused && view.getId() == R.id.destination) {
+            onMap.setVisibility(View.VISIBLE);
+        } else {
+            onMap.setVisibility(View.GONE);
+        }
     }
 
     private final BroadcastReceiver myReceiver = new BroadcastReceiver() {
@@ -300,6 +292,7 @@ public class MainActivity extends BaseActivity implements
         if (Build.VERSION.SDK_INT >= 21) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         }
+        MainPresenter.GEO_CACHE.clear();
         ButterKnife.bind(this);
         keyboardHeightProvider = new KeyboardHeightProvider(this);
         keyboardHeightProvider.addKeyboardListener(height -> {
@@ -314,20 +307,13 @@ public class MainActivity extends BaseActivity implements
 
         mainPresenter.attachView(this);
 
-        //providersMarker = new HashMap<>();
-
         mFusedLocation = LocationServices.getFusedLocationProviderClient(this);
         mapFragment = new MapFragment();
         getSupportFragmentManager().beginTransaction().add(R.id.map, mapFragment).commit();
 
         h = new Handler();
         r = () -> {
-
-            if (TextUtils.isEmpty(sourceTxt.getText().toString()) || sourceTxt.getText().toString().equals(getText(R.string.pickup_location).toString())) {
-                getDeviceLocation();
-                displayCurrentAddress();
-            }
-
+            getDeviceLocation();
             if (mLastKnownLocation != null) {
                 mainPresenter.checkStatus();
             }
@@ -349,10 +335,9 @@ public class MainActivity extends BaseActivity implements
                 }
             }
             getProviderHitCheck++;
-            h.postDelayed(r, 100);
+            h.postDelayed(r, 5000);
         };
-        h.postDelayed(r, 100);
-
+        h.postDelayed(r, 5000);
         drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(@NonNull View view, float v) {
@@ -387,7 +372,7 @@ public class MainActivity extends BaseActivity implements
             @Override
             public void onTransitionCompleted(MotionLayout motionLayout, int i) {
                 if (i == R.id.start) {
-                    onMap.setVisibility(View.GONE);
+                    isExpanded = false;
                     KeyboardUtils.hideKeyboard(MainActivity.this, sourceTxt, destinationTxt);
                     pickLocationLayout.requestFocus();
                     topLayout.enableTransition(R.id.tr, false);
@@ -422,9 +407,9 @@ public class MainActivity extends BaseActivity implements
                         isEditable = true;
                     }
                 } else if (i == R.id.end) {
-                    onMap.setVisibility(View.VISIBLE);
+                    isExpanded = true;
                 } else if (i == R.id.start_service) {
-                    onMap.setVisibility(View.GONE);
+                    isExpanded = false;
                     motionLayout.setTransition(R.id.tr);
                     CURRENT_STATUS = EMPTY;
                     changeFlow(CURRENT_STATUS);
@@ -449,12 +434,24 @@ public class MainActivity extends BaseActivity implements
         });
         searchAddressAdapter = new SearchAddressAdapter(new ArrayList<>(), item -> {
             if (selectedEditText == R.id.source) {
-                isEditable = false;
-                sourceTxt.setText(item.getDisplayName());
-                RIDE_REQUEST.put(SRC_ADD, item.getDisplayName());
-                RIDE_REQUEST.put(SRC_LONG, item.getLon());
-                RIDE_REQUEST.put(SRC_LAT, item.getLat());
-                isEditable = true;
+                if (mapFragment != null) {
+                    isMapMoved = true;
+                    mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+                            .target(new LatLng(
+                                    item.getLat(),
+                                    item.getLon()
+                                    )
+                            )
+                            .padding(
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    DisplayUtils.dpToPx(0) // current padding
+                            )
+                            .zoom(DEFAULT_ZOOM)
+                            .build()));
+                }
+                setStartAddress(item);
                 topLayout.transitionToStart();
             } else if (selectedEditText == R.id.destination) {
                 isEditable = false;
@@ -472,42 +469,149 @@ public class MainActivity extends BaseActivity implements
     }
 
     @Override
-    public void onSuccess(DataResponse dataResponse) {
-        this.checkStatusResponse = dataResponse;
-        updatePaymentEntities();
-        SharedHelper.putKey(this, SOS_NUMBER, checkStatusResponse.getSos());
-        if (!Objects.requireNonNull(dataResponse.getData()).isEmpty()) {
-            if (!CURRENT_STATUS.equals(dataResponse.getData().get(0).getStatus())) {
-                DATUM = dataResponse.getData().get(0);
-                CURRENT_STATUS = DATUM.getStatus();
-                changeFlow(CURRENT_STATUS);
-            }
-        } else if (CURRENT_STATUS.equals(SERVICE))
-            System.out.println("RRR CURRENT_STATUS = " + CURRENT_STATUS);
-        else {
-            CURRENT_STATUS = EMPTY;
-            changeFlow(CURRENT_STATUS);
-        }
-
-        if (CURRENT_STATUS.equals(STARTED)
-                || CURRENT_STATUS.equals(ARRIVED)
-                || CURRENT_STATUS.equals(PICKED_UP))
-            if (mProviderLocation == null) {
-                mProviderLocation = FirebaseDatabase.getInstance().getReference()
-                        .child("loc_p_" + DATUM.getProvider().getId());
-                updateDriverNavigation();
-            }
-
-        if (canGoToChatScreen) {
-            if (!isChatScreenOpen && DATUM != null) {
-                Intent i = new Intent(baseActivity(), ChatActivity.class);
-                i.putExtra("request_id", String.valueOf(DATUM.getId()));
-                startActivity(i);
-            }
-            canGoToChatScreen = false;
+    protected void onPause() {
+        super.onPause();
+        if (keyboardHeightProvider != null) {
+            keyboardHeightProvider.onPause();
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (keyboardHeightProvider != null) {
+            keyboardHeightProvider.onResume();
+        }
+        mainPresenter.getNavigationSettings();
+        registerReceiver(myReceiver, new IntentFilter(INTENT_FILTER));
+        mainPresenter.getUserInfo();
+        mainPresenter.checkStatus();
+        if (CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
+            RIDE_REQUEST.remove(DEST_ADD);
+            RIDE_REQUEST.remove(DEST_LAT);
+            RIDE_REQUEST.remove(DEST_LONG);
+            mainPresenter.getSavedAddress();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mainPresenter.onDetach();
+        unregisterReceiver(myReceiver);
+        if (r != null) h.removeCallbacks(r);
+    }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) drawer.closeDrawer(GravityCompat.START);
+        else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            if (getSupportFragmentManager().findFragmentById(R.id.container)
+                    instanceof ServiceFlowFragment) {
+                getSupportFragmentManager().popBackStack();
+            }
+            getSupportFragmentManager().popBackStack();
+            if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
+                mainPresenter.checkStatus();
+                topLayout.transitionToStart();
+            }
+        } else {
+            if (isDoubleBackPressed) {
+                super.onBackPressed();
+                return;
+            }
+            this.isDoubleBackPressed = true;
+            Toast.makeText(this, getString(R.string.please_click_back_again_to_exit), Toast.LENGTH_SHORT).show();
+        }
+
+        new Handler().postDelayed(() -> isDoubleBackPressed = false, 2000);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        for (Fragment fragment : getSupportFragmentManager().getFragments())
+            fragment.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_PICK_LOCATION) if (resultCode == Activity.RESULT_OK) {
+            if (RIDE_REQUEST.containsKey(SRC_ADD))
+                sourceTxt.setText(String.valueOf(RIDE_REQUEST.get(SRC_ADD)));
+            else sourceTxt.setText("");
+            if (RIDE_REQUEST.containsKey(DEST_ADD))
+                destinationTxt.setText(String.valueOf(RIDE_REQUEST.get(DEST_ADD)));
+            else destinationTxt.setText("");
+
+            if (RIDE_REQUEST.containsKey(SRC_ADD)
+                    && RIDE_REQUEST.containsKey(DEST_ADD)
+                    && CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
+                CURRENT_STATUS = SERVICE;
+                changeFlow(CURRENT_STATUS);
+                LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
+                LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
+                drawRoute(origin, destination);
+            } else if (RIDE_REQUEST.containsKey(DEST_ADD)
+                    && !RIDE_REQUEST.get(DEST_ADD).equals("")
+                    && CURRENT_STATUS.equalsIgnoreCase(PICKED_UP))
+                extendRide();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        isLocationPermissionGranted = false;
+        if (requestCode == REQUEST_ACCESS_FINE_LOCATION)
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                isLocationPermissionGranted = true;
+                getDeviceLocation();
+            }
+    }
+
+    // functions
+
+    private void returnToInitial() {
+        destinationTxt.setText("");
+        RIDE_REQUEST.remove(DEST_ADD);
+        RIDE_REQUEST.remove(DEST_LAT);
+        RIDE_REQUEST.remove(DEST_LONG);
+    }
+
+    public void ShowLogoutPopUp() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        alertDialogBuilder
+                .setMessage(getString(R.string.are_sure_you_want_to_logout)).setCancelable(false)
+                .setPositiveButton(getString(R.string.yes), (dialog, id) -> mainPresenter.logout(SharedHelper.getKey(this, "user_id")))
+                .setNegativeButton(getString(R.string.no), (dialog, id) -> dialog.cancel());
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void requestPlacesByDelay(Editable s) {
+        timer.cancel();
+        timerTask.cancel();
+        timer = new Timer();
+        timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(() -> {
+                    if (isEditable && !s.toString().trim().isEmpty()) {
+                        mainPresenter.startSearch(s.toString());
+                    }
+                });
+            }
+        };
+        timer.schedule(timerTask, REQUEST_PLACES_DELAY);
+    }
+
+    private void alertBecomeDriver() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=" + BuildConfig.DRIVER_PACKAGE));
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        startActivity(intent);
+    }
 
     public void changeFlow(String status) {
         System.out.println("RRR CURRENT_STATUS = " + status);
@@ -587,210 +691,22 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
-
-    public void onPaymentSuccess(String razorpayPaymentID) {
-        try {
-            showLoading();
-            HashMap<String, Object> cardHashMap = new HashMap<>();
-            cardHashMap.put("request_id", DATUM.getId());
-            cardHashMap.put("tips", "0");
-            cardHashMap.put("payment_type", "ONLINE");
-            cardHashMap.put("transaction_code", razorpayPaymentID);
-            mainPresenter.payment(cardHashMap);
-
-        } catch (Exception e) {
-            Log.e(TAG, "Exception in onPaymentSuccess", e);
-        }
-    }
-
-    public void onPaymentError(int code, String response) {
-        try {
-            Toast.makeText(this, "Payment failed: " + code + " " + response, Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Log.e(TAG, "Exception in onPaymentError", e);
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (keyboardHeightProvider != null) {
-            keyboardHeightProvider.onResume();
-        }
-        mainPresenter.getNavigationSettings();
-        registerReceiver(myReceiver, new IntentFilter(INTENT_FILTER));
-        mainPresenter.getUserInfo();
-        mainPresenter.checkStatus();
-        if (CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
-            RIDE_REQUEST.remove(DEST_ADD);
-            RIDE_REQUEST.remove(DEST_LAT);
-            RIDE_REQUEST.remove(DEST_LONG);
-            mainPresenter.getSavedAddress();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mainPresenter.onDetach();
-        unregisterReceiver(myReceiver);
-        if (r != null) h.removeCallbacks(r);
-    }
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) drawer.closeDrawer(GravityCompat.START);
-        else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-            if (getSupportFragmentManager().findFragmentById(R.id.container)
-                    instanceof ServiceFlowFragment) {
-                getSupportFragmentManager().popBackStack();
-            }
-            getSupportFragmentManager().popBackStack();
-            if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
-                mainPresenter.checkStatus();
-                topLayout.transitionToStart();
-            }
+    private void setStartAddress(@Nullable SearchAddress address) {
+        if (address != null) {
+            isEditable = false;
+            sourceTxt.setText(address.getShortAddress());
+            RIDE_REQUEST.put(SRC_ADD, address.getShortAddress());
+            RIDE_REQUEST.put(SRC_LAT, address.getLat());
+            RIDE_REQUEST.put(SRC_LONG, address.getLon());
+            isEditable = true;
         } else {
-            if (isDoubleBackPressed) {
-                super.onBackPressed();
-                return;
-            }
-            this.isDoubleBackPressed = true;
-            Toast.makeText(this, getString(R.string.please_click_back_again_to_exit), Toast.LENGTH_SHORT).show();
-        }
-
-        new Handler().postDelayed(() -> isDoubleBackPressed = false, 2000);
-    }
-
-    private void returnToInitial() {
-        destinationTxt.setText("");
-        RIDE_REQUEST.remove(DEST_ADD);
-        RIDE_REQUEST.remove(DEST_LAT);
-        RIDE_REQUEST.remove(DEST_LONG);
-    }
-
-    public void ShowLogoutPopUp() {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-        alertDialogBuilder
-                .setMessage(getString(R.string.are_sure_you_want_to_logout)).setCancelable(false)
-                .setPositiveButton(getString(R.string.yes), (dialog, id) -> mainPresenter.logout(SharedHelper.getKey(this, "user_id")))
-                .setNegativeButton(getString(R.string.no), (dialog, id) -> dialog.cancel());
-        AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
-    }
-
-    private void requestPlacesByDelay(Editable s) {
-        timer.cancel();
-        timerTask.cancel();
-        timer = new Timer();
-        timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                runOnUiThread(() -> {
-                    if (isEditable && !s.toString().trim().isEmpty()) {
-                        mainPresenter.startSearch(s.toString());
-                    }
-                });
-            }
-        };
-        timer.schedule(timerTask, REQUEST_PLACES_DELAY);
-    }
-
-    private void alertBecomeDriver() {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=" + BuildConfig.DRIVER_PACKAGE));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                | Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        startActivity(intent);
-    }
-
-    @OnClick({R.id.on_map, R.id.sos, R.id.erase_src, R.id.erase_dest, R.id.btn_home, R.id.btn_work, R.id.menu_app, R.id.gps, R.id.source, R.id.destination, R.id.menu_back})
-    public void onViewClicked(View view) {
-        switch (view.getId()) {
-            case R.id.on_map:
-                break;
-            case R.id.menu_app:
-                if (drawerLayout.isDrawerOpen(GravityCompat.START))
-                    drawerLayout.closeDrawer(GravityCompat.START);
-                else {
-                    User user = new Gson().fromJson(SharedHelper.getKey(this, "userInfo"), User.class);
-                    if (user != null) {
-                        drawerFragment.updateUser(user);
-                        SharedHelper.putKey(MainActivity.this, PROFILE_IMG, user.getPicture());
-                    }
-                    drawerLayout.openDrawer(GravityCompat.START);
-                }
-
-                break;
-            case R.id.sos:
-                SosFragment sosFragment = new SosFragment();
-                sosFragment.show(getSupportFragmentManager(), SOS);
-                break;
-            case R.id.menu_back:
-                topLayout.transitionToStart();
-                break;
-            case R.id.erase_src:
-                sourceTxt.setText("");
-                eraseSrc.setVisibility(View.INVISIBLE);
-                RIDE_REQUEST.remove(SRC_ADD);
-                RIDE_REQUEST.remove(SRC_LAT);
-                RIDE_REQUEST.remove(SRC_LONG);
-                break;
-            case R.id.erase_dest:
-                destinationTxt.setText("");
-                eraseDest.setVisibility(View.INVISIBLE);
-                RIDE_REQUEST.remove(DEST_ADD);
-                RIDE_REQUEST.remove(DEST_LAT);
-                RIDE_REQUEST.remove(DEST_LONG);
-                break;
-            case R.id.gps:
-                if (mLastKnownLocation != null) {
-                    LatLng currentLatLng = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
-                    if (mapFragment != null) {
-                        mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
-                                .target(currentLatLng)
-                                .padding(
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        DisplayUtils.dpToPx(0) // current padding
-                                )
-                                .zoom(DEFAULT_ZOOM)
-                                .build()));
-                    }
-                    displayCurrentAddress();
-                }
-                break;
-            case R.id.source:
-                CURRENT_STATUS = EMPTY;
-                if (topLayout.getProgress() == 0) {
-                    topLayout.enableTransition(R.id.tr, true);
-                    topLayout.transitionToEnd();
-                }
-                break;
-            case R.id.destination:
-                CURRENT_STATUS = EMPTY;
-                if (topLayout.getProgress() == 0) {
-                    topLayout.enableTransition(R.id.tr, true);
-                    topLayout.transitionToEnd();
-                }
-                break;
-            case R.id.btn_home:
-                if (home != null) {
-                    updateSavedAddress(home);
-                } else {
-
-                }
-                break;
-            case R.id.btn_work:
-                if (work != null) {
-                    updateSavedAddress(work);
-                } else {
-
-                }
-                break;
+            isEditable = false;
+            sourceTxt.setText("");
+            eraseSrc.setVisibility(View.INVISIBLE);
+            RIDE_REQUEST.remove(SRC_ADD);
+            RIDE_REQUEST.remove(SRC_LAT);
+            RIDE_REQUEST.remove(SRC_LONG);
+            isEditable = true;
         }
     }
 
@@ -808,21 +724,6 @@ public class MainActivity extends BaseActivity implements
             changeFlow(CURRENT_STATUS);
         }
     }
-
-/*    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        try {
-            googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_json));
-        } catch (Resources.NotFoundException e) {
-            e.printStackTrace();
-        }
-        this.mGoogleMap = googleMap;
-
-        getLocationPermission();
-        updateLocationUI();
-        getDeviceLocation();
-        displayCurrentAddress();
-    }*/
 
     private void updateDriverNavigation() {
         System.out.println("RRR called : updateDriverNavigation :: ");
@@ -928,107 +829,6 @@ public class MainActivity extends BaseActivity implements
                 .execute(this);*/
     }
 
-
-
-      /*  if (direction.isOK()) {
-            if (!CURRENT_STATUS.equalsIgnoreCase(SERVICE))
-              //  mGoogleMap.clear();
-            //Route route = direction.getRouteList().get(0);
-          //  if (!route.getLegList().isEmpty()) {
-
-               *//* Leg leg = route.getLegList().get(0);
-                InfoWindowData originLeg = new InfoWindowData();
-                originLeg.setAddress(leg.getStartAddress());
-                originLeg.setArrival_time(null);
-                originLeg.setDistance(leg.getDistance().getText());
-
-                destinationLeg = new InfoWindowData();
-                destinationLeg.setAddress(leg.getEndAddress());
-                destinationLeg.setArrival_time(leg.getDuration().getText());
-                destinationLeg.setDistance(leg.getDistance().getText());
-
-                LatLng origin = new LatLng(leg.getStartLocation().getLatitude(), leg.getStartLocation().getLongitude());
-                LatLng destination = new LatLng(leg.getEndLocation().getLatitude(), leg.getEndLocation().getLongitude());*//*
-
-                int serviceIcon;
-                if (DATUM != null) {
-
-                    if (DATUM.getServiceTypeId() == serviceMototaxiID) {
-                        //Se for mototaxi
-                        serviceIcon = R.drawable.car_icon_11;
-                    } else if (DATUM.getServiceTypeId() == serviceMotoboyID) {
-                        //Se for motoboy
-                        serviceIcon = R.drawable.car_icon_11;
-                    } else {
-                        //Se for outro (carro)
-                        serviceIcon = R.drawable.car_icon_11;
-                    }
-                } else {
-                    serviceIcon = R.drawable.car_icon_11;
-                }
-
-
-                if (CURRENT_STATUS.equalsIgnoreCase(SERVICE))
-               //     srcMarker = mGoogleMap.addMarker(new MarkerOptions()
-
-               //             .position(origin)
-               //             .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView())));
-               // else srcMarker = mGoogleMap.addMarker(new MarkerOptions()
-               //         .position(origin)
-               //         .icon(BitmapDescriptorFactory.fromResource(serviceIcon)));
-
-               // if (destMarker != null) destMarker.remove();
-              //  destMarker = mGoogleMap.addMarker(new MarkerOptions()
-              //          .icon(BitmapDescriptorFactory.fromResource(R.drawable.des_icon))
-              //          .position(destination));
-            }
-
-          //  polyLinePoints = route.getLegList().get(0).getDirectionPoint();
-
-           *//* if (CURRENT_STATUS.equalsIgnoreCase(SERVICE)) {
-                if (mPolyline != null) mPolyline.remove();
-                mPolyline = mGoogleMap.addPolyline(DirectionConverter.createPolyline
-                        (this, polyLinePoints, 5, getResources().getColor(R.color.colorAccent)));
-                LatLng southwest = route.getBound().getSouthwestCoordination().getCoordination();
-                LatLng northeast = route.getBound().getNortheastCoordination().getCoordination();
-                LatLngBounds bounds = new LatLngBounds(southwest, northeast);
-                try {
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 250));
-                } catch (Exception e) {
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 90));
-                }
-            } else
-                mPolyline = mGoogleMap.addPolyline(DirectionConverter.createPolyline
-                        (this, polyLinePoints, 2, getResources().getColor(R.color.colorAccent)));*//*
-        } else {
-            changeFlow(EMPTY);
-
-            Toast.makeText(this, getString(R.string.root_not_available), Toast.LENGTH_SHORT).show();
-        }*/
-
-   /* private void carAnim(final Marker marker, final LatLng start, final LatLng end) {
-        System.out.println("RRR MainActivity.carAnim");
-        ValueAnimator animator = ValueAnimator.ofFloat(0, 1);
-        animator.setDuration(1900);
-        final LatLngInterface latLngInterpolator = new LatLngInterface.LinearFixed();
-        animator.setInterpolator(new LinearInterpolator());
-        animator.addUpdateListener(valueAnimator1 -> {
-            canCarAnim = false;
-            float v = valueAnimator1.getAnimatedFraction();
-            LatLng newPos = latLngInterpolator.interpolate(v, start, end);
-            marker.setPosition(newPos);
-            marker.setAnchor(0.5f, 0.5f);
-            marker.setRotation(bearingBetweenLocations(start, end));
-        });
-        animator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                canCarAnim = true;
-            }
-        });
-        animator.start();
-    }*/
-
     public void changeFragment(Fragment fragment) {
         if (isFinishing()) return;
 
@@ -1083,30 +883,6 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
-    private Bitmap getMarkerBitmapFromView() {
-
-        View mView = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-                .inflate(R.layout.map_custom_infowindow, null);
-
-        TextView tvEtaVal = mView.findViewById(R.id.tvEstimatedFare);
-        String arrivalTime = destinationLeg.getArrival_time();
-        if (arrivalTime.contains("hours")) arrivalTime = arrivalTime.replace("hours", "h\n");
-        else if (arrivalTime.contains("hour")) arrivalTime = arrivalTime.replace("hour", "h\n");
-        if (arrivalTime.contains("mins")) arrivalTime = arrivalTime.replace("mins", "min");
-        tvEtaVal.setText(arrivalTime);
-        mView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        mView.layout(0, 0, mView.getMeasuredWidth(), mView.getMeasuredHeight());
-        mView.buildDrawingCache();
-        Bitmap returnedBitmap = Bitmap.createBitmap(mView.getMeasuredWidth(),
-                mView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(returnedBitmap);
-        canvas.drawColor(Color.WHITE, PorterDuff.Mode.SRC_IN);
-        Drawable drawable = mView.getBackground();
-        if (drawable != null) drawable.draw(canvas);
-        mView.draw(canvas);
-        return returnedBitmap;
-    }
-
     void getDeviceLocation() {
         try {
             if (isLocationPermissionGranted) {
@@ -1114,42 +890,9 @@ public class MainActivity extends BaseActivity implements
                 locationResult.addOnCompleteListener(this, task -> {
                     if (task.isSuccessful() && task.getResult() != null) {
                         mLastKnownLocation = task.getResult();
-                        if (mapFragment != null) {
-                            mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
-                                    .target(new LatLng(
-                                                    mLastKnownLocation.getLatitude(),
-                                                    mLastKnownLocation.getLongitude()
-                                            )
-                                    )
-                                    .padding(
-                                            0.0,
-                                            0.0,
-                                            0.0,
-                                            DisplayUtils.dpToPx(0) // current padding
-                                    )
-                                    .zoom(DEFAULT_ZOOM)
-                                    .build()));
-                        }
-                        SharedHelper.putKey(this, "latitude", String.valueOf(mLastKnownLocation.getLatitude()));
-                        SharedHelper.putKey(this, "longitude", String.valueOf(mLastKnownLocation.getLongitude()));
+                        handleLocation(true);
                     } else {
-                        mDefaultLocation = new LatLng(
-                                Double.valueOf(SharedHelper.getKey(this, "latitude", "-33.8523341")),
-                                Double.valueOf(SharedHelper.getKey(this, "longitude", "151.2106085"))
-                        );
-                        if (mapFragment != null) {
-                            mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
-                                    .target(mDefaultLocation)
-                                    .padding(
-                                            0.0,
-                                            0.0,
-                                            0.0,
-                                            DisplayUtils.dpToPx(0) // current padding
-                                    )
-                                    .zoom(DEFAULT_ZOOM)
-                                    .build()));
-                            mapFragment.enableMyLocation(false);
-                        }
+                        handleLocation(false);
                     }
                 });
             }
@@ -1158,46 +901,282 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
-    public void getLocationPermission() {
+    private void handleLocation(boolean success) {
+        if (mapFragment != null) {
+            if (success) {
+                if (mLastKnownLocation != null) {
+                    if (!isMapMoved) {
+                        mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+                                .target(new LatLng(
+                                                mLastKnownLocation.getLatitude(),
+                                                mLastKnownLocation.getLongitude()
+                                        )
+                                )
+                                .padding(
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        DisplayUtils.dpToPx(0) // current padding
+                                )
+                                .zoom(DEFAULT_ZOOM)
+                                .build()));
+                    }
+                    SharedHelper.putKey(this, "latitude", String.valueOf(mLastKnownLocation.getLatitude()));
+                    SharedHelper.putKey(this, "longitude", String.valueOf(mLastKnownLocation.getLongitude()));
+                }
+            } else {
+                mDefaultLocation = new LatLng(
+                        Double.valueOf(SharedHelper.getKey(this, "latitude", "43.2973300")),
+                        Double.valueOf(SharedHelper.getKey(this, "longitude", "68.2517500"))
+                );
+                if (mapFragment != null && !isMapMoved) {
+                    mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+                            .target(mDefaultLocation)
+                            .padding(
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    DisplayUtils.dpToPx(0) // current padding
+                            )
+                            .zoom(DEFAULT_ZOOM)
+                            .build()));
+                    mapFragment.enableMyLocation(false);
+                }
+            }
+        }
+    }
+
+    public boolean getLocationPermission() {
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
                 ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) isLocationPermissionGranted = true;
-        else
+                == PackageManager.PERMISSION_GRANTED) {
+            isLocationPermissionGranted = true;
+            return true;
+        } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{ACCESS_FINE_LOCATION},
                     REQUEST_ACCESS_FINE_LOCATION);
+            return false;
+        }
     }
 
-    private void updateLocationUI() {
-        /*if (mGoogleMap == null) return;
-        try {
-            if (isLocationPermissionGranted) {
-                mGoogleMap.setMyLocationEnabled(true);
-                mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
-                mGoogleMap.getUiSettings().setCompassEnabled(false);
-                //mGoogleMap.setOnCameraMoveListener(this);
-                //mGoogleMap.setOnCameraIdleListener(this);
-            } else {
-                mGoogleMap.setMyLocationEnabled(false);
-                mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
-                mLastKnownLocation = null;
-                getLocationPermission();
+    private void extendRide() {
+        new AlertDialog.Builder(MainActivity.this)
+                .setTitle(getString(R.string.destination_change))
+                .setMessage(getString(R.string.destination_fare_changes))
+                .setCancelable(true)
+                .setPositiveButton(getResources().getString(R.string.yes), (dialog, which) -> {
+                    if (RIDE_REQUEST.containsKey(DEST_ADD)) {
+                        HashMap<String, Object> map = new HashMap<>();
+                        map.put("latitude", RIDE_REQUEST.get(DEST_LAT));
+                        map.put("longitude", RIDE_REQUEST.get(DEST_LONG));
+                        map.put("address", RIDE_REQUEST.get(DEST_ADD));
+                        map.put("request_id", DATUM.getId());
+                        mainPresenter.updateDestination(map);
+                        LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
+                        LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
+                        drawRoute(origin, destination);
+                    }
+                })
+                .setNegativeButton(getResources().getString(R.string.no), (dialog, which) -> dialog.cancel())
+                .show();
+    }
+
+    private void displayCurrentAddress() {
+        if (getLocationPermission()) {
+            if (mLastKnownLocation == null) {
+                mLastKnownLocation = getLastKnownLocation();
             }
-        } catch (SecurityException e) {
-            e.printStackTrace();
+            handleLocation(true);
+            hideLoading();
+        }
+    }
+
+    public void updatePaymentEntities() {
+        if (checkStatusResponse != null) {
+            isCash = checkStatusResponse.getCash() == 1;
+            isCard = checkStatusResponse.getCard() == 1;
+            if (checkStatusResponse.getOnline().equals("1")) {
+                online = true;
+            }
+            isDebitMachine = checkStatusResponse.getDebitMachine() == 1;
+            isVoucher = checkStatusResponse.getVoucher() == 1;
+
+            MvpApplication.isPayumoney = checkStatusResponse.getPayumoney() == 1;
+            MvpApplication.isPaypal = checkStatusResponse.getPaypal() == 1;
+            MvpApplication.isBraintree = checkStatusResponse.getBraintree() == 1;
+            MvpApplication.isPaypalAdaptive = checkStatusResponse.getPaypal_adaptive() == 1;
+            MvpApplication.isPaytm = checkStatusResponse.getPaytm() == 1;
+
+            SharedHelper.putKey(this, "currency", checkStatusResponse.getCurrency());
+            if (isCash) RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.CASH);
+            else if (isCard) RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.CARD);
+            else if (isDebitMachine)
+                RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.DEBIT_MACHINE);
+            else if (isVoucher) RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.VOUCHER);
+        }
+    }
+
+    private Location getLastKnownLocation() {
+        LocationManager mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        List<String> providers = mLocationManager.getProviders(true);
+        Location bestLocation = null;
+        for (String provider : providers)
+            if (ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                Location l = mLocationManager.getLastKnownLocation(provider);
+                if (l == null) continue;
+                if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy())
+                    bestLocation = l;
+            }
+        return bestLocation;
+    }
+
+    private void addAllProviders(List<Provider> providers) {
+       /* if (providers != null) for (Provider provider : providers)
+            if (providersMarker.get(provider.getId()) != null) {
+                Marker marker = providersMarker.get(provider.getId());
+                LatLng startPos = marker.getPosition();
+                LatLng endPos = new LatLng(provider.getLatitude(), provider.getLongitude());
+                marker.setPosition(endPos);
+                carAnim(marker, startPos, endPos);
+            } else {
+                int serviceIcon;
+                if (provider.getProviderService().getServiceTypeId() == serviceMototaxiID) {
+                    serviceIcon = R.drawable.car_icon_11;
+                } else if (provider.getProviderService().getServiceTypeId() == serviceMotoboyID) {
+                    serviceIcon = R.drawable.car_icon_11;
+                } else {
+                    serviceIcon = R.drawable.car_icon_11;
+                }
+
+                new TheTask(provider.getId(), provider.getLatitude(), provider.getLongitude(), provider.getFirstName(), "", MvpApplication.marker).execute();
+
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .anchor(0.5f, 0.5f)
+                        .position(new LatLng(provider.getLatitude(), provider.getLongitude()))
+                        .rotation(0.0f)
+                        .snippet("" + provider.getId())
+                        .icon(BitmapDescriptorFactory.fromResource(serviceIcon));
+                providersMarker.put(provider.getId(), mGoogleMap.addMarker(markerOptions));
+            }*/
+    }
+
+    public void addSpecificProviders(List<Provider> providers, String key) {
+       /* if (providers != null) {
+            Bitmap b;
+            BitmapDescriptor bd;
+            try {
+                b = Bitmap.createScaledBitmap(decodeBase64(SharedHelper.getKey
+                        (this, key)), 60, 60, false);
+                bd = BitmapDescriptorFactory.fromBitmap(b);
+            } catch (Exception e) {
+
+                bd = BitmapDescriptorFactory.fromResource(R.drawable.car_icon_11);
+                e.printStackTrace();
+            }
+           *//* Iterator<Map.Entry<Integer, Marker>> it = providersMarker.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<Integer, Marker> pair = it.next();
+                Marker marker = providersMarker.get(pair.getKey());
+                marker.remove();
+                it.remove();
+            }*//*
+            for (Provider provider : providers) {
+
+                int serviceIcon;
+                if (provider.getProviderService().getServiceTypeId() == serviceMototaxiID) {
+                    serviceIcon = R.drawable.car_icon_11;
+                } else if (provider.getProviderService().getServiceTypeId() == serviceMotoboyID) {
+                    serviceIcon = R.drawable.car_icon_11;
+                } else {
+                    serviceIcon = R.drawable.car_icon_11;
+                }
+
+                new TheTask(provider.getId(), provider.getLatitude(), provider.getLongitude(), provider.getFirstName(), "", MvpApplication.marker).execute();
+               *//* MarkerOptions markerOptions = new MarkerOptions()
+                        .anchor(0.5f, 0.5f)
+                        .position(new LatLng(provider.getLatitude(), provider.getLongitude()))
+                        .rotation(0.0f)
+                        .snippet("" + provider.getId())
+                        .icon(BitmapDescriptorFactory.fromResource(serviceIcon));
+                providersMarker.put(provider.getId(), mGoogleMap.addMarker(markerOptions));*//*
+            }
         }*/
     }
 
+    // presenter
+
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
-        isLocationPermissionGranted = false;
-        if (requestCode == REQUEST_ACCESS_FINE_LOCATION)
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                isLocationPermissionGranted = true;
-                updateLocationUI();
-                getDeviceLocation();
-                displayCurrentAddress();
+    public void onSuccess(DataResponse dataResponse) {
+        this.checkStatusResponse = dataResponse;
+        updatePaymentEntities();
+        SharedHelper.putKey(this, SOS_NUMBER, checkStatusResponse.getSos());
+        if (!Objects.requireNonNull(dataResponse.getData()).isEmpty()) {
+            if (!CURRENT_STATUS.equals(dataResponse.getData().get(0).getStatus())) {
+                DATUM = dataResponse.getData().get(0);
+                CURRENT_STATUS = DATUM.getStatus();
+                changeFlow(CURRENT_STATUS);
             }
+        } else if (CURRENT_STATUS.equals(SERVICE))
+            System.out.println("RRR CURRENT_STATUS = " + CURRENT_STATUS);
+        else {
+            CURRENT_STATUS = EMPTY;
+            changeFlow(CURRENT_STATUS);
+        }
+
+        if (CURRENT_STATUS.equals(STARTED)
+                || CURRENT_STATUS.equals(ARRIVED)
+                || CURRENT_STATUS.equals(PICKED_UP))
+            if (mProviderLocation == null) {
+                mProviderLocation = FirebaseDatabase.getInstance().getReference()
+                        .child("loc_p_" + DATUM.getProvider().getId());
+                updateDriverNavigation();
+            }
+
+        if (canGoToChatScreen) {
+            if (!isChatScreenOpen && DATUM != null) {
+                Intent i = new Intent(baseActivity(), ChatActivity.class);
+                i.putExtra("request_id", String.valueOf(DATUM.getId()));
+                startActivity(i);
+            }
+            canGoToChatScreen = false;
+        }
+    }
+
+    @Override
+    public void onSuccess(SettingsResponse response) {
+        if (response.getReferral().getOnline().equals("1")) {
+            online = true;
+        }
+    }
+
+    @Override
+    public void onSettingError(Throwable e) {
+
+    }
+
+    @Override
+    public void onSearchError(Throwable e) {
+
+    }
+
+    @Override
+    public void onPointError(Throwable e) {
+        Log.d("gdsdg", "onEr" + e.toString());
+    }
+
+    @Override
+    public void onSuccessSearch(List<SearchAddress> o) {
+        searchAddressAdapter.update(o);
+    }
+
+    @Override
+    public void onSuccessPoint(SearchAddress o) {
+        if (CURRENT_STATUS.equals(EMPTY) && !isExpanded && o != null && !isDragging) {
+            setStartAddress(o);
+        }
     }
 
     @Override
@@ -1254,229 +1233,9 @@ public class MainActivity extends BaseActivity implements
         SharedHelper.putProviders(this, printJSON(providerList));
     }
 
-    private void addAllProviders(List<Provider> providers) {
-       /* if (providers != null) for (Provider provider : providers)
-            if (providersMarker.get(provider.getId()) != null) {
-                Marker marker = providersMarker.get(provider.getId());
-                LatLng startPos = marker.getPosition();
-                LatLng endPos = new LatLng(provider.getLatitude(), provider.getLongitude());
-                marker.setPosition(endPos);
-                carAnim(marker, startPos, endPos);
-            } else {
-                int serviceIcon;
-                if (provider.getProviderService().getServiceTypeId() == serviceMototaxiID) {
-                    serviceIcon = R.drawable.car_icon_11;
-                } else if (provider.getProviderService().getServiceTypeId() == serviceMotoboyID) {
-                    serviceIcon = R.drawable.car_icon_11;
-                } else {
-                    serviceIcon = R.drawable.car_icon_11;
-                }
-
-                new TheTask(provider.getId(), provider.getLatitude(), provider.getLongitude(), provider.getFirstName(), "", MvpApplication.marker).execute();
-
-                MarkerOptions markerOptions = new MarkerOptions()
-                        .anchor(0.5f, 0.5f)
-                        .position(new LatLng(provider.getLatitude(), provider.getLongitude()))
-                        .rotation(0.0f)
-                        .snippet("" + provider.getId())
-                        .icon(BitmapDescriptorFactory.fromResource(serviceIcon));
-                providersMarker.put(provider.getId(), mGoogleMap.addMarker(markerOptions));
-            }*/
-    }
-
-    @Override
-    public void onMenuClick(MenuDrawer menu) {
-        if (menu instanceof MenuDrawer.MenuMain) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        } else if (menu instanceof MenuDrawer.MenuPayments) {
-            startActivity(new Intent(this, PaymentActivity.class));
-        } else if (menu instanceof MenuDrawer.MenuHistory) {
-            startActivity(new Intent(this, YourTripActivity.class));
-        } else if (menu instanceof MenuDrawer.MenuSettings) {
-            startActivity(new Intent(this, SettingsActivity.class));
-        } else if (menu instanceof MenuDrawer.MenuHelp) {
-            startActivity(new Intent(this, HelpActivity.class));
-        } else if (menu instanceof MenuDrawer.MenuDriver) {
-            alertBecomeDriver();
-        } else if (menu instanceof MenuDrawer.MenuLogout) {
-            ShowLogoutPopUp();
-        }
-    }
-
-    public class TheTask extends AsyncTask<Void, Void, Void> {
-        double lat, lang;
-        int pos;
-        String firstname, dis, markerurl;
-        Bitmap bmp;
-
-        public TheTask(int i, Double latitude, Double longitude, String firstName, String description, String marker) {
-
-            firstname = firstName;
-            lat = latitude;
-            lang = longitude;
-            dis = description;
-            markerurl = marker;
-            pos = i;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            // TODO Auto-generated method stub
-            super.onPreExecute();
-
-
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            URL url;
-            try {
-                url = new URL(markerurl);
-                bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                bmp.setPixel(18, 18, getResources().getColor(R.color.default_dot_color));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-
-            super.onPostExecute(result);
-
-            if (bmp != null) {
-               /* MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(new LatLng(lat, lang))
-                        .anchor(0.5f, 0.5f)
-                        .title(firstname)
-                        .snippet(dis)
-                        .icon(BitmapDescriptorFactory.fromBitmap(bmp));
-
-                builder.include(markerOptions.getPosition());
-                providersMarker.put(pos, mGoogleMap.addMarker(markerOptions));*/
-
-            } else {
-                int serviceIcon;
-                serviceIcon = R.drawable.car_icon_11;
-
-                /*MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(new LatLng(lat, lang))
-                        .anchor(0.5f, 0.5f)
-                        .title(firstname)
-                        .snippet(dis)
-                        .icon(BitmapDescriptorFactory.fromResource(serviceIcon));
-
-                builder.include(markerOptions.getPosition());
-
-                providersMarker.put(pos, mGoogleMap.addMarker(markerOptions));*/
-
-
-            }
-
-            //   providersMarker.put(pos, mGoogleMap.addMarker(markerOptions));
-
-        }
-    }
-
-    public void addSpecificProviders(List<Provider> providers, String key) {
-       /* if (providers != null) {
-            Bitmap b;
-            BitmapDescriptor bd;
-            try {
-                b = Bitmap.createScaledBitmap(decodeBase64(SharedHelper.getKey
-                        (this, key)), 60, 60, false);
-                bd = BitmapDescriptorFactory.fromBitmap(b);
-            } catch (Exception e) {
-
-                bd = BitmapDescriptorFactory.fromResource(R.drawable.car_icon_11);
-                e.printStackTrace();
-            }
-           *//* Iterator<Map.Entry<Integer, Marker>> it = providersMarker.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<Integer, Marker> pair = it.next();
-                Marker marker = providersMarker.get(pair.getKey());
-                marker.remove();
-                it.remove();
-            }*//*
-            for (Provider provider : providers) {
-
-                int serviceIcon;
-                if (provider.getProviderService().getServiceTypeId() == serviceMototaxiID) {
-                    serviceIcon = R.drawable.car_icon_11;
-                } else if (provider.getProviderService().getServiceTypeId() == serviceMotoboyID) {
-                    serviceIcon = R.drawable.car_icon_11;
-                } else {
-                    serviceIcon = R.drawable.car_icon_11;
-                }
-
-                new TheTask(provider.getId(), provider.getLatitude(), provider.getLongitude(), provider.getFirstName(), "", MvpApplication.marker).execute();
-               *//* MarkerOptions markerOptions = new MarkerOptions()
-                        .anchor(0.5f, 0.5f)
-                        .position(new LatLng(provider.getLatitude(), provider.getLongitude()))
-                        .rotation(0.0f)
-                        .snippet("" + provider.getId())
-                        .icon(BitmapDescriptorFactory.fromResource(serviceIcon));
-                providersMarker.put(provider.getId(), mGoogleMap.addMarker(markerOptions));*//*
-            }
-        }*/
-    }
-
     @Override
     public void onError(Throwable e) {
 
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        for (Fragment fragment : getSupportFragmentManager().getFragments())
-            fragment.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_PICK_LOCATION) if (resultCode == Activity.RESULT_OK) {
-            if (RIDE_REQUEST.containsKey(SRC_ADD))
-                sourceTxt.setText(String.valueOf(RIDE_REQUEST.get(SRC_ADD)));
-            else sourceTxt.setText("");
-            if (RIDE_REQUEST.containsKey(DEST_ADD))
-                destinationTxt.setText(String.valueOf(RIDE_REQUEST.get(DEST_ADD)));
-            else destinationTxt.setText("");
-
-            if (RIDE_REQUEST.containsKey(SRC_ADD)
-                    && RIDE_REQUEST.containsKey(DEST_ADD)
-                    && CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
-                CURRENT_STATUS = SERVICE;
-                changeFlow(CURRENT_STATUS);
-                LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
-                LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
-                drawRoute(origin, destination);
-            } else if (RIDE_REQUEST.containsKey(DEST_ADD)
-                    && !RIDE_REQUEST.get(DEST_ADD).equals("")
-                    && CURRENT_STATUS.equalsIgnoreCase(PICKED_UP))
-                extendRide();
-        }
-    }
-
-    private void extendRide() {
-        new AlertDialog.Builder(MainActivity.this)
-                .setTitle(getString(R.string.destination_change))
-                .setMessage(getString(R.string.destination_fare_changes))
-                .setCancelable(true)
-                .setPositiveButton(getResources().getString(R.string.yes), (dialog, which) -> {
-                    if (RIDE_REQUEST.containsKey(DEST_ADD)) {
-                        HashMap<String, Object> map = new HashMap<>();
-                        map.put("latitude", RIDE_REQUEST.get(DEST_LAT));
-                        map.put("longitude", RIDE_REQUEST.get(DEST_LONG));
-                        map.put("address", RIDE_REQUEST.get(DEST_ADD));
-                        map.put("request_id", DATUM.getId());
-                        mainPresenter.updateDestination(map);
-                        LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
-                        LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
-                        drawRoute(origin, destination);
-                    }
-                })
-                .setNegativeButton(getResources().getString(R.string.no), (dialog, which) -> dialog.cancel())
-                .show();
     }
 
     @Override
@@ -1501,150 +1260,139 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        if (location != null) {
-            String cityName = null;
-            Geocoder gcd = new Geocoder(getBaseContext(), Locale.getDefault());
-            List<Address> addresses;
-            try {
-                addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                if (addresses.size() > 0) {
-                    System.out.println(addresses.get(0).getLocality());
-                    cityName = addresses.get(0).getLocality();
+    // clicks
+
+    @OnClick({R.id.on_map, R.id.sos, R.id.erase_src, R.id.erase_dest, R.id.btn_home, R.id.btn_work, R.id.menu_app, R.id.gps, R.id.source, R.id.destination, R.id.menu_back})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.on_map:
+                break;
+            case R.id.menu_app:
+                if (drawerLayout.isDrawerOpen(GravityCompat.START))
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                else {
+                    User user = new Gson().fromJson(SharedHelper.getKey(this, "userInfo"), User.class);
+                    if (user != null) {
+                        drawerFragment.updateUser(user);
+                        SharedHelper.putKey(MainActivity.this, PROFILE_IMG, user.getPicture());
+                    }
+                    drawerLayout.openDrawer(GravityCompat.START);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            String s = location.getLatitude() + "\n" + location.getLongitude()
-                    + "\n\n" + getString(R.string.my_current_city)
-                    + cityName;
-            Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
-        }
-    }
 
-    private void displayCurrentAddress() {
-        // if (mGoogleMap == null) return;
-
-        if (isLocationPermissionGranted) {
-            if (mLastKnownLocation == null) {
-                Toast.makeText(this, "waiting for your location ...", Toast.LENGTH_LONG).show();
-                mLastKnownLocation = getLastKnownLocation();
+                break;
+            case R.id.sos:
+                SosFragment sosFragment = new SosFragment();
+                sosFragment.show(getSupportFragmentManager(), SOS);
+                break;
+            case R.id.menu_back:
+                topLayout.transitionToStart();
+                break;
+            case R.id.erase_src:
+                setStartAddress(null);
+                break;
+            case R.id.erase_dest:
+                destinationTxt.setText("");
+                eraseDest.setVisibility(View.INVISIBLE);
+                RIDE_REQUEST.remove(DEST_ADD);
+                RIDE_REQUEST.remove(DEST_LAT);
+                RIDE_REQUEST.remove(DEST_LONG);
+                break;
+            case R.id.gps:
                 if (mLastKnownLocation != null) {
-                    String address = getAddress(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()));
-                    sourceTxt.setText(address);
-                    RIDE_REQUEST.put(SRC_ADD, address);
-                    RIDE_REQUEST.put(SRC_LAT, mLastKnownLocation.getLatitude());
-                    RIDE_REQUEST.put(SRC_LONG, mLastKnownLocation.getLongitude());
+                    LatLng currentLatLng = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
+                    if (mapFragment != null) {
+                        mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+                                .target(currentLatLng)
+                                .padding(
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        DisplayUtils.dpToPx(0) // current padding
+                                )
+                                .zoom(DEFAULT_ZOOM)
+                                .build()));
+                    }
+                    isMapMoved = false;
                 }
-
-            } else {
-                if (TextUtils.isEmpty(sourceTxt.getText().toString()) || sourceTxt.getText().toString().equals(getText(R.string.pickup_location).toString())) {
-                    String address = getAddress(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()));
-                    sourceTxt.setText(address);
-                    RIDE_REQUEST.put(SRC_ADD, address);
-                    RIDE_REQUEST.put(SRC_LAT, mLastKnownLocation.getLatitude());
-                    RIDE_REQUEST.put(SRC_LONG, mLastKnownLocation.getLongitude());
+                break;
+            case R.id.source:
+                CURRENT_STATUS = EMPTY;
+                if (topLayout.getProgress() == 0) {
+                    topLayout.enableTransition(R.id.tr, true);
+                    topLayout.transitionToEnd();
+                }
+                break;
+            case R.id.destination:
+                CURRENT_STATUS = EMPTY;
+                if (topLayout.getProgress() == 0) {
+                    topLayout.enableTransition(R.id.tr, true);
+                    topLayout.transitionToEnd();
+                }
+                break;
+            case R.id.btn_home:
+                if (home != null) {
+                    updateSavedAddress(home);
                 } else {
-                    String address = getAddress(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()));
-                    sourceTxt.setText(address);
-                    RIDE_REQUEST.put(SRC_ADD, address);
-                    RIDE_REQUEST.put(SRC_LAT, mLastKnownLocation.getLatitude());
-                    RIDE_REQUEST.put(SRC_LONG, mLastKnownLocation.getLongitude());
 
                 }
-            }
+                break;
+            case R.id.btn_work:
+                if (work != null) {
+                    updateSavedAddress(work);
+                } else {
 
-            hideLoading();
-        } else getLocationPermission();
-    }
-
-    public void updatePaymentEntities() {
-        if (checkStatusResponse != null) {
-            isCash = checkStatusResponse.getCash() == 1;
-            isCard = checkStatusResponse.getCard() == 1;
-            if (checkStatusResponse.getOnline().equals("1")) {
-                online = true;
-            }
-            isDebitMachine = checkStatusResponse.getDebitMachine() == 1;
-            isVoucher = checkStatusResponse.getVoucher() == 1;
-
-            MvpApplication.isPayumoney = checkStatusResponse.getPayumoney() == 1;
-            MvpApplication.isPaypal = checkStatusResponse.getPaypal() == 1;
-            MvpApplication.isBraintree = checkStatusResponse.getBraintree() == 1;
-            MvpApplication.isPaypalAdaptive = checkStatusResponse.getPaypal_adaptive() == 1;
-            MvpApplication.isPaytm = checkStatusResponse.getPaytm() == 1;
-
-            SharedHelper.putKey(this, "currency", checkStatusResponse.getCurrency());
-            if (isCash) RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.CASH);
-            else if (isCard) RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.CARD);
-            else if (isDebitMachine)
-                RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.DEBIT_MACHINE);
-            else if (isVoucher) RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.VOUCHER);
+                }
+                break;
         }
     }
 
-    private Location getLastKnownLocation() {
-        LocationManager mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        List<String> providers = mLocationManager.getProviders(true);
-        Location bestLocation = null;
-        for (String provider : providers)
-            if (ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                Location l = mLocationManager.getLastKnownLocation(provider);
-                if (l == null) continue;
-                if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy())
-                    bestLocation = l;
-            }
-        return bestLocation;
-    }
+    // drawer
 
     @Override
-    public void onSuccess(SettingsResponse response) {
-        if (response.getReferral().getOnline().equals("1")) {
-            online = true;
-        }
-        if (response.getReferral().getReferral().equalsIgnoreCase("1")) navMenuVisibility(true);
-        else navMenuVisibility(false);
-    }
-
-    private void navMenuVisibility(boolean visibility) {
-        //navigationView.getMenu().findItem(R.id.nav_invite_friend).setVisible(visibility);
-    }
-
-    @Override
-    public void onSettingError(Throwable e) {
-        navMenuVisibility(false);
-    }
-
-    @Override
-    public void onSuccessSearch(List<SearchAddress> o) {
-        searchAddressAdapter.update(o);
-    }
-
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (keyboardHeightProvider != null) {
-            keyboardHeightProvider.onPause();
+    public void onMenuClick(MenuDrawer menu) {
+        if (menu instanceof MenuDrawer.MenuMain) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else if (menu instanceof MenuDrawer.MenuPayments) {
+            startActivity(new Intent(this, PaymentActivity.class));
+        } else if (menu instanceof MenuDrawer.MenuHistory) {
+            startActivity(new Intent(this, YourTripActivity.class));
+        } else if (menu instanceof MenuDrawer.MenuSettings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+        } else if (menu instanceof MenuDrawer.MenuHelp) {
+            startActivity(new Intent(this, HelpActivity.class));
+        } else if (menu instanceof MenuDrawer.MenuDriver) {
+            alertBecomeDriver();
+        } else if (menu instanceof MenuDrawer.MenuLogout) {
+            ShowLogoutPopUp();
         }
     }
 
-    private interface LatLngInterface {
-        LatLng interpolate(float fraction, LatLng a, LatLng b);
+    // map
 
-        class LinearFixed implements LatLngInterface {
-            @Override
-            public LatLng interpolate(float fraction, LatLng a, LatLng b) {
-                double lat = (b.getLatitude() - a.getLatitude()) * fraction + a.getLatitude();
-                double lngDelta = b.getLongitude() - a.getLongitude();
-                if (Math.abs(lngDelta) > 180) lngDelta -= Math.signum(lngDelta) * 360;
-                double lng = lngDelta * fraction + a.getLongitude();
-                return new LatLng(lat, lng);
-            }
-        }
+    @Override
+    public void onMapMoved(boolean moved) {
+        isMapMoved = moved;
     }
 
+    @Override
+    public void onActionUp(LatLng point) {
+        isDragging = false;
+        mainPresenter.startSearch(point.getLatitude(), point.getLongitude());
+    }
+
+    @Override
+    public void onActionDown() {
+        isDragging = true;
+        setStartAddress(null);
+    }
+
+    @Override
+    public void onMapReady() {
+        displayCurrentAddress();
+    }
+
+    @Override
+    public int getMapPadding() {
+        return DisplayUtils.dpToPx(0); // current padding;
+    }
 }

@@ -1,6 +1,7 @@
 package com.thinkincab.app.ui.fragment.map;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -60,6 +61,24 @@ public class MapFragment extends Fragment implements
 
     protected boolean isScaling = false;
     protected boolean connected = true;
+
+    private LatLng center;
+
+    private IMapView listener;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof IMapView) {
+            listener = (IMapView) context;
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        listener = null;
+        super.onDetach();
+    }
 
     @Nullable
     @Override
@@ -178,11 +197,17 @@ public class MapFragment extends Fragment implements
         mapView.onLowMemory();
     }
 
+    private void handleZoom(double zoom) {
+    }
+
     protected boolean showLocation() {
         return true;
     }
 
     protected void mapInit(Style style) {
+        if (listener != null) {
+            listener.onMapReady();
+        }
     }
 
     public void animateCamera(@NonNull CameraUpdate update) {
@@ -203,7 +228,17 @@ public class MapFragment extends Fragment implements
 
     @Override
     public void onCameraIdle() {
-
+        if (mapBoxMap == null) {
+            return;
+        }
+        LatLng point = mapBoxMap.getCameraPosition().target;
+        if (point != null) {
+            if (!isScaling) {
+                if (listener != null) {
+                    listener.onActionUp(point);
+                }
+            }
+        }
     }
 
     @Override
@@ -218,7 +253,12 @@ public class MapFragment extends Fragment implements
 
     @Override
     public void onCameraMoveStarted(int reason) {
-
+        if (reason == REASON_API_GESTURE) {
+            if (listener != null) {
+                listener.onMapMoved(true);
+                listener.onActionDown();
+            }
+        }
     }
 
     @Override
@@ -227,13 +267,30 @@ public class MapFragment extends Fragment implements
     }
 
     @Override
-    public boolean onMapClick(@NonNull @NotNull LatLng point) {
-        return false;
+    public boolean onMapClick(@NonNull LatLng point) {
+        if (mapBoxMap == null) {
+            return false;
+        }
+        if (listener != null) {
+            listener.onMapMoved(true);
+            listener.onActionUp(point);
+            CameraPosition position = new CameraPosition.Builder()
+                    .target(point)
+                    .padding(
+                            0.0,
+                            0.0,
+                            0.0,
+                            listener.getMapPadding()
+                    )
+                    .build();
+            mapBoxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position));
+        }
+        return true;
     }
 
     @Override
     public boolean onMapLongClick(@NonNull @NotNull LatLng point) {
-        return false;
+        return true;
     }
 
     @Override
@@ -253,16 +310,44 @@ public class MapFragment extends Fragment implements
 
     @Override
     public void onScaleBegin(@NonNull @NotNull StandardScaleGestureDetector detector) {
-
+        if (mapBoxMap == null) {
+            return;
+        }
+        isScaling = true;
+        if (listener != null) {
+            listener.onMapMoved(true);
+        }
+        MoveGestureDetector gestureDetector = androidGesturesManager.getMoveGestureDetector();
+        gestureDetector.setMoveThreshold(100000f);
+        gestureDetector.interrupt();
+        center = mapBoxMap.getCameraPosition().target;
     }
 
     @Override
     public void onScale(@NonNull @NotNull StandardScaleGestureDetector detector) {
-
+        if (mapBoxMap == null) {
+            return;
+        }
+        if (center != null && listener != null) {
+            double zoom = mapBoxMap.getCameraPosition().zoom;
+            handleZoom(zoom);
+            mapBoxMap.setCameraPosition(new CameraPosition.Builder()
+                    .target(center)
+                    .padding(
+                            0.0,
+                            0.0,
+                            0.0,
+                            listener.getMapPadding()
+                    )
+                    .zoom(!detector.isScalingOut() ? zoom + (detector.getScaleFactor() - 1) : zoom - (1 - detector.getScaleFactor()))
+                    .build());
+        }
     }
 
     @Override
     public void onScaleEnd(@NonNull @NotNull StandardScaleGestureDetector detector) {
-
+        isScaling = false;
+        MoveGestureDetector gestureDetector = androidGesturesManager.getMoveGestureDetector();
+        gestureDetector.setMoveThreshold(0f);
     }
 }

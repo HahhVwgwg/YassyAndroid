@@ -115,6 +115,24 @@ public class SearchAddress {
         this.type = type;
     }
 
+    public String getShortAddress() {
+        String shortAddress = "";
+        if (getAddress().getAmenity() != null) {
+            shortAddress = getAddress().getAmenity();
+        } else if (getAddress().getRoad() != null && getAddress().getHouse() != null) {
+            shortAddress = getAddress().getRoad() + " " + getAddress().getHouse();
+        } else if (getAddress().getRoad() != null) {
+            shortAddress = getAddress().getRoad();
+        } else if (getAddress().getTown() != null) {
+            shortAddress = getAddress().getTown();
+        } else if (getAddress().getCounty() != null) {
+            shortAddress = getAddress().getCounty();
+        } else if (getAddress().getState() != null) {
+            shortAddress = getAddress().getState();
+        }
+        return  shortAddress;
+    }
+
     public static class Address {
         @SerializedName("amenity")
         @Expose

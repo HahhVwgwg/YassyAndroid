@@ -1,15 +1,7 @@
 package com.thinkincab.app.data.network;
 
-import android.util.Log;
-
-import androidx.annotation.NonNull;
-
 import com.facebook.stetho.okhttp3.StethoInterceptor;
-import com.thinkincab.app.BuildConfig;
-import com.thinkincab.app.MvpApplication;
-import com.thinkincab.app.data.SharedHelper;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;

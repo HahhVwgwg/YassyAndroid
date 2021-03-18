@@ -13,8 +13,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
-import android.location.Address;
-import android.location.Geocoder;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
@@ -40,7 +38,6 @@ import com.thinkincab.app.common.Constants;
 import com.thinkincab.app.common.CustomDialog;
 import com.thinkincab.app.common.LocaleHelper;
 import com.thinkincab.app.data.SharedHelper;
-import com.thinkincab.app.ui.activity.OnBoardActivity;
 import com.thinkincab.app.ui.activity.WelcomeActivityNew;
 import com.thinkincab.app.ui.activity.login.EmailActivity;
 import com.thinkincab.app.ui.activity.login.PasswordActivity;
@@ -88,8 +85,6 @@ public abstract class BaseActivity extends AppCompatActivity
     protected final int REQUEST_PICK_LOCATION = 3;
     protected final int PERMISSIONS_REQUEST_PHONE = 4;
     protected final int REQUEST_CHECK_SETTINGS = 5;
-    protected final int REQUEST_ACCOUNT_KIT = 99;
-    protected final int REQUEST_GOOGLE_LOGIN = 98;
     protected final float DEFAULT_ZOOM = 15;
     public static boolean online = false;
     protected LatLng mDefaultLocation = new LatLng(11.586677, 43.147869);
@@ -282,26 +277,6 @@ public abstract class BaseActivity extends AppCompatActivity
     public void hideLoading() {
         if (customDialog != null)
             customDialog.cancel();
-    }
-
-    protected String getAddress(LatLng currentLocation) {
-        String address = null;
-        try {
-            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-            List<Address> addresses = geocoder.getFromLocation(currentLocation.getLatitude(), currentLocation.getLongitude(), 1);
-            if ((addresses != null) && !addresses.isEmpty()) {
-                Address returnedAddress = addresses.get(0);
-                StringBuilder strReturnedAddress = new StringBuilder();
-                if (returnedAddress.getMaxAddressLineIndex() > 0)
-                    for (int j = 0; j < returnedAddress.getMaxAddressLineIndex(); j++)
-                        strReturnedAddress.append(returnedAddress.getAddressLine(j)).append("");
-                else strReturnedAddress.append(returnedAddress.getAddressLine(0)).append("");
-                address = strReturnedAddress.toString();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return address;
     }
 
     protected void pickImage() {
