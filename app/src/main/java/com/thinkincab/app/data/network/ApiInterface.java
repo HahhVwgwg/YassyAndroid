@@ -22,6 +22,7 @@ import com.thinkincab.app.data.network.model.PromoResponse;
 import com.thinkincab.app.data.network.model.Provider;
 import com.thinkincab.app.data.network.model.RegisterResponse;
 import com.thinkincab.app.data.network.model.Rental;
+import com.thinkincab.app.data.network.model.SearchRoute;
 import com.thinkincab.app.data.network.model.Service;
 import com.thinkincab.app.data.network.model.SettingsResponse;
 import com.thinkincab.app.data.network.model.Token;
@@ -270,6 +271,10 @@ public interface ApiInterface {
     @FormUrlEncoded
     @POST("api/user/payu/response")
     Observable<CheckSumData> payuMoneyChecksum();
+
+    @GET("ajax/graphhopper.php")
+    Observable<SearchRoute> doRoute(@Query(value = "from_coord", encoded = true) String from,
+                                    @Query(value = "to_coord", encoded = true) String to);
 
    // @FormUrlEncoded
    // @POST("api/user/payment")

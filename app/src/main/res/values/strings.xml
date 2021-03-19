@@ -32,7 +32,6 @@
     <string name="first_name">First name</string>
     <string name="last_name">Last name</string>
     <string name="accept_and_confirm">Accept &amp; Confirm</string>
-    <string name="confirm">Confirm</string>
     <string name="service_not_available">Service not available</string>
     <string name="please_select_leave_on_date">Please select leave on date</string>
     <string name="please_select_return_date">Please select return date</string>
@@ -148,6 +147,7 @@
     <string name="model">Model</string>
     <string name="schedule_ride">Schedule Ride</string>
     <string name="ride_now">Заказать</string>
+    <string name="confirm">Подтвердить</string>
     <string name="due_to_high_demand_price_may_vary">Due to high demand price may vary</string>
     <string name="choose_an_account">Choose an account</string>
     <string name="facebook">Facebook</string>

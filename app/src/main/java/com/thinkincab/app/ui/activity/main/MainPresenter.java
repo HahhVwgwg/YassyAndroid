@@ -6,7 +6,6 @@ import com.thinkincab.app.data.network.PlaceApiClient;
 import com.thinkincab.app.data.network.model.SearchAddress;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -114,6 +113,18 @@ public class MainPresenter<V extends MainIView> extends BasePresenter<V> impleme
                         GEO_CACHE.put(lat + "," + lon, r);
                     }
                     getMvpView().onSuccessPoint(r);
+                }, getMvpView()::onPointError));
+    }
+
+    @Override
+    public void getRoute(double lat, double lon, double finishLat, double finishLon) {
+        getCompositeDisposable().add(APIClient
+                .getAPIClient()
+                .doRoute(lat + "," + lon, finishLat + "," + finishLon)
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(r -> {
+                    getMvpView().onSuccessRoute(r);
                 }, getMvpView()::onPointError));
     }
 

@@ -24,6 +24,8 @@ public interface MainIPresenter<V extends MainIView> extends MvpPresenter<V> {
 
     void startSearch(double lat, double lon);
 
+    void getRoute(double lat, double lon, double finishLat, double finishLon);
+
     void updateDestination(HashMap<String, Object> obj);
 
 }

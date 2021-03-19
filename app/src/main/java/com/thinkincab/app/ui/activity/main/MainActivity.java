@@ -16,7 +16,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -72,6 +71,7 @@ import com.thinkincab.app.data.network.model.MenuDrawer;
 import com.thinkincab.app.data.network.model.Message;
 import com.thinkincab.app.data.network.model.Provider;
 import com.thinkincab.app.data.network.model.SearchAddress;
+import com.thinkincab.app.data.network.model.SearchRoute;
 import com.thinkincab.app.data.network.model.SettingsResponse;
 import com.thinkincab.app.data.network.model.User;
 import com.thinkincab.app.data.network.model.UserAddress;
@@ -87,6 +87,7 @@ import com.thinkincab.app.ui.fragment.book_ride.BookRideFragment;
 import com.thinkincab.app.ui.fragment.invoice.InvoiceFragment;
 import com.thinkincab.app.ui.fragment.map.IMapView;
 import com.thinkincab.app.ui.fragment.map.MapFragment;
+import com.thinkincab.app.ui.fragment.map_select.MapSelectFragment;
 import com.thinkincab.app.ui.fragment.rate.RatingDialogFragment;
 import com.thinkincab.app.ui.fragment.schedule.ScheduleFragment;
 import com.thinkincab.app.ui.fragment.searching.SearchingFragment;
@@ -183,6 +184,8 @@ public class MainActivity extends BaseActivity implements
     RecyclerView addressesList;
     @BindView(R.id.on_map)
     FrameLayout onMap;
+    @BindView(R.id.main_pin)
+    View mainPin;
 
     private KeyboardHeightProvider keyboardHeightProvider;
 
@@ -211,7 +214,6 @@ public class MainActivity extends BaseActivity implements
     private boolean canReRoute = true, canCarAnim = true;
     private int getProviderHitCheck;
 
-    private ArrayList<LatLng> polyLinePoints;
     private LatLng start = null, end = null;
     private Location mLastKnownLocation;
 
@@ -223,6 +225,8 @@ public class MainActivity extends BaseActivity implements
     private DrawerFragment drawerFragment;
     private Runnable r;
     private Handler h;
+
+    private MapSelectFragment mapSelectFragment;
 
     private int countRequest = 0;
 
@@ -277,7 +281,11 @@ public class MainActivity extends BaseActivity implements
     private final BroadcastReceiver myReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            mainPresenter.checkStatus();
+            if (intent.getBooleanExtra("map", false)) {
+                topLayout.transitionToStart();
+            } else {
+                mainPresenter.checkStatus();
+            }
         }
     };
     private LatLngBounds.Builder builder;
@@ -296,7 +304,7 @@ public class MainActivity extends BaseActivity implements
         ButterKnife.bind(this);
         keyboardHeightProvider = new KeyboardHeightProvider(this);
         keyboardHeightProvider.addKeyboardListener(height -> {
-            addressesList.setPadding(0, 0, 0, height);
+            //addressesList.setPadding(0, 0, 0, height);
             ((ViewGroup.MarginLayoutParams) onMap.getLayoutParams()).bottomMargin = height + DisplayUtils.dpToPx(16);
             onMap.requestLayout();
         });
@@ -328,7 +336,7 @@ public class MainActivity extends BaseActivity implements
             } else if (CURRENT_STATUS.equals(STARTED) || CURRENT_STATUS.equals(ARRIVED)
                     || CURRENT_STATUS.equals(PICKED_UP)) if (getProviderHitCheck % 3 == 0) {
                 LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                for (LatLng latLng : polyLinePoints) builder.include(latLng);
+
                 LatLngBounds bounds = builder.build();
                 if (mapFragment != null) {
                     mapFragment.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 90));
@@ -377,7 +385,11 @@ public class MainActivity extends BaseActivity implements
                     pickLocationLayout.requestFocus();
                     topLayout.enableTransition(R.id.tr, false);
                     searchAddressAdapter.update(new ArrayList<>());
-                    if (RIDE_REQUEST.containsKey(SRC_ADD)
+                    if (CURRENT_STATUS.equalsIgnoreCase(MAP)) {
+                        changeFlow(CURRENT_STATUS);
+                        motionLayout.setTransition(R.id.tr_to_map);
+                        motionLayout.transitionToEnd();
+                    } else if (RIDE_REQUEST.containsKey(SRC_ADD)
                             && RIDE_REQUEST.containsKey(DEST_ADD)
                             && CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
                         CURRENT_STATUS = SERVICE;
@@ -414,6 +426,27 @@ public class MainActivity extends BaseActivity implements
                     CURRENT_STATUS = EMPTY;
                     changeFlow(CURRENT_STATUS);
                     returnToInitial();
+                } else if (i == R.id.start_map) {
+                    isExpanded = false;
+                    motionLayout.setTransition(R.id.tr);
+                    if (RIDE_REQUEST.containsKey(DEST_ADD) && RIDE_REQUEST.get(DEST_ADD) != destinationTxt.getText().toString()) {
+                        isEditable = false;
+                        destinationTxt.setText((String) RIDE_REQUEST.get(DEST_ADD));
+                        isEditable = true;
+                    }
+                    if (RIDE_REQUEST.containsKey(SRC_ADD)
+                            && RIDE_REQUEST.containsKey(DEST_ADD)) {
+                        CURRENT_STATUS = SERVICE;
+                        changeFlow(CURRENT_STATUS);
+                        LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
+                        LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
+                        drawRoute(origin, destination);
+                        motionLayout.setTransition(R.id.tr_to_service);
+                        motionLayout.transitionToEnd();
+                    } else {
+                        CURRENT_STATUS = EMPTY;
+                        changeFlow(CURRENT_STATUS);
+                    }
                 }
             }
 
@@ -455,8 +488,8 @@ public class MainActivity extends BaseActivity implements
                 topLayout.transitionToStart();
             } else if (selectedEditText == R.id.destination) {
                 isEditable = false;
-                destinationTxt.setText(item.getDisplayName());
-                RIDE_REQUEST.put(DEST_ADD, item.getDisplayName());
+                destinationTxt.setText(item.getShortAddress());
+                RIDE_REQUEST.put(DEST_ADD, item.getShortAddress());
                 RIDE_REQUEST.put(DEST_LONG, item.getLon());
                 RIDE_REQUEST.put(DEST_LAT, item.getLat());
                 isEditable = true;
@@ -633,7 +666,21 @@ public class MainActivity extends BaseActivity implements
                 btnHomeValue.setText(home != null ? R.string.home : R.string.add_home);
                 btnWorkValue.setText(work != null ? R.string.work : R.string.add_work);
                 mProviderLocation = null;
-                polyLinePoints = null;
+                if (mapFragment != null) {
+                    mapFragment.deleteRoute();
+                }
+                mainPin.setVisibility(View.VISIBLE);
+                break;
+            case MAP:
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, findViewById(R.id.nav_view));
+                menuApp.setVisibility(View.GONE);
+                menuBack.setVisibility(View.VISIBLE);
+                mapSelectFragment = new MapSelectFragment();
+                changeFragment(mapSelectFragment);
+                if (mapFragment != null) {
+                    mapFragment.deleteRoute();
+                }
+                mainPin.setVisibility(View.VISIBLE);
                 break;
             case SERVICE:
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, findViewById(R.id.nav_view));
@@ -641,6 +688,10 @@ public class MainActivity extends BaseActivity implements
                 menuBack.setVisibility(View.VISIBLE);
                 updatePaymentEntities();
                 changeFragment(new BookRideFragment());
+                if (mapFragment != null) {
+                    mapFragment.deleteRoute();
+                }
+                mainPin.setVisibility(View.GONE);
                 break;
             case SEARCHING:
                 pickLocationLayout.setVisibility(View.GONE);
@@ -755,13 +806,6 @@ public class MainActivity extends BaseActivity implements
                                         destination = new LatLng(DATUM.getDLatitude(), DATUM.getDLongitude());
                                         break;
                                 }
-                                if (polyLinePoints == null || polyLinePoints.size() < 2)// || mPolyline == null)
-                                    drawRoute(source, destination);
-                                else {
-                                    int index = checkForReRoute(source);
-                                    if (index < 0) reRoutingDelay(source, destination);
-                                    else polyLineRerouting(source, index);
-                                }
 
                                 if (start != null) {
                                     SharedHelper.putCurrentLocation(MainActivity.this, start);
@@ -796,44 +840,14 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
-    private void polyLineRerouting(LatLng point, int index) {
-        if (index > 0) {
-            polyLinePoints.subList(0, index + 1).clear();
-            polyLinePoints.add(0, point);
-            //  mPolyline.remove();
-
-            // mPolyline = mGoogleMap.addPolyline(DirectionConverter.createPolyline
-            //         (this, polyLinePoints, 5, getResources().getColor(R.color.colorAccent)));
-
-            System.out.println("RRR mPolyline = " + polyLinePoints.size());
-        } else System.out.println("RRR mPolyline = Failed");
-    }
-
-    private int checkForReRoute(LatLng point) {
-        // if (polyLinePoints != null && polyLinePoints.size() > 0) {
-        //System.out.println("RRR indexOnEdgeOrPath = " +
-        //        new PolyUtil().indexOnEdgeOrPath(point, polyLinePoints, false, true, 100));
-        //      indexOnEdgeOrPath returns -1 if the point is outside the polyline
-        //      returns the index position if the point is inside the polyline
-        //return new PolyUtil().indexOnEdgeOrPath(point, polyLinePoints, false, true, 100);
-        // } else return -1;
-        return -1;
-    }
-
     public void drawRoute(LatLng source, LatLng destination) {
-/*        GoogleDirection
-                .withServerKey(getString(R.string.google_map_key))
-                .from(source)
-                .to(destination)
-                .transportMode(TransportMode.DRIVING)
-                .execute(this);*/
+        mainPresenter.getRoute(source.getLatitude(), source.getLongitude(), destination.getLatitude(), destination.getLongitude());
     }
 
     public void changeFragment(Fragment fragment) {
         if (isFinishing()) return;
-
         if (fragment != null) {
-            if (fragment instanceof BookRideFragment) {
+            if (fragment instanceof BookRideFragment || fragment instanceof MapSelectFragment) {
 
             } else if (fragment instanceof ServiceTypesFragment ||
                     fragment instanceof ServiceFlowFragment || fragment instanceof RateCardFragment)
@@ -860,6 +874,7 @@ public class MainActivity extends BaseActivity implements
             }
 
         } else {
+            mapSelectFragment = null;
             for (Fragment fragmentd : getSupportFragmentManager().getFragments()) {
                 if (fragmentd instanceof ServiceFlowFragment) {
                     getSupportFragmentManager().beginTransaction().remove(fragmentd).commitAllowingStateLoss();
@@ -1119,7 +1134,7 @@ public class MainActivity extends BaseActivity implements
                 CURRENT_STATUS = DATUM.getStatus();
                 changeFlow(CURRENT_STATUS);
             }
-        } else if (CURRENT_STATUS.equals(SERVICE))
+        } else if (CURRENT_STATUS.equals(SERVICE) || CURRENT_STATUS.equals(MAP))
             System.out.println("RRR CURRENT_STATUS = " + CURRENT_STATUS);
         else {
             CURRENT_STATUS = EMPTY;
@@ -1165,6 +1180,13 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void onPointError(Throwable e) {
         Log.d("gdsdg", "onEr" + e.toString());
+    }
+
+    @Override
+    public void onSuccessRoute(SearchRoute o) {
+        if (CURRENT_STATUS.equalsIgnoreCase(SERVICE) && mapFragment != null) {
+            mapFragment.showRoute(o);
+        }
     }
 
     @Override
@@ -1266,6 +1288,8 @@ public class MainActivity extends BaseActivity implements
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.on_map:
+                CURRENT_STATUS = MAP;
+                topLayout.transitionToStart();
                 break;
             case R.id.menu_app:
                 if (drawerLayout.isDrawerOpen(GravityCompat.START))
@@ -1376,14 +1400,26 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     public void onActionUp(LatLng point) {
-        isDragging = false;
-        mainPresenter.startSearch(point.getLatitude(), point.getLongitude());
+        if (CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
+            isDragging = false;
+            mainPresenter.startSearch(point.getLatitude(), point.getLongitude());
+        } else if (CURRENT_STATUS.equalsIgnoreCase(MAP)) {
+            if (mapSelectFragment != null) {
+                mapSelectFragment.onActionUp(point);
+            }
+        }
     }
 
     @Override
     public void onActionDown() {
-        isDragging = true;
-        setStartAddress(null);
+        if (CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
+            isDragging = true;
+            setStartAddress(null);
+        } else if (CURRENT_STATUS.equalsIgnoreCase(MAP)) {
+            if (mapSelectFragment != null) {
+                mapSelectFragment.onActionDown();
+            }
+        }
     }
 
     @Override

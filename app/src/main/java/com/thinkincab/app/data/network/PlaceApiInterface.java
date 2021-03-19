@@ -1,6 +1,5 @@
 package com.thinkincab.app.data.network;
 
-import com.thinkincab.app.R;
 import com.thinkincab.app.data.network.model.SearchAddress;
 
 import java.util.List;

@@ -6,6 +6,7 @@ import com.thinkincab.app.data.network.model.DataResponse;
 import com.thinkincab.app.data.network.model.Message;
 import com.thinkincab.app.data.network.model.Provider;
 import com.thinkincab.app.data.network.model.SearchAddress;
+import com.thinkincab.app.data.network.model.SearchRoute;
 import com.thinkincab.app.data.network.model.SettingsResponse;
 import com.thinkincab.app.data.network.model.User;
 
@@ -39,4 +40,6 @@ public interface MainIView extends MvpView {
     void onSuccessSearch(List<SearchAddress> o);
 
     void onSuccessPoint(SearchAddress o);
+
+    void onSuccessRoute(SearchRoute o);
 }

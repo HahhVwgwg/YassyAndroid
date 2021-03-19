@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,12 +14,17 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.android.gestures.AndroidGesturesManager;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.android.gestures.StandardScaleGestureDetector;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.LineString;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdate;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -32,13 +38,25 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.plugins.markerview.MarkerViewManager;
+import com.mapbox.mapboxsdk.style.layers.LineLayer;
+import com.mapbox.mapboxsdk.style.layers.Property;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.thinkincab.app.R;
+import com.thinkincab.app.data.network.model.SearchRoute;
 import com.thinkincab.app.ui.utils.DisplayUtils;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineCap;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineJoin;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
 
 public class MapFragment extends Fragment implements
         MapboxMap.OnMapClickListener,
@@ -51,6 +69,9 @@ public class MapFragment extends Fragment implements
         MapboxMap.OnCameraMoveListener,
         MapboxMap.OnCameraMoveStartedListener {
 
+    private final static String ROUTE_LAYER_ID = "route-layer-id";
+    private final static String ROUTE_SOURCE_ID = "route-source-id";
+
     @BindView(R.id.map_box)
     MapView mapView;
 
@@ -58,6 +79,9 @@ public class MapFragment extends Fragment implements
     protected MarkerViewManager markerViewManager;
     protected AndroidGesturesManager androidGesturesManager;
     protected LocationComponent locationComponent;
+
+    protected LineLayer routeLayer;
+    protected Style style;
 
     protected boolean isScaling = false;
     protected boolean connected = true;
@@ -205,6 +229,16 @@ public class MapFragment extends Fragment implements
     }
 
     protected void mapInit(Style style) {
+        this.style = style;
+        routeLayer = new LineLayer(ROUTE_LAYER_ID, ROUTE_SOURCE_ID);
+        routeLayer.setProperties(
+                lineCap(Property.LINE_CAP_ROUND),
+                lineJoin(Property.LINE_JOIN_ROUND),
+                lineWidth(0f),
+                lineColor(ContextCompat.getColor(requireContext(), R.color.app_orange))
+        );
+        style.addLayer(routeLayer);
+        style.addSource(new GeoJsonSource(ROUTE_SOURCE_ID, FeatureCollection.fromFeatures(new ArrayList<>())));
         if (listener != null) {
             listener.onMapReady();
         }
@@ -222,6 +256,44 @@ public class MapFragment extends Fragment implements
             return;
         }
         locationComponent.setLocationComponentEnabled(enable);
+    }
+
+    public void deleteRoute() {
+        routeLayer.setProperties(
+                lineWidth(0f)
+        );
+        GeoJsonSource s = ((GeoJsonSource) style.getSourceAs(ROUTE_SOURCE_ID));
+        if (s != null) {
+            s.setGeoJson(FeatureCollection.fromFeatures(new ArrayList<>()));
+        }
+    }
+
+    public void showRoute(SearchRoute o) {
+        routeLayer.setProperties(
+                lineWidth(3f)
+        );
+        List<Point> points = new ArrayList<>();
+        try {
+            for (List<Double> one : o.getPaths().get(0).getPoints().getCoordinates()) {
+                points.add(Point.fromLngLat(one.get(0), one.get(1)));
+            }
+        } catch (Exception e) {
+            Log.d("gdsdg", "onEr" + e.toString());
+        }
+        Feature directionsRouteFeature = Feature.fromGeometry(
+                LineString.fromLngLats(points, null)
+        );
+        FeatureCollection collection = FeatureCollection.fromFeature(directionsRouteFeature);
+        GeoJsonSource s = ((GeoJsonSource) style.getSourceAs(ROUTE_SOURCE_ID));
+        if (points.size() > 2) {
+            if (s != null) {
+                s.setGeoJson(collection);
+            }
+        } else {
+            if (s != null) {
+                s.setGeoJson(FeatureCollection.fromFeatures(new ArrayList<>()));
+            }
+        }
     }
 
     // map
