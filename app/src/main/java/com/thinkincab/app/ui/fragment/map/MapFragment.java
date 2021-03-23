@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -29,6 +30,7 @@ import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdate;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.location.LocationComponent;
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
 import com.mapbox.mapboxsdk.location.LocationComponentOptions;
@@ -40,6 +42,8 @@ import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.plugins.markerview.MarkerViewManager;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.Property;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.thinkincab.app.R;
 import com.thinkincab.app.data.network.model.SearchRoute;
@@ -57,6 +61,11 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineCap;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineJoin;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
+import static com.thinkincab.app.MvpApplication.RIDE_REQUEST;
+import static com.thinkincab.app.common.Constants.RIDE_REQUEST.DEST_LAT;
+import static com.thinkincab.app.common.Constants.RIDE_REQUEST.DEST_LONG;
+import static com.thinkincab.app.common.Constants.RIDE_REQUEST.SRC_LAT;
+import static com.thinkincab.app.common.Constants.RIDE_REQUEST.SRC_LONG;
 
 public class MapFragment extends Fragment implements
         MapboxMap.OnMapClickListener,
@@ -71,6 +80,10 @@ public class MapFragment extends Fragment implements
 
     private final static String ROUTE_LAYER_ID = "route-layer-id";
     private final static String ROUTE_SOURCE_ID = "route-source-id";
+    private final static String POINT_1_LAYER_ID = "point-1-layer-id";
+    private final static String POINT_1_SOURCE_ID = "point-1-source-id";
+    private final static String POINT_2_LAYER_ID = "point-2-layer-id";
+    private final static String POINT_2_SOURCE_ID = "point-2-source-id";
 
     @BindView(R.id.map_box)
     MapView mapView;
@@ -82,6 +95,10 @@ public class MapFragment extends Fragment implements
 
     protected LineLayer routeLayer;
     protected Style style;
+    protected SymbolLayer pointLayer1;
+    protected GeoJsonSource pointSource1;
+    protected SymbolLayer pointLayer2;
+    protected GeoJsonSource pointSource2;
 
     protected boolean isScaling = false;
     protected boolean connected = true;
@@ -126,7 +143,7 @@ public class MapFragment extends Fragment implements
                                 0.0,
                                 0.0,
                                 0.0,
-                                DisplayUtils.dpToPx(0) // current padding
+                                listener.getMapPadding()
                         )
                         .zoom(15)
                         .build()));
@@ -230,6 +247,46 @@ public class MapFragment extends Fragment implements
 
     protected void mapInit(Style style) {
         this.style = style;
+        Drawable start = ContextCompat.getDrawable(requireContext(), R.drawable.ic_start_pin);
+        if (start != null) {
+            style.addImage(("marker-icon-point-1"), start);
+        }
+        Drawable end = ContextCompat.getDrawable(requireContext(), R.drawable.ic_finish_pin);
+        if (end != null) {
+            style.addImage(("marker-icon-point-2"), end);
+        }
+        pointSource1 = new GeoJsonSource(
+                POINT_1_SOURCE_ID,
+                Feature.fromGeometry(
+                        Point.fromLngLat(0.0, 0.0),
+                        null,
+                        "point-1"
+                )
+        );
+        pointSource2 = new GeoJsonSource(
+                POINT_2_SOURCE_ID,
+                Feature.fromGeometry(
+                        Point.fromLngLat(0.0, 0.0),
+                        null,
+                        "point-2"
+                )
+        );
+        pointLayer1 = new SymbolLayer(POINT_1_LAYER_ID, POINT_1_SOURCE_ID)
+                .withProperties(
+                        PropertyFactory.iconImage("marker-icon-point-1"),
+                        PropertyFactory.iconOpacity(0.0f),
+                        PropertyFactory.iconIgnorePlacement(true),
+                        PropertyFactory.iconAllowOverlap(true)
+                );
+        pointLayer2 = new SymbolLayer(POINT_2_LAYER_ID, POINT_2_SOURCE_ID)
+                .withProperties(
+                        PropertyFactory.iconImage("marker-icon-point-2"),
+                        PropertyFactory.iconOpacity(0.0f),
+                        PropertyFactory.iconIgnorePlacement(true),
+                        PropertyFactory.iconAllowOverlap(true)
+                );
+        style.addSource(pointSource1);
+        style.addSource(pointSource2);
         routeLayer = new LineLayer(ROUTE_LAYER_ID, ROUTE_SOURCE_ID);
         routeLayer.setProperties(
                 lineCap(Property.LINE_CAP_ROUND),
@@ -239,9 +296,12 @@ public class MapFragment extends Fragment implements
         );
         style.addLayer(routeLayer);
         style.addSource(new GeoJsonSource(ROUTE_SOURCE_ID, FeatureCollection.fromFeatures(new ArrayList<>())));
+        style.addLayerAbove(pointLayer1, ROUTE_LAYER_ID);
+        style.addLayerAbove(pointLayer2, ROUTE_LAYER_ID);
         if (listener != null) {
             listener.onMapReady();
         }
+
     }
 
     public void animateCamera(@NonNull CameraUpdate update) {
@@ -262,29 +322,57 @@ public class MapFragment extends Fragment implements
         routeLayer.setProperties(
                 lineWidth(0f)
         );
-        GeoJsonSource s = ((GeoJsonSource) style.getSourceAs(ROUTE_SOURCE_ID));
+        GeoJsonSource s = style.getSourceAs(ROUTE_SOURCE_ID);
         if (s != null) {
             s.setGeoJson(FeatureCollection.fromFeatures(new ArrayList<>()));
         }
+        pointLayer1.setProperties(
+                PropertyFactory.iconOpacity(0f)
+        );
+        pointLayer2.setProperties(
+                PropertyFactory.iconOpacity(0f)
+        );
+        pointSource1.setGeoJson(
+                Point.fromLngLat(0.0, 0.0)
+        );
+        pointSource2.setGeoJson(
+                Point.fromLngLat(0.0, 0.0)
+        );
     }
 
     public void showRoute(SearchRoute o) {
         routeLayer.setProperties(
                 lineWidth(3f)
         );
+        pointLayer1.setProperties(
+                PropertyFactory.iconOpacity(1f)
+        );
+        pointLayer2.setProperties(
+                PropertyFactory.iconOpacity(1f)
+        );
+        LatLng origin = null;
+        LatLng destination = null;
+        try {
+            //noinspection ConstantConditions
+            origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
+            //noinspection ConstantConditions
+            destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         List<Point> points = new ArrayList<>();
         try {
             for (List<Double> one : o.getPaths().get(0).getPoints().getCoordinates()) {
                 points.add(Point.fromLngLat(one.get(0), one.get(1)));
             }
         } catch (Exception e) {
-            Log.d("gdsdg", "onEr" + e.toString());
+            Log.d("MapFragment", "onEr" + e.toString());
         }
         Feature directionsRouteFeature = Feature.fromGeometry(
                 LineString.fromLngLats(points, null)
         );
         FeatureCollection collection = FeatureCollection.fromFeature(directionsRouteFeature);
-        GeoJsonSource s = ((GeoJsonSource) style.getSourceAs(ROUTE_SOURCE_ID));
+        GeoJsonSource s = style.getSourceAs(ROUTE_SOURCE_ID);
         if (points.size() > 2) {
             if (s != null) {
                 s.setGeoJson(collection);
@@ -294,6 +382,30 @@ public class MapFragment extends Fragment implements
                 s.setGeoJson(FeatureCollection.fromFeatures(new ArrayList<>()));
             }
         }
+        LatLngBounds.Builder latLngBounds = new LatLngBounds.Builder();
+        if (origin != null) {
+            pointSource1.setGeoJson(
+                    Point.fromLngLat(origin.getLongitude(), origin.getLatitude())
+            );
+            latLngBounds.include(origin);
+        }
+        if (destination != null) {
+            pointSource2.setGeoJson(
+                    Point.fromLngLat(destination.getLongitude(), destination.getLatitude())
+            );
+            latLngBounds.include(destination);
+        }
+        for (Point point : points) {
+            latLngBounds.include(new LatLng(point.latitude(), point.longitude()));
+        }
+        LatLngBounds llb = latLngBounds.build();
+        mapView.post(() -> mapBoxMap.animateCamera(CameraUpdateFactory.newLatLngBounds(
+                llb,
+                DisplayUtils.dpToPx(24),
+                DisplayUtils.dpToPx(48),
+                DisplayUtils.dpToPx(24),
+                DisplayUtils.dpToPx(24)
+        )));
     }
 
     // map

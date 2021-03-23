@@ -479,7 +479,7 @@ public class MainActivity extends BaseActivity implements
                                     0.0,
                                     0.0,
                                     0.0,
-                                    DisplayUtils.dpToPx(0) // current padding
+                                    getActualPadding()
                             )
                             .zoom(DEFAULT_ZOOM)
                             .build()));
@@ -931,7 +931,7 @@ public class MainActivity extends BaseActivity implements
                                         0.0,
                                         0.0,
                                         0.0,
-                                        DisplayUtils.dpToPx(0) // current padding
+                                        getActualPadding()
                                 )
                                 .zoom(DEFAULT_ZOOM)
                                 .build()));
@@ -951,7 +951,7 @@ public class MainActivity extends BaseActivity implements
                                     0.0,
                                     0.0,
                                     0.0,
-                                    DisplayUtils.dpToPx(0) // current padding
+                                    getActualPadding()
                             )
                             .zoom(DEFAULT_ZOOM)
                             .build()));
@@ -1046,6 +1046,15 @@ public class MainActivity extends BaseActivity implements
                     bestLocation = l;
             }
         return bestLocation;
+    }
+
+    private int getActualPadding() {
+        switch (CURRENT_STATUS) {
+            case SERVICE:
+                return DisplayUtils.dpToPx(200); // TODO
+            default:
+                return 0;
+        }
     }
 
     private void addAllProviders(List<Provider> providers) {
@@ -1331,7 +1340,7 @@ public class MainActivity extends BaseActivity implements
                                         0.0,
                                         0.0,
                                         0.0,
-                                        DisplayUtils.dpToPx(0) // current padding
+                                        getActualPadding()
                                 )
                                 .zoom(DEFAULT_ZOOM)
                                 .build()));
@@ -1429,6 +1438,6 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     public int getMapPadding() {
-        return DisplayUtils.dpToPx(0); // current padding;
+        return getActualPadding();
     }
 }
