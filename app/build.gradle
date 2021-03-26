@@ -29,7 +29,7 @@ android {
         resValue "string", "default_notification_channel_id", "fcm_default_channel"
 
         //Demo credentials
-        buildConfigField "String", "BASE_URL", '"https://yassy.taxi/"'
+        buildConfigField "String", "BASE_URL", '"https://my.yassy.taxi/"'
         buildConfigField "String", "BASE_IMAGE_URL", '"https://yassy.taxi/storage/"'
         buildConfigField "String", "TERMS_CONDITIONS", '"https://yassy.taxi/privacy"'
         buildConfigField "String", "SITE_URL", '"https://yassy.taxi/"'

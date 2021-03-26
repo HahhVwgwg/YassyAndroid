@@ -43,11 +43,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 import com.hold1.keyboardheightprovider.KeyboardHeightProvider;
@@ -61,12 +58,10 @@ import com.thinkincab.app.R;
 import com.thinkincab.app.base.BaseActivity;
 import com.thinkincab.app.chat.ChatActivity;
 import com.thinkincab.app.common.Constants;
-import com.thinkincab.app.common.InfoWindowData;
 import com.thinkincab.app.common.LocaleHelper;
 import com.thinkincab.app.data.SharedHelper;
 import com.thinkincab.app.data.network.model.AddressResponse;
 import com.thinkincab.app.data.network.model.DataResponse;
-import com.thinkincab.app.data.network.model.LatLngFireBaseDB;
 import com.thinkincab.app.data.network.model.MenuDrawer;
 import com.thinkincab.app.data.network.model.Message;
 import com.thinkincab.app.data.network.model.Provider;
@@ -147,6 +142,7 @@ public class MainActivity extends BaseActivity implements
         IMapView,
         DrawerMenuListener {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     private static String CURRENT_STATUS = EMPTY;
     private final MainPresenter<MainActivity> mainPresenter = new MainPresenter<>();
 
@@ -207,14 +203,10 @@ public class MainActivity extends BaseActivity implements
     private MapFragment mapFragment;
     private DatabaseReference mProviderLocation;
 
-    private InfoWindowData destinationLeg;
-
     private boolean isDoubleBackPressed = false;
     private boolean isLocationPermissionGranted;
-    private boolean canReRoute = true, canCarAnim = true;
     private int getProviderHitCheck;
 
-    private LatLng start = null, end = null;
     private Location mLastKnownLocation;
 
     private DataResponse checkStatusResponse = new DataResponse();
@@ -228,13 +220,10 @@ public class MainActivity extends BaseActivity implements
 
     private MapSelectFragment mapSelectFragment;
 
-    private int countRequest = 0;
-
     private int selectedEditText;
 
     private final TextWatcher filterTextWatcher = new TextWatcher() {
 
-        private boolean userIsTyping;
 
         public void afterTextChanged(Editable editable) {
             eraseSrc.setVisibility(sourceTxt.hasFocus() && editable.length() > 0 ? View.VISIBLE : View.INVISIBLE);
@@ -243,11 +232,11 @@ public class MainActivity extends BaseActivity implements
         }
 
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            userIsTyping = after > count;
+
         }
 
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            userIsTyping = before < count;
+
         }
 
     };
@@ -288,7 +277,6 @@ public class MainActivity extends BaseActivity implements
             }
         }
     };
-    private LatLngBounds.Builder builder;
 
     @Override
     public int getLayoutId() {
@@ -311,7 +299,6 @@ public class MainActivity extends BaseActivity implements
         drawerFragment = (DrawerFragment) getSupportFragmentManager().findFragmentById(R.id.drawer);
 
         registerReceiver(myReceiver, new IntentFilter(INTENT_FILTER));
-        builder = new LatLngBounds.Builder();
 
         mainPresenter.attachView(this);
 
@@ -592,7 +579,7 @@ public class MainActivity extends BaseActivity implements
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         isLocationPermissionGranted = false;
         if (requestCode == REQUEST_ACCESS_FINE_LOCATION)
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -661,7 +648,6 @@ public class MainActivity extends BaseActivity implements
                 //  mGoogleMap.clear();
                 // providersMarker.clear();
                 hideLoading();
-                addAllProviders(SharedHelper.getProviders(this));
                 changeFragment(null);
                 btnHomeValue.setText(home != null ? R.string.home : R.string.add_home);
                 btnWorkValue.setText(work != null ? R.string.work : R.string.add_work);
@@ -686,7 +672,7 @@ public class MainActivity extends BaseActivity implements
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, findViewById(R.id.nav_view));
                 menuApp.setVisibility(View.GONE);
                 menuBack.setVisibility(View.VISIBLE);
-                updatePaymentEntities();
+                //updatePaymentEntities();
                 changeFragment(new BookRideFragment());
                 if (mapFragment != null) {
                     mapFragment.deleteRoute();
@@ -776,70 +762,6 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
-    private void updateDriverNavigation() {
-        System.out.println("RRR called : updateDriverNavigation :: ");
-        if (mProviderLocation != null)
-            mProviderLocation.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    try {
-                        LatLngFireBaseDB fbData = dataSnapshot.getValue(LatLngFireBaseDB.class);
-                        assert fbData != null;
-                        double lat = fbData.getLat();
-                        double lng = fbData.getLng();
-
-                        System.out.println("RRR Lat FIREBASE: " + lat + " Lng: " + lng);
-
-                        if (lat != 0.00 && lng != 0.00) {
-                            if (STARTED.equalsIgnoreCase(CURRENT_STATUS) ||
-                                    ARRIVED.equalsIgnoreCase(CURRENT_STATUS) ||
-                                    PICKED_UP.equalsIgnoreCase(CURRENT_STATUS)) {
-                                LatLng source = null, destination = null;
-                                switch (CURRENT_STATUS) {
-                                    case STARTED:
-                                        source = new LatLng(lat, lng);
-                                        destination = new LatLng(DATUM.getSLatitude(), DATUM.getSLongitude());
-                                        break;
-                                    case ARRIVED:
-                                    case PICKED_UP:
-                                        source = new LatLng(lat, lng);
-                                        destination = new LatLng(DATUM.getDLatitude(), DATUM.getDLongitude());
-                                        break;
-                                }
-
-                                if (start != null) {
-                                    SharedHelper.putCurrentLocation(MainActivity.this, start);
-                                    end = start;
-                                }
-                                start = source;
-                                if (end != null && canCarAnim) {
-                                    if (start != null) {
-                                        System.out.println("CAR ANIM ===>>");
-                                        //   carAnim(srcMarker, end, start);
-                                    }
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError error) {
-                    Log.w("RRR ", "Failed to read value.", error.toException());
-                }
-            });
-    }
-
-    private void reRoutingDelay(LatLng source, LatLng destination) {
-        if (canReRoute) {
-            canReRoute = !canReRoute;
-            drawRoute(source, destination);
-            new Handler().postDelayed(() -> canReRoute = true, 8000);
-        }
-    }
-
     public void drawRoute(LatLng source, LatLng destination) {
         mainPresenter.getRoute(source.getLatitude(), source.getLongitude(), destination.getLatitude(), destination.getLongitude());
     }
@@ -887,7 +809,13 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
-    void dismissDialog(String tag) {
+    public void showTime(String time) {
+        if (CURRENT_STATUS.equalsIgnoreCase(SERVICE) && mapFragment != null) {
+            mapFragment.showTime(time);
+        }
+    }
+
+    private void dismissDialog(String tag) {
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment instanceof SearchingFragment) {
             SearchingFragment df = (SearchingFragment) fragment;
@@ -898,7 +826,7 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
-    void getDeviceLocation() {
+    private void getDeviceLocation() {
         try {
             if (isLocationPermissionGranted) {
                 Task<Location> locationResult = mFusedLocation.getLastLocation();
@@ -1051,83 +979,10 @@ public class MainActivity extends BaseActivity implements
     private int getActualPadding() {
         switch (CURRENT_STATUS) {
             case SERVICE:
-                return DisplayUtils.dpToPx(200); // TODO
+                return DisplayUtils.dpToPx(420); // TODO
             default:
                 return 0;
         }
-    }
-
-    private void addAllProviders(List<Provider> providers) {
-       /* if (providers != null) for (Provider provider : providers)
-            if (providersMarker.get(provider.getId()) != null) {
-                Marker marker = providersMarker.get(provider.getId());
-                LatLng startPos = marker.getPosition();
-                LatLng endPos = new LatLng(provider.getLatitude(), provider.getLongitude());
-                marker.setPosition(endPos);
-                carAnim(marker, startPos, endPos);
-            } else {
-                int serviceIcon;
-                if (provider.getProviderService().getServiceTypeId() == serviceMototaxiID) {
-                    serviceIcon = R.drawable.car_icon_11;
-                } else if (provider.getProviderService().getServiceTypeId() == serviceMotoboyID) {
-                    serviceIcon = R.drawable.car_icon_11;
-                } else {
-                    serviceIcon = R.drawable.car_icon_11;
-                }
-
-                new TheTask(provider.getId(), provider.getLatitude(), provider.getLongitude(), provider.getFirstName(), "", MvpApplication.marker).execute();
-
-                MarkerOptions markerOptions = new MarkerOptions()
-                        .anchor(0.5f, 0.5f)
-                        .position(new LatLng(provider.getLatitude(), provider.getLongitude()))
-                        .rotation(0.0f)
-                        .snippet("" + provider.getId())
-                        .icon(BitmapDescriptorFactory.fromResource(serviceIcon));
-                providersMarker.put(provider.getId(), mGoogleMap.addMarker(markerOptions));
-            }*/
-    }
-
-    public void addSpecificProviders(List<Provider> providers, String key) {
-       /* if (providers != null) {
-            Bitmap b;
-            BitmapDescriptor bd;
-            try {
-                b = Bitmap.createScaledBitmap(decodeBase64(SharedHelper.getKey
-                        (this, key)), 60, 60, false);
-                bd = BitmapDescriptorFactory.fromBitmap(b);
-            } catch (Exception e) {
-
-                bd = BitmapDescriptorFactory.fromResource(R.drawable.car_icon_11);
-                e.printStackTrace();
-            }
-           *//* Iterator<Map.Entry<Integer, Marker>> it = providersMarker.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<Integer, Marker> pair = it.next();
-                Marker marker = providersMarker.get(pair.getKey());
-                marker.remove();
-                it.remove();
-            }*//*
-            for (Provider provider : providers) {
-
-                int serviceIcon;
-                if (provider.getProviderService().getServiceTypeId() == serviceMototaxiID) {
-                    serviceIcon = R.drawable.car_icon_11;
-                } else if (provider.getProviderService().getServiceTypeId() == serviceMotoboyID) {
-                    serviceIcon = R.drawable.car_icon_11;
-                } else {
-                    serviceIcon = R.drawable.car_icon_11;
-                }
-
-                new TheTask(provider.getId(), provider.getLatitude(), provider.getLongitude(), provider.getFirstName(), "", MvpApplication.marker).execute();
-               *//* MarkerOptions markerOptions = new MarkerOptions()
-                        .anchor(0.5f, 0.5f)
-                        .position(new LatLng(provider.getLatitude(), provider.getLongitude()))
-                        .rotation(0.0f)
-                        .snippet("" + provider.getId())
-                        .icon(BitmapDescriptorFactory.fromResource(serviceIcon));
-                providersMarker.put(provider.getId(), mGoogleMap.addMarker(markerOptions));*//*
-            }
-        }*/
     }
 
     // presenter
@@ -1156,7 +1011,7 @@ public class MainActivity extends BaseActivity implements
             if (mProviderLocation == null) {
                 mProviderLocation = FirebaseDatabase.getInstance().getReference()
                         .child("loc_p_" + DATUM.getProvider().getId());
-                updateDriverNavigation();
+                //updateDriverNavigation();
             }
 
         if (canGoToChatScreen) {
@@ -1188,11 +1043,19 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     public void onPointError(Throwable e) {
-        Log.d("gdsdg", "onEr" + e.toString());
+        Log.d(TAG, "onEr" + e.toString());
+    }
+
+    @Override
+    public void onRouteError(Throwable e) {
+        if (CURRENT_STATUS.equalsIgnoreCase(SERVICE) && mapFragment != null) {
+            mapFragment.showRoute(null);
+        }
     }
 
     @Override
     public void onSuccessRoute(SearchRoute o) {
+        Log.d(TAG, "onSuccessRoute" + o.getPaths().size());
         if (CURRENT_STATUS.equalsIgnoreCase(SERVICE) && mapFragment != null) {
             mapFragment.showRoute(o);
         }

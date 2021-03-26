@@ -25,6 +25,7 @@ import com.thinkincab.app.data.network.model.Rental;
 import com.thinkincab.app.data.network.model.SearchRoute;
 import com.thinkincab.app.data.network.model.Service;
 import com.thinkincab.app.data.network.model.SettingsResponse;
+import com.thinkincab.app.data.network.model.Tariffs;
 import com.thinkincab.app.data.network.model.Token;
 import com.thinkincab.app.data.network.model.TokenOtp;
 import com.thinkincab.app.data.network.model.User;
@@ -125,8 +126,8 @@ public interface ApiInterface {
     @GET("api/user/rental/logic")
     Observable<List<Rental>> rentals();
 
-    @GET("api/user/estimated/fare")
-    Call<EstimateFare> estimateFare(@QueryMap Map<String, Object> params);
+    @GET("api/user/calculate")
+    Call<Tariffs> estimateFare(@QueryMap Map<String, Object> params);
 
     @GET("api/user/estimated/fare")
     Observable<EstimateFare> estimateFare2(@QueryMap Map<String, Object> params);
@@ -273,7 +274,8 @@ public interface ApiInterface {
     Observable<CheckSumData> payuMoneyChecksum();
 
     @GET("ajax/graphhopper.php")
-    Observable<SearchRoute> doRoute(@Query(value = "from_coord", encoded = true) String from,
+    Observable<SearchRoute> doRoute(@Query(value = "q", encoded = true) String q,
+                                    @Query(value = "from_coord", encoded = true) String from,
                                     @Query(value = "to_coord", encoded = true) String to);
 
    // @FormUrlEncoded

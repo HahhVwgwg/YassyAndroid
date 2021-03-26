@@ -15,6 +15,9 @@ public class MainPresenter<V extends MainIView> extends BasePresenter<V> impleme
 
     public final static Map<String, SearchAddress> GEO_CACHE = new HashMap<>();
 
+    private boolean enableProviders;
+    private boolean enableCheckStatus;
+
     @Override
     public void getUserInfo() {
         getCompositeDisposable().add(APIClient
@@ -39,12 +42,14 @@ public class MainPresenter<V extends MainIView> extends BasePresenter<V> impleme
 
     @Override
     public void checkStatus() {
-        getCompositeDisposable().add(APIClient
-                .getAPIClient()
-                .checkStatus()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(getMvpView()::onSuccess, getMvpView()::onError));
+        if (enableCheckStatus) {
+            getCompositeDisposable().add(APIClient
+                    .getAPIClient()
+                    .checkStatus()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(getMvpView()::onSuccess, getMvpView()::onError));
+        }
     }
 
     @Override
@@ -59,12 +64,14 @@ public class MainPresenter<V extends MainIView> extends BasePresenter<V> impleme
 
     @Override
     public void getProviders(HashMap<String, Object> params) {
-        getCompositeDisposable().add(APIClient
-                .getAPIClient()
-                .providers(params)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(getMvpView()::onSuccess, getMvpView()::onError));
+        if (enableProviders) {
+            getCompositeDisposable().add(APIClient
+                    .getAPIClient()
+                    .providers(params)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(getMvpView()::onSuccess, getMvpView()::onError));
+        }
     }
 
     @Override
@@ -120,12 +127,12 @@ public class MainPresenter<V extends MainIView> extends BasePresenter<V> impleme
     public void getRoute(double lat, double lon, double finishLat, double finishLon) {
         getCompositeDisposable().add(APIClient
                 .getAPIClient()
-                .doRoute(lat + "," + lon, finishLat + "," + finishLon)
+                .doRoute("frontend", lat + "," + lon, finishLat + "," + finishLon)
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(r -> {
                     getMvpView().onSuccessRoute(r);
-                }, getMvpView()::onPointError));
+                }, getMvpView()::onRouteError));
     }
 
     @Override

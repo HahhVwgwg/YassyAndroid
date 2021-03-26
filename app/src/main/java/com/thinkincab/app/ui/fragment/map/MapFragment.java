@@ -340,7 +340,7 @@ public class MapFragment extends Fragment implements
         );
     }
 
-    public void showRoute(SearchRoute o) {
+    public void showRoute(@Nullable SearchRoute o) {
         routeLayer.setProperties(
                 lineWidth(3f)
         );
@@ -365,6 +365,10 @@ public class MapFragment extends Fragment implements
             for (List<Double> one : o.getPaths().get(0).getPoints().getCoordinates()) {
                 points.add(Point.fromLngLat(one.get(0), one.get(1)));
             }
+            List<Double> one = o.getPaths().get(0).getPoints().getCoordinates().get(0);
+            List<Double> two = o.getPaths().get(0).getPoints().getCoordinates().get(o.getPaths().get(0).getPoints().getCoordinates().size() - 1);
+            origin = new LatLng(one.get(1), one.get(0));
+            destination = new LatLng(two.get(1), two.get(0));
         } catch (Exception e) {
             Log.d("MapFragment", "onEr" + e.toString());
         }
@@ -401,11 +405,15 @@ public class MapFragment extends Fragment implements
         LatLngBounds llb = latLngBounds.build();
         mapView.post(() -> mapBoxMap.animateCamera(CameraUpdateFactory.newLatLngBounds(
                 llb,
-                DisplayUtils.dpToPx(24),
-                DisplayUtils.dpToPx(48),
-                DisplayUtils.dpToPx(24),
-                DisplayUtils.dpToPx(24)
+                DisplayUtils.dpToPx(36),
+                DisplayUtils.dpToPx(80),
+                DisplayUtils.dpToPx(36),
+                DisplayUtils.dpToPx(80) + ((listener != null) ? listener.getMapPadding() : 0)
         )));
+    }
+
+    public void showTime(String time) {
+        // todo
     }
 
     // map

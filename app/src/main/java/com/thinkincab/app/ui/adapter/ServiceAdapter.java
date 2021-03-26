@@ -1,7 +1,6 @@
 package com.thinkincab.app.ui.adapter;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -9,63 +8,44 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
 import com.thinkincab.app.R;
-import com.thinkincab.app.common.Constants;
-import com.thinkincab.app.data.SharedHelper;
-import com.thinkincab.app.data.network.model.EstimateFare;
 import com.thinkincab.app.data.network.model.Service;
-import com.thinkincab.app.ui.fragment.RateCardFragment;
+import com.thinkincab.app.data.network.model.Tariffs;
 import com.thinkincab.app.ui.fragment.service.ServiceTypesFragment;
 
 import java.util.List;
 
+import static com.thinkincab.app.MvpApplication.RIDE_REQUEST;
+import static com.thinkincab.app.common.Constants.RIDE_REQUEST.SERVICE_TYPE;
+
 public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHolder> {
 
-    private List<Service> list;
-    private TextView capacity;
-    private Context context;
+    private final List<Service> list;
     private int lastCheckedPos = 0;
-    private Animation zoomIn;
-    private ServiceTypesFragment.ServiceListener mListener;
-    private EstimateFare estimateFare;
-    private boolean canNotifyDataSetChanged = true;
+    private final ServiceTypesFragment.ServiceListener mListener;
+    private Tariffs estimateFare;
     private int itemWidth;
 
-    public ServiceAdapter(Context context, List<Service> list,
-                          ServiceTypesFragment.ServiceListener listener,
-                          TextView capacity, EstimateFare fare) {
-        this.context = context;
+    public ServiceAdapter(List<Service> list, ServiceTypesFragment.ServiceListener listener, Tariffs fare) {
         this.list = list;
-        this.capacity = capacity;
         this.mListener = listener;
         this.estimateFare = fare;
-        zoomIn = AnimationUtils.loadAnimation(this.context, R.anim.zoom_in_animation);
-        zoomIn.setFillAfter(true);
     }
 
-    public ServiceAdapter(Context context, List<Service> list,
+    public ServiceAdapter(List<Service> list,
                           ServiceTypesFragment.ServiceListener listener,
-                          TextView capacity, EstimateFare fare, int itemWidth) {
-        this.context = context;
+                          Tariffs fare, int itemWidth) {
         this.list = list;
-        this.capacity = capacity;
         this.mListener = listener;
         this.estimateFare = fare;
         this.itemWidth = itemWidth;
-        zoomIn = AnimationUtils.loadAnimation(this.context, R.anim.zoom_in_animation);
-        zoomIn.setFillAfter(true);
     }
 
-    public void setEstimateFare(EstimateFare estimateFare) {
+    public void setEstimateFare(Tariffs estimateFare) {
         this.estimateFare = estimateFare;
-        canNotifyDataSetChanged = true;
         notifyDataSetChanged();
     }
 
@@ -88,47 +68,23 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHo
             holder.serviceName.setText(obj.getName());
         if (estimateFare != null) {
             holder.price.setVisibility(View.VISIBLE);
-            if (SharedHelper.getKey(context, "measurementType").equalsIgnoreCase(Constants.MeasurementType.KM)) {
-                if (estimateFare.getDistance() > 1 || estimateFare.getDistance() > 1.0) {
-                    holder.price.setText(estimateFare.getDistance() + " " + context.getString(R.string.kms));
-                } else {
-                    holder.price.setText(estimateFare.getDistance() + " " + context.getString(R.string.km));
-                }
-            } else {
-                if (estimateFare.getDistance() > 1 || estimateFare.getDistance() > 1.0) {
-                    holder.price.setText(estimateFare.getDistance() + " " + context.getString(R.string.miles));
-                } else {
-                    holder.price.setText(estimateFare.getDistance() + " " + context.getString(R.string.mile));
-                }
-            }
         }
 
-        if (position == lastCheckedPos && canNotifyDataSetChanged) {
-            canNotifyDataSetChanged = true;
-            if (capacity != null) {
-                capacity.setText(String.valueOf(obj.getCapacity()));
-            }
-            holder.serviceName.setTextColor(context.getResources().getColor(R.color.text_black));
+        if (position == lastCheckedPos) {
+            holder.serviceName.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.text_black));
             holder.itemView.setElevation(24f);
             holder.itemView.setBackgroundResource(R.drawable.service_bg_active);
             holder.itemView.setAlpha(1);
-
-            if (estimateFare != null) {
-                if (SharedHelper.getKey(context, "measurementType").equalsIgnoreCase(Constants.MeasurementType.KM)) {
-                    if (estimateFare.getDistance() > 1 || estimateFare.getDistance() > 1.0)
-                        holder.price.setText(estimateFare.getDistance() + " " + context.getString(R.string.kms));
-                    else
-                        holder.price.setText(estimateFare.getDistance() + " " + context.getString(R.string.km));
-                } else {
-                    if (estimateFare.getDistance() > 1 || estimateFare.getDistance() > 1.0)
-                        holder.price.setText(estimateFare.getDistance() + " " + context.getString(R.string.miles));
-                    else
-                        holder.price.setText(estimateFare.getDistance() + " " + context.getString(R.string.mile));
+            if (obj !=  null && estimateFare != null && estimateFare.getType() != null) {
+                for (Tariffs.TariffType type : estimateFare.getType()) {
+                    if (type.getServiceType() == obj.getId()) {
+                        holder.price.setText(holder.itemView.getContext().getString(R.string.sum_template, type.getEstimatedFare()));
+                    }
                 }
 
             }
         } else {
-            holder.serviceName.setTextColor(context.getResources().getColor(R.color.text_service_grey));
+            holder.serviceName.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.text_service_grey));
             holder.itemView.setBackgroundResource(R.drawable.service_bg_inactive);
             holder.itemView.setElevation(0f);
             holder.itemView.setAlpha((float) 0.5);
@@ -139,11 +95,12 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHo
             if (object != null) {
                 if (view.getId() == R.id.item_view) {
                     if (lastCheckedPos == position) {
-                        RateCardFragment.SERVICE = object;
-                        //((MainActivity) context).changeFragment(new RateCardFragment());
+                        mListener.whenClicked(position);
+                    } else {
+                        lastCheckedPos = position;
+                        RIDE_REQUEST.put(SERVICE_TYPE, object.getId());
+                        notifyDataSetChanged();
                     }
-                    lastCheckedPos = position;
-                    notifyDataSetChanged();
                 }
             }
         });

@@ -35,6 +35,8 @@ public interface MainIView extends MvpView {
 
     void onPointError(Throwable e);
 
+    void onRouteError(Throwable e);
+
     void onSuccess(SettingsResponse response);
 
     void onSuccessSearch(List<SearchAddress> o);

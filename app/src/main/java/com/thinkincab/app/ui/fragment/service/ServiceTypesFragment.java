@@ -30,6 +30,7 @@ import com.thinkincab.app.data.network.APIClient;
 import com.thinkincab.app.data.network.model.EstimateFare;
 import com.thinkincab.app.data.network.model.Provider;
 import com.thinkincab.app.data.network.model.Service;
+import com.thinkincab.app.data.network.model.Tariffs;
 import com.thinkincab.app.ui.activity.main.MainActivity;
 import com.thinkincab.app.ui.activity.payment.PaymentActivity;
 import com.thinkincab.app.ui.adapter.ServiceAdapter;
@@ -109,7 +110,6 @@ public class ServiceTypesFragment extends BaseFragment implements ServiceTypesIV
             if (provider.getProviderService().getServiceTypeId() == mServices.get(pos).getId())
                 providers.add(provider);
 
-        ((MainActivity) getActivity()).addSpecificProviders(providers, key);
 
     };
 
@@ -162,73 +162,7 @@ public class ServiceTypesFragment extends BaseFragment implements ServiceTypesIV
     }
 
     private void estimatedApiCall() {
-        Call<EstimateFare> call = APIClient.getAPIClient().estimateFare(RIDE_REQUEST);
-        call.enqueue(new Callback<EstimateFare>() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onResponse(@NonNull Call<EstimateFare> call,
-                                   @NonNull Response<EstimateFare> response) {
-                if (ServiceTypesFragment.this.isVisible()) {
-                   customDialog.dismiss();
-                    if (response.body() != null) {
-                        EstimateFare estimateFare = response.body();
 
-                        RateCardFragment.SERVICE = estimateFare.getService();
-                        mEstimateFare = estimateFare;
-                        surge = estimateFare.getSurge();
-                        walletAmount = estimateFare.getWalletBalance();
-                        if (getContext() != null)
-                            putKey(getContext(), "wallet", String.valueOf(estimateFare.getWalletBalance()));
-                        if (walletAmount == 0) walletBalance.setVisibility(View.GONE);
-                        else {
-                            walletBalance.setVisibility(View.VISIBLE);
-                            Double d = Double.parseDouble(String.valueOf(String.valueOf(walletAmount)));
-                            int i = d.intValue();
-                            walletBalance.setText(SharedHelper.getKey(getContext(), "currency") + " " +(i));
-                        }
-                        if (surge == 0) {
-                            surgeValue.setVisibility(View.GONE);
-                            tvDemand.setVisibility(View.GONE);
-                        } else {
-                            surgeValue.setVisibility(View.VISIBLE);
-                            surgeValue.setText(estimateFare.getSurgeValue());
-                            tvDemand.setVisibility(View.VISIBLE);
-                        }
-                        if (isFromAdapter) {
-                            mServices.get(servicePos).setEstimatedTime(estimateFare.getTime());
-                            RIDE_REQUEST.put(DISTANCE_VAL, estimateFare.getDistance());
-                            adapter.setEstimateFare(mEstimateFare);
-                            adapter.notifyDataSetChanged();
-                            if (mServices.isEmpty()) errorLayout.setVisibility(View.VISIBLE);
-                            else errorLayout.setVisibility(View.GONE);
-                        } else if (adapter != null) {
-                            Service service = adapter.getSelectedService();
-                            if (service != null) {
-                                Bundle bundle = new Bundle();
-                                bundle.putString("service_name", service.getName());
-                                bundle.putSerializable("mService", service);
-                                bundle.putSerializable("estimate_fare", estimateFare);
-                                bundle.putDouble("use_wallet", walletAmount);
-                                BookRideFragment bookRideFragment = new BookRideFragment();
-                                bookRideFragment.setArguments(bundle);
-                                ((MainActivity) Objects.requireNonNull(getActivity())).changeFragment(bookRideFragment);
-                            }
-                        }
-                    } else if (response.raw().code() == 500) try {
-                        JSONObject object = new JSONObject(response.errorBody().string());
-                        if (object.has("error"))
-                            Toast.makeText(baseActivity(), object.optString("error"), Toast.LENGTH_SHORT).show();
-                    } catch (Exception exp) {
-                        exp.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<EstimateFare> call, @NonNull Throwable t) {
-                onErrorBase(t);
-            }
-        });
     }
 
     @Override
@@ -260,7 +194,7 @@ public class ServiceTypesFragment extends BaseFragment implements ServiceTypesIV
                 e.printStackTrace();
             }
 
-            adapter = new ServiceAdapter(getActivity(), mServices, mListener, capacity, mEstimateFare);
+            adapter = new ServiceAdapter(mServices, mListener, new Tariffs());
             serviceRv.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
             serviceRv.setItemAnimator(new DefaultItemAnimator());
             serviceRv.addItemDecoration(new EqualSpacingItemDecoration(16, EqualSpacingItemDecoration.HORIZONTAL));
