@@ -218,6 +218,8 @@ public class MainActivity extends BaseActivity implements
     private Runnable r;
     private Handler h;
 
+    private LatLng lastPoint;
+
     private MapSelectFragment mapSelectFragment;
 
     private int selectedEditText;
@@ -433,6 +435,10 @@ public class MainActivity extends BaseActivity implements
                     } else {
                         CURRENT_STATUS = EMPTY;
                         changeFlow(CURRENT_STATUS);
+                    }
+                } else if (i == R.id.end_map) {
+                    if (mapSelectFragment != null && lastPoint != null) {
+                        mapSelectFragment.onActionUp(lastPoint);
                     }
                 }
             }
@@ -771,8 +777,7 @@ public class MainActivity extends BaseActivity implements
         if (fragment != null) {
             if (fragment instanceof BookRideFragment || fragment instanceof MapSelectFragment) {
 
-            } else if (fragment instanceof ServiceTypesFragment ||
-                    fragment instanceof ServiceFlowFragment || fragment instanceof RateCardFragment)
+            } else if (fragment instanceof ServiceFlowFragment || fragment instanceof RateCardFragment)
                 container.setBackgroundColor(getResources().getColor(android.R.color.transparent));
             else container.setBackgroundColor(getResources().getColor(R.color.white));
 
@@ -782,10 +787,7 @@ public class MainActivity extends BaseActivity implements
                 fragmentTransaction.addToBackStack(fragment.getTag());
             else if (fragment instanceof ScheduleFragment)
                 fragmentTransaction.addToBackStack(fragment.getTag());
-            else if (fragment instanceof ServiceTypesFragment) {
-                fragmentTransaction.addToBackStack(fragment.getTag());
-
-            } else if (fragment instanceof BookRideFragment)
+            else if (fragment instanceof BookRideFragment)
                 fragmentTransaction.addToBackStack(fragment.getTag());
 
             try {
@@ -1272,7 +1274,9 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     public void onActionUp(LatLng point) {
+        lastPoint = point;
         if (CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
+
             isDragging = false;
             mainPresenter.startSearch(point.getLatitude(), point.getLongitude());
         } else if (CURRENT_STATUS.equalsIgnoreCase(MAP)) {

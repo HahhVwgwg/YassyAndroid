@@ -11,16 +11,6 @@ import io.reactivex.schedulers.Schedulers;
 public class ServiceTypesPresenter<V extends ServiceTypesIView> extends BasePresenter<V> implements ServiceTypesIPresenter<V> {
 
     @Override
-    public void services() {
-        getCompositeDisposable().add(APIClient
-                .getAPIClient()
-                .services()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(getMvpView()::onSuccess, getMvpView()::onError));
-    }
-
-    @Override
     public void rideNow(HashMap<String, Object> obj) {
         getCompositeDisposable().add(APIClient
                 .getAPIClient()

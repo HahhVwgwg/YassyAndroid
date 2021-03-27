@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface ServiceTypesIView extends MvpView {
 
-    void onSuccess(List<Service> serviceList);
-
     void onError(Throwable e);
 
     void onSuccess(Object object);

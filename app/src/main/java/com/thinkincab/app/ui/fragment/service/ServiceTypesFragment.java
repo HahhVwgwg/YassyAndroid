@@ -1,119 +1,104 @@
 package com.thinkincab.app.ui.fragment.service;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.os.AsyncTask;
-import android.os.Bundle;
+
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import android.text.TextUtils;
-import android.util.Base64;
-import android.util.Log;
+import androidx.annotation.Nullable;
+import androidx.viewpager2.widget.ViewPager2;
+
+import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.TextView;
-import android.widget.Toast;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.thinkincab.app.R;
-import com.thinkincab.app.base.BaseActivity;
-import com.thinkincab.app.base.BaseFragment;
-import com.thinkincab.app.common.CustomDialog;
-import com.thinkincab.app.common.EqualSpacingItemDecoration;
-import com.thinkincab.app.data.SharedHelper;
-import com.thinkincab.app.data.network.APIClient;
-import com.thinkincab.app.data.network.model.EstimateFare;
-import com.thinkincab.app.data.network.model.Provider;
+import com.thinkincab.app.base.BaseBottomSheetDialogFragment;
 import com.thinkincab.app.data.network.model.Service;
-import com.thinkincab.app.data.network.model.Tariffs;
-import com.thinkincab.app.ui.activity.main.MainActivity;
-import com.thinkincab.app.ui.activity.payment.PaymentActivity;
-import com.thinkincab.app.ui.adapter.ServiceAdapter;
-import com.thinkincab.app.ui.fragment.RateCardFragment;
-import com.thinkincab.app.ui.fragment.book_ride.BookRideFragment;
-import com.thinkincab.app.ui.fragment.schedule.ScheduleFragment;
+import com.thinkincab.app.ui.adapter.ServicePagerAdapter;
 
-import org.json.JSONObject;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import static com.thinkincab.app.MvpApplication.RIDE_REQUEST;
 import static com.thinkincab.app.common.Constants.BroadcastReceiver.INTENT_FILTER;
-import static com.thinkincab.app.common.Constants.RIDE_REQUEST.CARD_ID;
-import static com.thinkincab.app.common.Constants.RIDE_REQUEST.CARD_LAST_FOUR;
-import static com.thinkincab.app.common.Constants.RIDE_REQUEST.DISTANCE_VAL;
-import static com.thinkincab.app.common.Constants.RIDE_REQUEST.PAYMENT_MODE;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.SERVICE_TYPE;
-import static com.thinkincab.app.data.SharedHelper.getKey;
-import static com.thinkincab.app.data.SharedHelper.getProviders;
-import static com.thinkincab.app.data.SharedHelper.putKey;
-import static com.thinkincab.app.ui.activity.payment.PaymentActivity.PICK_PAYMENT_METHOD;
 
-public class ServiceTypesFragment extends BaseFragment implements ServiceTypesIView {
+public class ServiceTypesFragment extends BaseBottomSheetDialogFragment implements ServiceTypesIView {
 
-    @BindView(R.id.service_rv)
-    RecyclerView serviceRv;
-    @BindView(R.id.capacity)
-    TextView capacity;
-    @BindView(R.id.payment_type)
-    TextView paymentType;
-    @BindView(R.id.error_layout)
-    TextView errorLayout;
+    @BindView(R.id.slider)
+    ViewPager2 slider;
+    @BindView(R.id.service_dots)
+    TabLayout dots;
+
     Unbinder unbinder;
-    ServiceAdapter adapter;
-    List<Service> mServices = new ArrayList<>();
-    @BindView(R.id.use_wallet)
-    CheckBox useWallet;
-    @BindView(R.id.wallet_balance)
-    TextView walletBalance;
-    @BindView(R.id.surge_value)
-    TextView surgeValue;
-    @BindView(R.id.tv_demand)
-    TextView tvDemand;
-    @BindView(R.id.get_pricing)
-    Button get_princing;
-    CustomDialog customDialog;
+    private ServicePagerAdapter adapter;
+    private List<Service> mServices = new ArrayList<>();
 
-    private ServiceTypesPresenter<ServiceTypesFragment> presenter = new ServiceTypesPresenter<>();
-    private boolean isFromAdapter = true;
-    private int servicePos = 0;
-    private EstimateFare mEstimateFare;
-    private double walletAmount;
-    private int surge;
+    public static ServiceTypesFragment create(List<Service> services, List<Integer> prices, int selected) {
+        ServiceTypesFragment serviceTypesFragment = new ServiceTypesFragment();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("data", new ServiceData(services, selected, prices));
+        serviceTypesFragment.setArguments(bundle);
+        return serviceTypesFragment;
+    }
+
+    private final ServiceTypesPresenter<ServiceTypesFragment> presenter = new ServiceTypesPresenter<>();
+
+    private ServiceData serviceData;
 
     private ServiceListener mListener = pos -> {
-        isFromAdapter = true;
-        servicePos = pos;
+
         String key = mServices.get(pos).getName() + mServices.get(pos).getId();
         RIDE_REQUEST.put(SERVICE_TYPE, mServices.get(pos).getId());
-        
-        estimatedApiCall();
-        List<Provider> providers = new ArrayList<>();
-        for (Provider provider : getProviders(Objects.requireNonNull(getActivity())))
-            if (provider.getProviderService().getServiceTypeId() == mServices.get(pos).getId())
-                providers.add(provider);
-
-
     };
 
-    public ServiceTypesFragment() {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setStyle(BottomSheetDialogFragment.STYLE_NORMAL, R.style.CustomBottomSheetDialogTheme);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (getArguments() != null) {
+            serviceData = (ServiceData) getArguments().getSerializable("data");
+            adapter = new ServicePagerAdapter(this, serviceData);
+            slider.setAdapter(adapter);
+            slider.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                    super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+                }
+
+                @Override
+                public void onPageSelected(int position) {
+                    super.onPageSelected(position);
+                    RIDE_REQUEST.put(SERVICE_TYPE, serviceData.services.get(position));
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int state) {
+                    super.onPageScrollStateChanged(state);
+                }
+            });
+            new TabLayoutMediator(dots, slider, (tab, position) -> {
+                //Some implementation
+            }).attach();
+            slider.setCurrentItem(serviceData.getSelected(), false);
+        }
     }
 
     @Override
@@ -122,37 +107,19 @@ public class ServiceTypesFragment extends BaseFragment implements ServiceTypesIV
     }
 
     @Override
-    public View initView(View view) {
+    public void initView(View view) {
+        getDialog().setOnShowListener(dialog -> {
+            BottomSheetDialog d = (BottomSheetDialog) dialog;
+            View bottomSheetInternal = d.findViewById(R.id.design_bottom_sheet);
+            BottomSheetBehavior.from(bottomSheetInternal).setState(BottomSheetBehavior.STATE_EXPANDED);
+        });
         unbinder = ButterKnife.bind(this, view);
         presenter.attachView(this);
-        presenter.services();
-        customDialog=new CustomDialog(getContext());
-        return view;
     }
 
-    @OnClick({R.id.payment_type, R.id.get_pricing, R.id.schedule_ride, R.id.ride_now})
+    @OnClick({R.id.ride_now})
     public void onViewClicked(View view) {
         switch (view.getId()) {
-            case R.id.payment_type:
-                ((MainActivity) Objects.requireNonNull(getActivity())).updatePaymentEntities();
-                startActivityForResult(new Intent(getActivity(), PaymentActivity.class), PICK_PAYMENT_METHOD);
-                break;
-            case R.id.get_pricing:
-                if (adapter != null) {
-                    isFromAdapter = false;
-                    Service service = adapter.getSelectedService();
-                    if (service != null) {
-                        RIDE_REQUEST.put(SERVICE_TYPE, service.getId());
-                        if (RIDE_REQUEST.containsKey(SERVICE_TYPE) && RIDE_REQUEST.get(SERVICE_TYPE) != null) {
-                            showLoading();
-                            estimatedApiCall();
-                        }
-                    }
-                }
-                break;
-            case R.id.schedule_ride:
-                ((MainActivity) Objects.requireNonNull(getActivity())).changeFragment(new ScheduleFragment());
-                break;
             case R.id.ride_now:
                 sendRequest();
                 break;
@@ -161,97 +128,20 @@ public class ServiceTypesFragment extends BaseFragment implements ServiceTypesIV
         }
     }
 
-    private void estimatedApiCall() {
-
-    }
-
-    @Override
-    public void onSuccess(List<Service> services) {
-        try {
-            customDialog.dismiss();
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
-        if (services != null && !services.isEmpty()) {
-            RIDE_REQUEST.put(SERVICE_TYPE, 1);
-            mServices.clear();
-            mServices.addAll(services);
-
-            try {
-                AsyncTask.execute(() -> {
-                    for (Service s : mServices) {
-                        String key = s.getName() + s.getId();
-                        if (!TextUtils.isEmpty(s.getMarker()))
-                            if (TextUtils.isEmpty(getKey(Objects.requireNonNull(getActivity()), key))) {
-                                Bitmap b = ((BaseActivity) getActivity()).getBitmapFromURL(s.getMarker());
-                                Log.e("get image", String.valueOf(b));
-                                if (b != null)
-                                    putKey(Objects.requireNonNull(this.getContext()), key,  encodeBase64(b));
-                            }
-                    }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            adapter = new ServiceAdapter(mServices, mListener, new Tariffs());
-            serviceRv.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
-            serviceRv.setItemAnimator(new DefaultItemAnimator());
-            serviceRv.addItemDecoration(new EqualSpacingItemDecoration(16, EqualSpacingItemDecoration.HORIZONTAL));
-            serviceRv.setAdapter(adapter);
-
-            if (adapter != null) {
-                Service mService = adapter.getSelectedService();
-                if (mService != null) RIDE_REQUEST.put(SERVICE_TYPE, mService.getId());
-            }
-            mListener.whenClicked(0);
-        }
-    }
-    public String encodeBase64(Bitmap image) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        return Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
-    }
-
     @Override
     public void onError(Throwable e) {
 //        handleError(e);
-
-        get_princing.setVisibility(View.GONE);
-        new AlertDialog.Builder(getContext())
-                .setTitle("Attention")
-                .setIcon(R.drawable.ic_checked)
-                .setMessage("\n" + "Aucun service dans les environs.")
-                .setPositiveButton("OK", (dialog, which) -> {})
-                .show();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == PICK_PAYMENT_METHOD && resultCode == Activity.RESULT_OK) {
-            RIDE_REQUEST.put(PAYMENT_MODE, data.getStringExtra("payment_mode"));
-            if (data.getStringExtra("payment_mode").equals("CARD")) {
-                RIDE_REQUEST.put(CARD_ID, data.getStringExtra("card_id"));
-                RIDE_REQUEST.put(CARD_LAST_FOUR, data.getStringExtra("card_last_four"));
-            }
-            initPayment(paymentType);
-        }
     }
 
     private void sendRequest() {
         HashMap<String, Object> map = new HashMap<>(RIDE_REQUEST);
-        map.put("use_wallet", useWallet.isChecked() ? 1 : 0);
         showLoading();
         presenter.rideNow(map);
     }
 
     @Override
     public void onSuccess(@NonNull Object object) {
-        try {
-            customDialog.dismiss();
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
+
         baseActivity().sendBroadcast(new Intent(INTENT_FILTER));
     }
 
@@ -261,14 +151,34 @@ public class ServiceTypesFragment extends BaseFragment implements ServiceTypesIV
         super.onDestroyView();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        initPayment(paymentType);
-    }
-
     public interface ServiceListener {
         void whenClicked(int pos);
+    }
+
+    public static class ServiceData implements Serializable {
+
+        private final List<Service> services;
+        private final List<Integer> prices;
+
+        private final int selected;
+
+        public ServiceData(List<Service> services, int selected, List<Integer> prices) {
+            this.services = services;
+            this.selected = selected;
+            this.prices = prices;
+        }
+
+        public int getSelected() {
+            return selected;
+        }
+
+        public List<Integer> getPrices() {
+            return prices;
+        }
+
+        public List<Service> getServices() {
+            return services;
+        }
     }
 
 }

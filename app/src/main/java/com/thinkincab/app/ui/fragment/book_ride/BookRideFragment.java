@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,6 +57,7 @@ import static com.thinkincab.app.common.Constants.RIDE_REQUEST.PAYMENT_MODE;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.SERVICE_TYPE;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.SRC_ADD;
 import static com.thinkincab.app.common.Constants.Status.PAYMENT;
+import static com.thinkincab.app.common.Constants.Status.SERVICE;
 import static com.thinkincab.app.ui.activity.payment.PaymentActivity.PICK_PAYMENT_METHOD;
 
 public class BookRideFragment extends BaseFragment implements BookRideIView {
@@ -75,10 +75,12 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
     RecyclerView serviceRv;
     @BindView(R.id.estimated_payment_mode)
     TextView estimatedPaymentMode;
-    @BindView(R.id.llEstimatedFareContainer)
-    LinearLayout llEstimatedFareContainer;
 
     private String paymentMode;
+
+    private ServiceAdapter adapter;
+    private List<Service> mServices = new ArrayList<>();
+    private List<Integer> mPrices = new ArrayList<>();
 
     private final BookRidePresenter<BookRideFragment> presenter = new BookRidePresenter<>();
 
@@ -182,9 +184,6 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
         }
     }
 
-    ServiceAdapter adapter;
-    List<Service> mServices = new ArrayList<>();
-
     @Override
     public void onSuccess(List<Service> serviceList) {
         if (serviceList != null && !serviceList.isEmpty()) {
@@ -201,7 +200,7 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                 Service mService = adapter.getSelectedService();
                 if (mService != null) RIDE_REQUEST.put(SERVICE_TYPE, mService.getId());
             }
-            mListener.whenClicked(0);
+            RIDE_REQUEST.put(SERVICE_TYPE, mServices.get(0).getId());
             estimatedApiCall();
         }
     }
@@ -209,11 +208,14 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
     private Tariffs mEstimateFare;
 
     private final ServiceTypesFragment.ServiceListener mListener = pos -> {
-
-        RIDE_REQUEST.put(SERVICE_TYPE, mServices.get(pos).getId());
-
-
-
+        if (mPrices.size() == 0) {
+            mPrices.add(0);
+            mPrices.add(0);
+        } else if (mPrices.size() == 1) {
+            mPrices.add(0);
+        }
+        ServiceTypesFragment serviceTypesFragment = ServiceTypesFragment.create(mServices, mPrices, pos);
+        serviceTypesFragment.show(getChildFragmentManager(), SERVICE);
     };
 
     private void estimatedApiCall() {
@@ -228,6 +230,10 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                         Tariffs estimateFare = response.body();
                         mEstimateFare = estimateFare;
                         adapter.setEstimateFare(estimateFare);
+                        mPrices.clear();
+                        for (Tariffs.TariffType type : estimateFare.getType()) {
+                            mPrices.add(type.getEstimatedFare());
+                        }
                         Service service = adapter.getSelectedService();
                         if (service != null) {
                             RIDE_REQUEST.put(SERVICE_TYPE, service.getId());
