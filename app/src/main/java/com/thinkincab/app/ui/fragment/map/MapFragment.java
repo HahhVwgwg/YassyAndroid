@@ -11,6 +11,8 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,6 +41,7 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.plugins.markerview.MarkerView;
 import com.mapbox.mapboxsdk.plugins.markerview.MarkerViewManager;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.Property;
@@ -99,13 +102,16 @@ public class MapFragment extends Fragment implements
     protected GeoJsonSource pointSource1;
     protected SymbolLayer pointLayer2;
     protected GeoJsonSource pointSource2;
+    protected MarkerView timeMarker;
 
     protected boolean isScaling = false;
     protected boolean connected = true;
 
     private LatLng center;
-
     private IMapView listener;
+
+    private TextView time;
+    private View bulb;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -241,12 +247,27 @@ public class MapFragment extends Fragment implements
     private void handleZoom(double zoom) {
     }
 
+    private View generateTimeBulb() {
+        View customView = LayoutInflater.from(requireContext()).inflate(
+                        R.layout.time_bulb,
+                        null
+                );
+        customView.setLayoutParams(new FrameLayout.LayoutParams(
+                DisplayUtils.dpToPx(82),
+                DisplayUtils.dpToPx(50)
+        ));
+        time = customView.findViewById(R.id.time_value);
+        return customView;
+    }
+
     protected boolean showLocation() {
         return true;
     }
 
     protected void mapInit(Style style) {
         this.style = style;
+        bulb = generateTimeBulb();
+        bulb.setAlpha(0f);
         Drawable start = ContextCompat.getDrawable(requireContext(), R.drawable.ic_start_pin);
         if (start != null) {
             style.addImage(("marker-icon-point-1"), start);
@@ -282,6 +303,7 @@ public class MapFragment extends Fragment implements
                 .withProperties(
                         PropertyFactory.iconImage("marker-icon-point-2"),
                         PropertyFactory.iconOpacity(0.0f),
+                        PropertyFactory.iconOffset(new Float[]{0f, -DisplayUtils.dpToPxInFloat(8)}),
                         PropertyFactory.iconIgnorePlacement(true),
                         PropertyFactory.iconAllowOverlap(true)
                 );
@@ -338,6 +360,9 @@ public class MapFragment extends Fragment implements
         pointSource2.setGeoJson(
                 Point.fromLngLat(0.0, 0.0)
         );
+        if (timeMarker != null) {
+            markerViewManager.removeMarker(timeMarker);
+        }
     }
 
     public void showRoute(@Nullable SearchRoute o) {
@@ -392,6 +417,17 @@ public class MapFragment extends Fragment implements
                     Point.fromLngLat(origin.getLongitude(), origin.getLatitude())
             );
             latLngBounds.include(origin);
+            timeMarker = new MarkerView(origin, bulb);
+            timeMarker.setOnPositionUpdateListener(pf -> {
+                pf.offset(
+                        -((float) bulb.getWidth() / 2),
+                        -((float) bulb.getHeight())
+                );
+                return pf;
+            });
+            if (timeMarker != null) {
+                markerViewManager.addMarker(timeMarker);
+            }
         }
         if (destination != null) {
             pointSource2.setGeoJson(
@@ -405,15 +441,18 @@ public class MapFragment extends Fragment implements
         LatLngBounds llb = latLngBounds.build();
         mapView.post(() -> mapBoxMap.animateCamera(CameraUpdateFactory.newLatLngBounds(
                 llb,
-                DisplayUtils.dpToPx(36),
-                DisplayUtils.dpToPx(80),
-                DisplayUtils.dpToPx(36),
-                DisplayUtils.dpToPx(80) + ((listener != null) ? listener.getMapPadding() : 0)
+                DisplayUtils.dpToPx(42),
+                DisplayUtils.dpToPx(100),
+                DisplayUtils.dpToPx(42),
+                DisplayUtils.dpToPx(90) + ((listener != null) ? listener.getMapPadding() : 0)
         )));
     }
 
     public void showTime(String time) {
-        // todo
+        if (this.time != null) {
+            this.time.setText(time);
+            bulb.setAlpha(1f);
+        }
     }
 
     // map

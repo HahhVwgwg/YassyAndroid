@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="82dp"
+    android:layout_height="50dp"
+    android:background="@drawable/bg_time">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/time_value"
+        style="@style/TextService"
+        android:layout_width="64dp"
+        android:layout_height="29dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="4dp"
+        android:ellipsize="marquee"
+        android:gravity="center"
+        android:singleLine="true"
+        app:autoSizeMaxTextSize="14dp"
+        app:autoSizeMinTextSize="11dp"
+        app:autoSizeTextType="uniform"
+        tools:text="15 мин" />
+
+</FrameLayout>

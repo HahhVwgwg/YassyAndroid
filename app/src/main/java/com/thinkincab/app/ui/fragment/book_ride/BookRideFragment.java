@@ -9,12 +9,14 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.thinkincab.app.R;
 import com.thinkincab.app.base.BaseFragment;
 import com.thinkincab.app.common.Constants;
@@ -100,9 +102,11 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
     private void setDataOnUi(String serviceName, Service service, Tariffs fare) {
         if (serviceName != null && !serviceName.isEmpty()) {
             try {
+                Log.d("sfdgsg", new Gson().toJson(fare));
                 RIDE_REQUEST.put(DISTANCE_VAL, fare.getType().get(0).getDistance());
                 ((MainActivity) getActivity()).showTime(fare.getType().get(0).getTime());
             } catch (Exception e) {
+                Log.d("sfdgsg", e.toString());
                 e.printStackTrace();
             }
         }
@@ -223,7 +227,7 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                     if (response.body() != null) {
                         Tariffs estimateFare = response.body();
                         mEstimateFare = estimateFare;
-
+                        adapter.setEstimateFare(estimateFare);
                         Service service = adapter.getSelectedService();
                         if (service != null) {
                             RIDE_REQUEST.put(SERVICE_TYPE, service.getId());

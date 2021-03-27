@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,46 +65,47 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHo
         if (itemWidth > 0) {
             holder.itemView.getLayoutParams().width = itemWidth;
         }
-        if (obj != null)
+        if (obj != null) {
             holder.serviceName.setText(obj.getName());
-        if (estimateFare != null) {
-            holder.price.setVisibility(View.VISIBLE);
-        }
 
-        if (position == lastCheckedPos) {
-            holder.serviceName.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.text_black));
-            holder.itemView.setElevation(24f);
-            holder.itemView.setBackgroundResource(R.drawable.service_bg_active);
-            holder.itemView.setAlpha(1);
-            if (obj !=  null && estimateFare != null && estimateFare.getType() != null) {
+            holder.price.setVisibility(View.VISIBLE);
+            Log.d("sfdgsg", "bind " + obj.getId());
+            if (estimateFare != null && estimateFare.getType() != null) {
                 for (Tariffs.TariffType type : estimateFare.getType()) {
+                    Log.d("sfdgsg", "bind fare " + type.getServiceType());
                     if (type.getServiceType() == obj.getId()) {
                         holder.price.setText(holder.itemView.getContext().getString(R.string.sum_template, type.getEstimatedFare()));
                     }
                 }
 
             }
-        } else {
-            holder.serviceName.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.text_service_grey));
-            holder.itemView.setBackgroundResource(R.drawable.service_bg_inactive);
-            holder.itemView.setElevation(0f);
-            holder.itemView.setAlpha((float) 0.5);
-        }
+            if (position == lastCheckedPos) {
+                holder.serviceName.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.text_black));
+                holder.itemView.setElevation(24f);
+                holder.itemView.setBackgroundResource(R.drawable.service_bg_active);
+                holder.itemView.setAlpha(1);
+            } else {
+                holder.serviceName.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.text_service_grey));
+                holder.itemView.setBackgroundResource(R.drawable.service_bg_inactive);
+                holder.itemView.setElevation(0f);
+                holder.itemView.setAlpha((float) 0.5);
+            }
 
-        holder.itemView.setOnClickListener(view -> {
-            Service object = list.get(position);
-            if (object != null) {
-                if (view.getId() == R.id.item_view) {
-                    if (lastCheckedPos == position) {
-                        mListener.whenClicked(position);
-                    } else {
-                        lastCheckedPos = position;
-                        RIDE_REQUEST.put(SERVICE_TYPE, object.getId());
-                        notifyDataSetChanged();
+            holder.itemView.setOnClickListener(view -> {
+                Service object = list.get(position);
+                if (object != null) {
+                    if (view.getId() == R.id.item_view) {
+                        if (lastCheckedPos == position) {
+                            mListener.whenClicked(position);
+                        } else {
+                            lastCheckedPos = position;
+                            RIDE_REQUEST.put(SERVICE_TYPE, object.getId());
+                            notifyDataSetChanged();
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
