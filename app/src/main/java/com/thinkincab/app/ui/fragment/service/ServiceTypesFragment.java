@@ -22,7 +22,6 @@ import com.thinkincab.app.ui.adapter.ServicePagerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -44,7 +43,6 @@ public class ServiceTypesFragment extends BaseBottomSheetDialogFragment implemen
 
     Unbinder unbinder;
     private ServicePagerAdapter adapter;
-    private List<Service> mServices = new ArrayList<>();
 
     public static ServiceTypesFragment create(List<Service> services, List<Integer> prices, int selected) {
         ServiceTypesFragment serviceTypesFragment = new ServiceTypesFragment();
@@ -57,12 +55,6 @@ public class ServiceTypesFragment extends BaseBottomSheetDialogFragment implemen
     private final ServiceTypesPresenter<ServiceTypesFragment> presenter = new ServiceTypesPresenter<>();
 
     private ServiceData serviceData;
-
-    private ServiceListener mListener = pos -> {
-
-        String key = mServices.get(pos).getName() + mServices.get(pos).getId();
-        RIDE_REQUEST.put(SERVICE_TYPE, mServices.get(pos).getId());
-    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -86,7 +78,7 @@ public class ServiceTypesFragment extends BaseBottomSheetDialogFragment implemen
                 @Override
                 public void onPageSelected(int position) {
                     super.onPageSelected(position);
-                    RIDE_REQUEST.put(SERVICE_TYPE, serviceData.services.get(position));
+                    RIDE_REQUEST.put(SERVICE_TYPE, serviceData.services.get(position).getId());
                 }
 
                 @Override
@@ -130,7 +122,8 @@ public class ServiceTypesFragment extends BaseBottomSheetDialogFragment implemen
 
     @Override
     public void onError(Throwable e) {
-//        handleError(e);
+        hideLoading();
+        handleError(e);
     }
 
     private void sendRequest() {
@@ -141,8 +134,9 @@ public class ServiceTypesFragment extends BaseBottomSheetDialogFragment implemen
 
     @Override
     public void onSuccess(@NonNull Object object) {
-
+        hideLoading();
         baseActivity().sendBroadcast(new Intent(INTENT_FILTER));
+        dismiss();
     }
 
     @Override

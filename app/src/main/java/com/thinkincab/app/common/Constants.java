@@ -32,14 +32,14 @@ public interface Constants {
     }
 
     interface Status {
-        String EMPTY = "EMPTY";
-        String MAP = "MAP";
-        String SERVICE = "SERVICE";
-        String SEARCHING = "SEARCHING";
+        String EMPTY = "EMPTY"; // нет заказа, создание
+        String MAP = "MAP"; // выбор адреса на карте
+        String SERVICE = "SERVICE"; // выбор тарифа и опций
+        String SEARCHING = "SEARCHING"; // поиск авто
         String PAYMENT = "PAYMENT";
         String SOS = "SOS";
         String STARTED = "STARTED";
-        String ARRIVED = "ARRIVED";
+        String ARRIVED = "ARRIVED";  // водитель подъехал
         String PICKED_UP = "PICKEDUP";
         String DROPPED = "DROPPED";
         String COMPLETED = "COMPLETED";

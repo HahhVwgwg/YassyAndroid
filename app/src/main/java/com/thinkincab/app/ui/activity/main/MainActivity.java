@@ -86,7 +86,6 @@ import com.thinkincab.app.ui.fragment.map_select.MapSelectFragment;
 import com.thinkincab.app.ui.fragment.rate.RatingDialogFragment;
 import com.thinkincab.app.ui.fragment.schedule.ScheduleFragment;
 import com.thinkincab.app.ui.fragment.searching.SearchingFragment;
-import com.thinkincab.app.ui.fragment.service.ServiceTypesFragment;
 import com.thinkincab.app.ui.fragment.service_flow.ServiceFlowFragment;
 import com.thinkincab.app.ui.fragment.sos.SosFragment;
 import com.thinkincab.app.ui.utils.DisplayUtils;
@@ -324,11 +323,21 @@ public class MainActivity extends BaseActivity implements
                 }
             } else if (CURRENT_STATUS.equals(STARTED) || CURRENT_STATUS.equals(ARRIVED)
                     || CURRENT_STATUS.equals(PICKED_UP)) if (getProviderHitCheck % 3 == 0) {
-                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                try {
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                    builder.include(new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG)));
+                    LatLngBounds bounds = builder.build();
+                    if (mapFragment != null) {
+                        mapFragment.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,
+                                DisplayUtils.dpToPx(42),
+                                DisplayUtils.dpToPx(100),
+                                DisplayUtils.dpToPx(42),
+                                DisplayUtils.dpToPx(90) + getMapPadding()
+                                )
+                        );
+                    }
+                } catch (Exception e) {
 
-                LatLngBounds bounds = builder.build();
-                if (mapFragment != null) {
-                    mapFragment.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 90));
                 }
             }
             getProviderHitCheck++;
@@ -651,8 +660,6 @@ public class MainActivity extends BaseActivity implements
                 menuApp.setVisibility(View.VISIBLE);
                 menuBack.setVisibility(View.GONE);
                 pickLocationLayout.setVisibility(View.VISIBLE);
-                //  mGoogleMap.clear();
-                // providersMarker.clear();
                 hideLoading();
                 changeFragment(null);
                 btnHomeValue.setText(home != null ? R.string.home : R.string.add_home);
@@ -692,7 +699,6 @@ public class MainActivity extends BaseActivity implements
                 searchingFragment.show(getSupportFragmentManager(), SEARCHING);
                 break;
             case STARTED:
-                // mGoogleMap.clear();
                 pickLocationLayout.setVisibility(View.GONE);
                 menuBack.setVisibility(View.GONE);
                 if (DATUM != null)
@@ -700,8 +706,14 @@ public class MainActivity extends BaseActivity implements
                 changeFragment(new ServiceFlowFragment());
                 break;
             case ARRIVED:
-                pickLocationLayout.setVisibility(View.GONE);
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, findViewById(R.id.nav_view));
+                menuApp.setVisibility(View.GONE);
+                menuBack.setVisibility(View.GONE);
+                topLayout.setTransition(R.id.tr_to_trip);
+                topLayout.transitionToEnd();
+                //pickLocationLayout.setVisibility(View.GONE);
                 changeFragment(new ServiceFlowFragment());
+                mainPin.setVisibility(View.GONE);
                 break;
             case PICKED_UP:
                 pickLocationLayout.setVisibility(View.GONE);
@@ -775,9 +787,9 @@ public class MainActivity extends BaseActivity implements
     public void changeFragment(Fragment fragment) {
         if (isFinishing()) return;
         if (fragment != null) {
-            if (fragment instanceof BookRideFragment || fragment instanceof MapSelectFragment) {
+            if (fragment instanceof ServiceFlowFragment || fragment instanceof BookRideFragment || fragment instanceof MapSelectFragment) {
 
-            } else if (fragment instanceof ServiceFlowFragment || fragment instanceof RateCardFragment)
+            } else if (fragment instanceof RateCardFragment)
                 container.setBackgroundColor(getResources().getColor(android.R.color.transparent));
             else container.setBackgroundColor(getResources().getColor(R.color.white));
 
@@ -796,7 +808,6 @@ public class MainActivity extends BaseActivity implements
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         } else {
             mapSelectFragment = null;
             for (Fragment fragmentd : getSupportFragmentManager().getFragments()) {
@@ -1009,12 +1020,9 @@ public class MainActivity extends BaseActivity implements
 
         if (CURRENT_STATUS.equals(STARTED)
                 || CURRENT_STATUS.equals(ARRIVED)
-                || CURRENT_STATUS.equals(PICKED_UP))
-            if (mProviderLocation == null) {
-                mProviderLocation = FirebaseDatabase.getInstance().getReference()
-                        .child("loc_p_" + DATUM.getProvider().getId());
-                //updateDriverNavigation();
-            }
+                || CURRENT_STATUS.equals(PICKED_UP)) {
+
+        }
 
         if (canGoToChatScreen) {
             if (!isChatScreenOpen && DATUM != null) {

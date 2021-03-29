@@ -9,9 +9,15 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.CountDownTimer;
 import android.os.Handler;
+
 import androidx.annotation.NonNull;
+
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import androidx.core.app.ActivityCompat;
+
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -68,26 +74,13 @@ public class ServiceFlowFragment extends BaseFragment
     TextView status;
     @BindView(R.id.rating)
     RatingBar rating;
-    @BindView(R.id.cancel)
-    Button cancel;
-    @BindView(R.id.share_ride)
-    Button sharedRide;
+    @BindView(R.id.cancel_btn)
+    MaterialButton cancel;
+
     @BindView(R.id.image)
     ImageView image;
-    @BindView(R.id.service_type_name)
-    TextView serviceTypeName;
-    @BindView(R.id.service_number)
-    TextView serviceNumber;
-    @BindView(R.id.service_model)
-    TextView serviceModel;
     @BindView(R.id.call)
     Button call;
-    @BindView(R.id.chat)
-    FloatingActionButton chat;
-    @BindView(R.id.provider_eta)
-    TextView providerEta;
-    @BindView(R.id.peak_note)
-    TextView peek_note;
 
     private Runnable runnable;
     private Handler handler;
@@ -99,52 +92,44 @@ public class ServiceFlowFragment extends BaseFragment
     private ServiceFlowPresenter<ServiceFlowFragment> presenter = new ServiceFlowPresenter<>();
     private CancelRequestInterface callback;
 
-    public ServiceFlowFragment() {
-    }
-
     @Override
     public int getLayoutId() {
         return R.layout.fragment_service_flow;
     }
 
     CountDownTimer mcoundowntimer;
+
     @Override
     public View initView(View view) {
         ButterKnife.bind(this, view);
         callback = this;
         presenter.attachView(this);
 
+        presenter.checkStatus();
 
-
-
-       presenter.checkStatus();
-
-
-       mcoundowntimer= new CountDownTimer(1000000, 1000) {
+        mcoundowntimer = new CountDownTimer(1000000, 1000) {
             @Override
             public void onTick(long l) {
-                if((!isRemoving())&&(renthours!=-1)){
-                if(mdataResponse.getData().get(0).getRent_plan()!=null)
-                { SimpleDateFormat sdf = new  SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    try {
-                        Date dd =sdf.parse(mdataResponse.getData().get(0).getCreatedAt());
-                        long timestarted =dd.getTime()+renthours*3600*1000;
-                        if(System.currentTimeMillis()>timestarted)
-                        {
-                            secondSplitUp(0,tvTimer);
-                        }
-                        else {
+                if ((!isRemoving()) && (renthours != -1)) {
+                    if (mdataResponse.getData().get(0).getRent_plan() != null) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        try {
+                            Date dd = sdf.parse(mdataResponse.getData().get(0).getCreatedAt());
+                            long timestarted = dd.getTime() + renthours * 3600 * 1000;
+                            if (System.currentTimeMillis() > timestarted) {
+                               // secondSplitUp(0, tvTimer);
+                            } else {
 
-                            secondSplitUp((timestarted-System.currentTimeMillis())/1000,tvTimer);
+                               // secondSplitUp((timestarted - System.currentTimeMillis()) / 1000, tvTimer);
+                            }
+
+                        } catch (ParseException e) {
+                            e.printStackTrace();
                         }
 
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+
                     }
-
-
                 }
-            }
             }
 
             @Override
@@ -153,12 +138,11 @@ public class ServiceFlowFragment extends BaseFragment
             }
         };
 
-       if(getArguments()!=null)
-       {
-           if(getArguments().getString("show")!=null)
-               mcoundowntimer.start();
+        if (getArguments() != null) {
+            if (getArguments().getString("show") != null)
+                mcoundowntimer.start();
 
-       }
+        }
 
 
         if (DATUM != null) initView(DATUM);
@@ -169,27 +153,25 @@ public class ServiceFlowFragment extends BaseFragment
     public void onDestroyView() {
         presenter.onDetach();
 
+        Log.d("ghshdhbh", "onDestroyView Serc");
 
         super.onDestroyView();
     }
 
-    @OnClick({R.id.sos, R.id.cancel, R.id.share_ride, R.id.call, R.id.chat})
+    @OnClick({R.id.sos, R.id.cancel_btn, R.id.call_btn, R.id.chat_btn})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.sos:
                 sos();
                 break;
-            case R.id.cancel:
+            case R.id.cancel_btn:
                 CancelRideDialogFragment cancelRideFragment = new CancelRideDialogFragment(callback);
                 cancelRideFragment.show(baseActivity().getSupportFragmentManager(), cancelRideFragment.getTag());
                 break;
-            case R.id.share_ride:
-                sharedRide();
-                break;
-            case R.id.call:
+            case R.id.call_btn:
                 callPhoneNumber(providerPhoneNumber);
                 break;
-            case R.id.chat:
+            case R.id.chat_btn:
                 if (DATUM != null) {
                     Intent i = new Intent(baseActivity(), ChatActivity.class);
                     i.putExtra("request_id", String.valueOf(DATUM.getId()));
@@ -201,6 +183,7 @@ public class ServiceFlowFragment extends BaseFragment
 
     @SuppressLint({"StringFormatInvalid", "RestrictedApi"})
     private void initView(Datum datum) {
+        Log.d("ghshdhbh", "initView trip" + datum.toString());
         Provider provider = datum.getProvider();
         if (provider != null) {
             firstName.setText(String.format("%s %s", provider.getFirstName(), provider.getLastName()));
@@ -217,7 +200,7 @@ public class ServiceFlowFragment extends BaseFragment
 
         ServiceType serviceType = datum.getServiceType();
         if (serviceType != null) {
-            serviceTypeName.setText(serviceType.getName());
+           // serviceTypeName.setText(serviceType.getName());
             Glide.with(baseActivity())
                     .load(serviceType.getImage())
                     .apply(RequestOptions.placeholderOf(R.drawable.ic_car)
@@ -226,12 +209,11 @@ public class ServiceFlowFragment extends BaseFragment
                     .into(image);
         }
 
-        chat.setVisibility(PICKED_UP.equalsIgnoreCase(datum.getStatus()) ? View.GONE : View.VISIBLE);
 
         ProviderService providerService = datum.getProviderService();
         if (providerService != null) {
-            serviceNumber.setText(providerService.getServiceNumber());
-            serviceModel.setText(providerService.getServiceModel());
+          //  serviceNumber.setText(providerService.getServiceNumber());
+         //   serviceModel.setText(providerService.getServiceModel());
         }
 
         otp.setText(getString(R.string.otp_, datum.getOtp()));
@@ -252,14 +234,10 @@ public class ServiceFlowFragment extends BaseFragment
             case PICKED_UP:
                 status.setText(R.string.you_are_on_ride);
                 cancel.setVisibility(View.GONE);
-                sharedRide.setVisibility(View.VISIBLE);
                 break;
             default:
                 break;
         }
-
-        if(datum.getServicerequired().equals("none"))
-            peek_note.setVisibility(View.VISIBLE);
 
         if (STARTED.equalsIgnoreCase(datum.getStatus())) {
             LatLng source = new LatLng(datum.getProvider().getLatitude(), datum.getProvider().getLongitude());
@@ -272,7 +250,6 @@ public class ServiceFlowFragment extends BaseFragment
         }
 
     }
-
 
 
     private void sos() {
@@ -295,14 +272,12 @@ public class ServiceFlowFragment extends BaseFragment
         }
     }
 
-    @BindView(R.id.textView8)
-    TextView tvTimer;
     private long timerInHandler = 0L;
     private Handler customHandler = new Handler();
 
     private Runnable updateTimerThread = new Runnable() {
         public void run() {
-           // timerInHandler++;
+            // timerInHandler++;
             //secondSplitUp(timerInHandler, tvTimer);
             //customHandler.postDelayed(this, 1000);
         }
@@ -335,56 +310,55 @@ public class ServiceFlowFragment extends BaseFragment
     }
 
 
-boolean popupshowed=false;
-        public void secondSplitUp(long biggy, TextView tvTimer)
-        {
-            if(biggy<600)
-            {
-                if(!popupshowed)
-                {
-                 popupshowed=true;
-                 new AlertDialog.Builder(getContext()).setMessage(R.string.planupgrademsg).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                     @Override
-                     public void onClick(DialogInterface dialogInterface, int i) {
-                         dialogInterface.dismiss();
-                     }
-                 }).setPositiveButton("Continue", new DialogInterface.OnClickListener() {
-                     @Override
-                     public void onClick(DialogInterface dialogInterface, int i) {
-                        presenter.checkStatus();
-                         dialogInterface.dismiss();
-                     }
-                 }).show();
-                };
+    boolean popupshowed = false;
 
+    public void secondSplitUp(long biggy, TextView tvTimer) {
+        if (biggy < 600) {
+            if (!popupshowed) {
+                popupshowed = true;
+                new AlertDialog.Builder(getContext()).setMessage(R.string.planupgrademsg).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                }).setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        presenter.checkStatus();
+                        dialogInterface.dismiss();
+                    }
+                }).show();
             }
-            else popupshowed=false;
-            int hours = (int) biggy / 3600;
-            int sec = (int) biggy - hours * 3600;
-            int mins = sec / 60;
-            sec = sec - mins * 60;
-            tvTimer.setText(String.format("%02d:", hours)
-                    + String.format("%02d:", mins)
-                    + String.format("%02d", sec));
-        }
+            ;
+
+        } else popupshowed = false;
+        int hours = (int) biggy / 3600;
+        int sec = (int) biggy - hours * 3600;
+        int mins = sec / 60;
+        sec = sec - mins * 60;
+        tvTimer.setText(String.format("%02d:", hours)
+                + String.format("%02d:", mins)
+                + String.format("%02d", sec));
+    }
 
 
     @Override
     public void onDestroy() {
+        Log.d("ghshdhbh", "onDestroy Serc");
         presenter.onDetach();
-        if(mcoundowntimer!=null)
-        {
+        if (mcoundowntimer != null) {
             mcoundowntimer.cancel();
         }
         if (handler != null) handler.removeCallbacks(runnable);
         if (customHandler != null)
-     //   customHandler.removeCallbacks(updateTimerThread);
-        super.onDestroy();
+            //   customHandler.removeCallbacks(updateTimerThread);
+            super.onDestroy();
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        Log.d("ghshdhbh", "onStop Serc");
         if (handler != null) handler.removeCallbacks(runnable);
     }
 
@@ -392,6 +366,7 @@ boolean popupshowed=false;
     @Override
     public void onResume() {
         System.out.println("RRR ServiceFlowFragment.onResume");
+        Log.d("ghshdhbh", "onResume Serc");
         super.onResume();
         handler = new Handler();
         runnable = () -> {
@@ -453,23 +428,20 @@ boolean popupshowed=false;
     }
 
 
-
-
-    DataResponse mdataResponse ;
-        int renthours=-1;
+    DataResponse mdataResponse;
+    int renthours = -1;
 
     @Override
     public void onSuccess(DataResponse dataResponse) {
 
-        mdataResponse=dataResponse;
+        mdataResponse = dataResponse;
 
-         if((dataResponse.getData().get(0).getRent_plan()!=null)&&(dataResponse.getData().get(0).getServicerequired().equals("rental")))
-         {
+        if ((dataResponse.getData().get(0).getRent_plan() != null) && (dataResponse.getData().get(0).getServicerequired().equals("rental"))) {
 
-             //mcoundowntimer.start();
-             renthours= Integer.parseInt(dataResponse.getData().get(0).getRent_plan().getHour());
+            //mcoundowntimer.start();
+            renthours = Integer.parseInt(dataResponse.getData().get(0).getRent_plan().getHour());
             // renthours=5;
-         }
+        }
 
 
     }

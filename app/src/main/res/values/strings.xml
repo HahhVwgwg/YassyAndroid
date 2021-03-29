@@ -441,6 +441,15 @@
     <string name="fare_standard_desc">Быстро и доступно!</string>
     <string name="fare_comfort_desc">Комфортная поездка с опытным водителем</string>
 
+    <string name="trip_call_label">Позвонить</string>
+    <string name="trip_chat_label">Чат</string>
+    <string name="trip_go_label">Уже выхожу</string>
+    <string name="trip_where_label">Куда</string>
+    <string name="trip_payment_label">Изменить способ оплаты</string>
+    <string name="trip_fare">Детали заказа</string>
+    <string name="trip_fare_label">Ваш тариф %d ₸</string>
+    <string name="trip_cancel">Отменить</string>
+
     <string name="find_on_map">Указать на карте</string>
     <string name="mapbox_access_token">sk.eyJ1IjoieWFzc3ktdGF4aSIsImEiOiJja21idnp0dWcxYmdjMndwaHQ2OWVrNXo0In0.PeBoVsfxaNMfF_344xbApw</string>
 </resources>

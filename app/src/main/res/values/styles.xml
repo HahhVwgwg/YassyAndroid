@@ -134,6 +134,12 @@
         <item name="android:fontFamily">@string/font_family_regular_400</item>
     </style>
 
+    <style name="TextDescLabelSmall">
+        <item name="android:textColor">@color/text_hint</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">@string/font_family_regular_400</item>
+    </style>
+
     <style name="TextDesc">
         <item name="android:textColor">@color/text_light_black</item>
         <item name="android:textColorHint">@color/text_hint</item>
@@ -166,6 +172,10 @@
     </style>
 
     <style name="TextDesc.ServiceGrey" parent="TextDesc">
+        <item name="android:textColor">@color/text_service_grey</item>
+    </style>
+
+    <style name="TextSmallDesc.ServiceGrey" parent="TextDesc">
         <item name="android:textColor">@color/text_service_grey</item>
     </style>
 

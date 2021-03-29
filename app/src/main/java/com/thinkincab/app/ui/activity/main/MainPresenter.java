@@ -15,8 +15,8 @@ public class MainPresenter<V extends MainIView> extends BasePresenter<V> impleme
 
     public final static Map<String, SearchAddress> GEO_CACHE = new HashMap<>();
 
-    private boolean enableProviders;
-    private boolean enableCheckStatus;
+    private boolean enableProviders = false;
+    private boolean enableCheckStatus = true;
 
     @Override
     public void getUserInfo() {

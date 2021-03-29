@@ -15,7 +15,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
 import com.thinkincab.app.R;
 import com.thinkincab.app.base.BaseFragment;
 import com.thinkincab.app.common.Constants;
@@ -101,14 +100,12 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
         return view;
     }
 
-    private void setDataOnUi(String serviceName, Service service, Tariffs fare) {
+    private void setDataOnUi(String serviceName, Tariffs fare) {
         if (serviceName != null && !serviceName.isEmpty()) {
             try {
-                Log.d("sfdgsg", new Gson().toJson(fare));
                 RIDE_REQUEST.put(DISTANCE_VAL, fare.getType().get(0).getDistance());
                 ((MainActivity) getActivity()).showTime(fare.getType().get(0).getTime());
             } catch (Exception e) {
-                Log.d("sfdgsg", e.toString());
                 e.printStackTrace();
             }
         }
@@ -237,7 +234,7 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                         Service service = adapter.getSelectedService();
                         if (service != null) {
                             RIDE_REQUEST.put(SERVICE_TYPE, service.getId());
-                            setDataOnUi(service.getName(), service, estimateFare);
+                            setDataOnUi(service.getName(), estimateFare);
                         }
 
                     } else if (response.raw().code() == 500) try {
@@ -278,6 +275,7 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
     public void onResume() {
         super.onResume();
         initPayment(estimatedPaymentMode);
+        Log.d("sfkhgkgh", "onResume");
     }
 
     public interface CouponListener {
