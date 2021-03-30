@@ -145,6 +145,8 @@ public class MainActivity extends BaseActivity implements
     private static String CURRENT_STATUS = EMPTY;
     private final MainPresenter<MainActivity> mainPresenter = new MainPresenter<>();
 
+    private final int[] transitions = new int[] {R.id.tr_to_trip, R.id.tr_to_map, R.id.tr_to_service, R.id.tr};
+
     @BindView(R.id.container)
     FrameLayout container;
     @BindView(R.id.menu_back)
@@ -384,14 +386,14 @@ public class MainActivity extends BaseActivity implements
                     topLayout.enableTransition(R.id.tr, false);
                     searchAddressAdapter.update(new ArrayList<>());
                     if (CURRENT_STATUS.equalsIgnoreCase(MAP)) {
-                        changeFlow(CURRENT_STATUS);
+                        changeFlow(CURRENT_STATUS, false);
                         motionLayout.setTransition(R.id.tr_to_map);
                         motionLayout.transitionToEnd();
                     } else if (RIDE_REQUEST.containsKey(SRC_ADD)
                             && RIDE_REQUEST.containsKey(DEST_ADD)
                             && CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
                         CURRENT_STATUS = SERVICE;
-                        changeFlow(CURRENT_STATUS);
+                        changeFlow(CURRENT_STATUS, false);
                         LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
                         LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
                         drawRoute(origin, destination);
@@ -418,11 +420,14 @@ public class MainActivity extends BaseActivity implements
                     }
                 } else if (i == R.id.end) {
                     isExpanded = true;
+                } else if (i == R.id.start_trip) {
+                    isExpanded = false;
+                    motionLayout.setTransition(R.id.tr);
                 } else if (i == R.id.start_service) {
                     isExpanded = false;
                     motionLayout.setTransition(R.id.tr);
                     CURRENT_STATUS = EMPTY;
-                    changeFlow(CURRENT_STATUS);
+                    changeFlow(CURRENT_STATUS, false);
                     returnToInitial();
                 } else if (i == R.id.start_map) {
                     isExpanded = false;
@@ -435,7 +440,7 @@ public class MainActivity extends BaseActivity implements
                     if (RIDE_REQUEST.containsKey(SRC_ADD)
                             && RIDE_REQUEST.containsKey(DEST_ADD)) {
                         CURRENT_STATUS = SERVICE;
-                        changeFlow(CURRENT_STATUS);
+                        changeFlow(CURRENT_STATUS, false);
                         LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
                         LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
                         drawRoute(origin, destination);
@@ -443,7 +448,7 @@ public class MainActivity extends BaseActivity implements
                         motionLayout.transitionToEnd();
                     } else {
                         CURRENT_STATUS = EMPTY;
-                        changeFlow(CURRENT_STATUS);
+                        changeFlow(CURRENT_STATUS, false);
                     }
                 } else if (i == R.id.end_map) {
                     if (mapSelectFragment != null && lastPoint != null) {
@@ -473,8 +478,8 @@ public class MainActivity extends BaseActivity implements
                     isMapMoved = true;
                     mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
                             .target(new LatLng(
-                                    item.getLat(),
-                                    item.getLon()
+                                            item.getLat(),
+                                            item.getLon()
                                     )
                             )
                             .padding(
@@ -540,8 +545,9 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) drawer.closeDrawer(GravityCompat.START);
-        else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             if (getSupportFragmentManager().findFragmentById(R.id.container)
                     instanceof ServiceFlowFragment) {
                 getSupportFragmentManager().popBackStack();
@@ -582,7 +588,7 @@ public class MainActivity extends BaseActivity implements
                     && RIDE_REQUEST.containsKey(DEST_ADD)
                     && CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
                 CURRENT_STATUS = SERVICE;
-                changeFlow(CURRENT_STATUS);
+                changeFlow(CURRENT_STATUS, false);
                 LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
                 LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
                 drawRoute(origin, destination);
@@ -648,13 +654,16 @@ public class MainActivity extends BaseActivity implements
         startActivity(intent);
     }
 
-    public void changeFlow(String status) {
-        System.out.println("RRR CURRENT_STATUS = " + status);
-
-        dismissDialog(SEARCHING);
+    public void changeFlow(String status, boolean rollbackTransition) {
+        Log.d("TRIP_INFO", "status - " + status + ", " + rollbackTransition);
+        if (rollbackTransition) {
+            topLayout.transitionToStart();
+        }
         dismissDialog(RATING);
         switch (status) {
             case EMPTY:
+                Log.d("TRIP_INFO", "tr - " + topLayout.getTransitionName());
+
                 CURRENT_STATUS = EMPTY;
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, findViewById(R.id.nav_view));
                 menuApp.setVisibility(View.VISIBLE);
@@ -693,17 +702,26 @@ public class MainActivity extends BaseActivity implements
                 mainPin.setVisibility(View.GONE);
                 break;
             case SEARCHING:
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, findViewById(R.id.nav_view));
+                menuApp.setVisibility(View.GONE);
+                menuBack.setVisibility(View.GONE);
                 pickLocationLayout.setVisibility(View.GONE);
                 updatePaymentEntities();
                 SearchingFragment searchingFragment = new SearchingFragment();
-                searchingFragment.show(getSupportFragmentManager(), SEARCHING);
+                changeFragment(searchingFragment);
                 break;
             case STARTED:
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, findViewById(R.id.nav_view));
+                menuApp.setVisibility(View.GONE);
+                menuBack.setVisibility(View.GONE);
                 pickLocationLayout.setVisibility(View.GONE);
+                topLayout.setTransition(R.id.tr_to_trip);
+                topLayout.transitionToEnd();
                 menuBack.setVisibility(View.GONE);
                 if (DATUM != null)
                     FirebaseMessaging.getInstance().subscribeToTopic(String.valueOf(DATUM.getId()));
                 changeFragment(new ServiceFlowFragment());
+                mainPin.setVisibility(View.GONE);
                 break;
             case ARRIVED:
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, findViewById(R.id.nav_view));
@@ -711,7 +729,7 @@ public class MainActivity extends BaseActivity implements
                 menuBack.setVisibility(View.GONE);
                 topLayout.setTransition(R.id.tr_to_trip);
                 topLayout.transitionToEnd();
-                //pickLocationLayout.setVisibility(View.GONE);
+                pickLocationLayout.setVisibility(View.GONE);
                 changeFragment(new ServiceFlowFragment());
                 mainPin.setVisibility(View.GONE);
                 break;
@@ -776,7 +794,7 @@ public class MainActivity extends BaseActivity implements
             LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
             drawRoute(origin, destination);
             CURRENT_STATUS = SERVICE;
-            changeFlow(CURRENT_STATUS);
+            changeFlow(CURRENT_STATUS, false);
         }
     }
 
@@ -787,20 +805,19 @@ public class MainActivity extends BaseActivity implements
     public void changeFragment(Fragment fragment) {
         if (isFinishing()) return;
         if (fragment != null) {
-            if (fragment instanceof ServiceFlowFragment || fragment instanceof BookRideFragment || fragment instanceof MapSelectFragment) {
-
-            } else if (fragment instanceof RateCardFragment)
-                container.setBackgroundColor(getResources().getColor(android.R.color.transparent));
-            else container.setBackgroundColor(getResources().getColor(R.color.white));
-
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-
-            if (fragment instanceof RateCardFragment)
+            if (fragment instanceof RateCardFragment) {
                 fragmentTransaction.addToBackStack(fragment.getTag());
-            else if (fragment instanceof ScheduleFragment)
+            } else if (fragment instanceof ScheduleFragment) {
                 fragmentTransaction.addToBackStack(fragment.getTag());
-            else if (fragment instanceof BookRideFragment)
+            } else if (fragment instanceof BookRideFragment) {
+                container.setBackgroundResource(R.drawable.form_bg);
                 fragmentTransaction.addToBackStack(fragment.getTag());
+            } else if (fragment instanceof MapSelectFragment) {
+                container.setBackgroundResource(R.drawable.form_bg);
+            } else {
+                container.setBackgroundResource(0);
+            }
 
             try {
                 fragmentTransaction.replace(R.id.container, fragment, fragment.getTag());
@@ -830,10 +847,7 @@ public class MainActivity extends BaseActivity implements
 
     private void dismissDialog(String tag) {
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment instanceof SearchingFragment) {
-            SearchingFragment df = (SearchingFragment) fragment;
-            df.dismissAllowingStateLoss();
-        } else if (fragment instanceof RatingDialogFragment) {
+        if (fragment instanceof RatingDialogFragment) {
             RatingDialogFragment df = (RatingDialogFragment) fragment;
             df.dismissAllowingStateLoss();
         }
@@ -1008,14 +1022,17 @@ public class MainActivity extends BaseActivity implements
         if (!Objects.requireNonNull(dataResponse.getData()).isEmpty()) {
             if (!CURRENT_STATUS.equals(dataResponse.getData().get(0).getStatus())) {
                 DATUM = dataResponse.getData().get(0);
+                final boolean rollback = DATUM.getStatus().equals(EMPTY) && !CURRENT_STATUS.equals(EMPTY);
                 CURRENT_STATUS = DATUM.getStatus();
-                changeFlow(CURRENT_STATUS);
+                Log.d("TRIP_INFO", "status by data - " + CURRENT_STATUS);
+                changeFlow(CURRENT_STATUS, rollback);
             }
-        } else if (CURRENT_STATUS.equals(SERVICE) || CURRENT_STATUS.equals(MAP))
+        } else if (CURRENT_STATUS.equals(SERVICE) || CURRENT_STATUS.equals(MAP)) {
             System.out.println("RRR CURRENT_STATUS = " + CURRENT_STATUS);
-        else {
+        } else {
+            Log.d("TRIP_INFO", "status clear - " + CURRENT_STATUS);
             CURRENT_STATUS = EMPTY;
-            changeFlow(CURRENT_STATUS);
+            changeFlow(CURRENT_STATUS, false);
         }
 
         if (CURRENT_STATUS.equals(STARTED)
@@ -1160,7 +1177,7 @@ public class MainActivity extends BaseActivity implements
             Toast.makeText(this, "Card failed or insufficient balance! Please pay the driver in cash.", Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(this, R.string.you_have_successfully_paid, Toast.LENGTH_SHORT).show();
-            this.changeFlow(RATING);
+            this.changeFlow(RATING, false);
         }
     }
 

@@ -38,9 +38,9 @@ public interface Constants {
         String SEARCHING = "SEARCHING"; // поиск авто
         String PAYMENT = "PAYMENT";
         String SOS = "SOS";
-        String STARTED = "STARTED";
+        String STARTED = "STARTED"; // воитель принял заказ
         String ARRIVED = "ARRIVED";  // водитель подъехал
-        String PICKED_UP = "PICKEDUP";
+        String PICKED_UP = "PICKEDUP"; // клиент сел в машину
         String DROPPED = "DROPPED";
         String COMPLETED = "COMPLETED";
         String RATING = "RATING";

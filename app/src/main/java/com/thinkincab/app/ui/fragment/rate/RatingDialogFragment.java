@@ -93,7 +93,7 @@ public class RatingDialogFragment extends BaseBottomSheetDialogFragment implemen
         }
         dismiss();
         Objects.requireNonNull(getActivity()).sendBroadcast(new Intent(INTENT_FILTER));
-        ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(EMPTY);
+        ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(EMPTY, false);
         if (!TextUtils.isEmpty(chatPath))
             FirebaseDatabase.getInstance().getReference().child(chatPath).removeValue();
     }

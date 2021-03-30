@@ -480,7 +480,7 @@ public class InvoiceFragment extends BaseFragment implements InvoiceIView {
     @Override
     public void onSuccessPayment(Object o) {
         Toast.makeText(getContext(), R.string.you_have_successfully_paid, Toast.LENGTH_SHORT).show();
-        ((MainActivity) Objects.requireNonNull(getContext())).changeFlow("RATING");
+        ((MainActivity) Objects.requireNonNull(getContext())).changeFlow("RATING", false);
     }
 
     @Override
@@ -495,7 +495,7 @@ public class InvoiceFragment extends BaseFragment implements InvoiceIView {
             Toast.makeText(getContext(), "Card failed or insufficient balance! Please pay the driver in cash.", Toast.LENGTH_LONG).show();
         }else{
             Toast.makeText(getContext(), R.string.you_have_successfully_paid, Toast.LENGTH_SHORT).show();
-            ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(RATING);
+            ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(RATING, false);
         }
 
     }
@@ -520,7 +520,7 @@ public class InvoiceFragment extends BaseFragment implements InvoiceIView {
                 break;
             case R.id.done:
             case R.id.ivInvoice:
-                ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(RATING);
+                ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(RATING, false);
                 break;
             case R.id.tvGiveTip:
                 showTipDialog(payment.getPayable());

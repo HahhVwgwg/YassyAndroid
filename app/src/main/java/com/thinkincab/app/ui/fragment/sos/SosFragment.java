@@ -8,8 +8,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.thinkincab.app.R;
 import com.thinkincab.app.base.BaseBottomSheetDialogFragment;
-import com.thinkincab.app.ui.fragment.searching.SearchingFragment;
-import com.thinkincab.app.ui.fragment.searching.SearchingPresenter;
 
 import butterknife.ButterKnife;
 

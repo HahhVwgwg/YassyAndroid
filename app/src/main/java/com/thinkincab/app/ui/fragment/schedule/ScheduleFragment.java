@@ -118,7 +118,7 @@ public class ScheduleFragment extends BaseFragment implements ScheduleIView {
 
         Toasty.success(Objects.requireNonNull(getActivity()), getString(R.string.success_schedule_ride_created), Toast.LENGTH_SHORT).show();
         baseActivity().sendBroadcast(new Intent(INTENT_FILTER));
-        ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(EMPTY);
+        ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(EMPTY, false);
 
     }
 

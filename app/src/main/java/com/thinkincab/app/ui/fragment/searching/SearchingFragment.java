@@ -11,6 +11,7 @@ import android.view.View;
 import com.thinkincab.app.MvpApplication;
 import com.thinkincab.app.R;
 import com.thinkincab.app.base.BaseBottomSheetDialogFragment;
+import com.thinkincab.app.base.BaseFragment;
 import com.thinkincab.app.data.network.model.Datum;
 import com.thinkincab.app.ui.activity.main.MainActivity;
 
@@ -27,18 +28,9 @@ import static com.thinkincab.app.common.Constants.RIDE_REQUEST.DEST_LAT;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.DEST_LONG;
 import static com.thinkincab.app.common.Constants.Status.EMPTY;
 
-public class SearchingFragment extends BaseBottomSheetDialogFragment implements SearchingIView {
+public class SearchingFragment extends BaseFragment implements SearchingIView {
 
     private SearchingPresenter<SearchingFragment> presenter = new SearchingPresenter<>();
-
-    public SearchingFragment() {
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setStyle(BottomSheetDialogFragment.STYLE_NORMAL, R.style.CustomBottomSheetDialogTheme);
-    }
 
     @Override
     public int getLayoutId() {
@@ -46,15 +38,10 @@ public class SearchingFragment extends BaseBottomSheetDialogFragment implements 
     }
 
     @Override
-    public void initView(View view) {
-        setCancelable(false);
-        getDialog().setOnShowListener(dialog -> {
-            BottomSheetDialog d = (BottomSheetDialog) dialog;
-            View bottomSheetInternal = d.findViewById(R.id.design_bottom_sheet);
-            BottomSheetBehavior.from(bottomSheetInternal).setState(BottomSheetBehavior.STATE_EXPANDED);
-        });
+    public View initView(View view) {
         ButterKnife.bind(this, view);
         presenter.attachView(this);
+        return view;
     }
 
 
@@ -97,14 +84,13 @@ public class SearchingFragment extends BaseBottomSheetDialogFragment implements 
         MvpApplication.RIDE_REQUEST.remove(DEST_LONG);
 
         baseActivity().sendBroadcast(new Intent(INTENT_FILTER));
-        ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(EMPTY);
-        dismissAllowingStateLoss();
+        ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(EMPTY, true);
     }
 
     @Override
     public void onError(Throwable e) {
         handleError(e);
         baseActivity().sendBroadcast(new Intent(INTENT_FILTER));
-        ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(EMPTY);
+        ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(EMPTY, true);
     }
 }

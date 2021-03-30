@@ -12,21 +12,13 @@ import android.os.Handler;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
 import androidx.core.app.ActivityCompat;
 
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.thinkincab.app.R;
 import com.thinkincab.app.base.BaseFragment;
@@ -49,38 +41,28 @@ import java.util.Objects;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.thinkincab.app.MvpApplication.DATUM;
 import static com.thinkincab.app.MvpApplication.RIDE_REQUEST;
-import static com.thinkincab.app.MvpApplication.showOTP;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.SRC_LAT;
 import static com.thinkincab.app.common.Constants.RIDE_REQUEST.SRC_LONG;
 import static com.thinkincab.app.common.Constants.Status.ARRIVED;
 import static com.thinkincab.app.common.Constants.Status.PICKED_UP;
 import static com.thinkincab.app.common.Constants.Status.STARTED;
-import static com.thinkincab.app.data.SharedHelper.key.SOS_NUMBER;
 
 public class ServiceFlowFragment extends BaseFragment
         implements ServiceFlowIView, CancelRequestInterface {
 
-    @BindView(R.id.otp)
-    TextView otp;
-    @BindView(R.id.avatar)
-    CircleImageView avatar;
-    @BindView(R.id.first_name)
-    TextView firstName;
-    @BindView(R.id.status)
-    TextView status;
-    @BindView(R.id.rating)
-    RatingBar rating;
-    @BindView(R.id.cancel_btn)
-    MaterialButton cancel;
-
-    @BindView(R.id.image)
-    ImageView image;
-    @BindView(R.id.call)
-    Button call;
+    @BindView(R.id.source)
+    TextView source;
+    @BindView(R.id.trip_status_title)
+    TextView statusTitle;
+    @BindView(R.id.trip_status_desc)
+    TextView statusDesc;
+    @BindView(R.id.payment_value)
+    TextView paymentValue;
+    @BindView(R.id.fare_label)
+    TextView fareLabel;
 
     private Runnable runnable;
     private Handler handler;
@@ -152,17 +134,14 @@ public class ServiceFlowFragment extends BaseFragment
     @Override
     public void onDestroyView() {
         presenter.onDetach();
-
-        Log.d("ghshdhbh", "onDestroyView Serc");
-
         super.onDestroyView();
     }
 
-    @OnClick({R.id.sos, R.id.cancel_btn, R.id.call_btn, R.id.chat_btn})
+    @OnClick({R.id.go_btn, R.id.cancel_btn, R.id.call_btn, R.id.chat_btn})
     public void onViewClicked(View view) {
         switch (view.getId()) {
-            case R.id.sos:
-                sos();
+            case R.id.go_btn:
+
                 break;
             case R.id.cancel_btn:
                 CancelRideDialogFragment cancelRideFragment = new CancelRideDialogFragment(callback);
@@ -183,41 +162,25 @@ public class ServiceFlowFragment extends BaseFragment
 
     @SuppressLint({"StringFormatInvalid", "RestrictedApi"})
     private void initView(Datum datum) {
-        Log.d("ghshdhbh", "initView trip" + datum.toString());
+        Log.d("TRIP_INFO", "initView trip" + datum.toString());
         Provider provider = datum.getProvider();
         if (provider != null) {
-            firstName.setText(String.format("%s %s", provider.getFirstName(), provider.getLastName()));
-            rating.setRating(Float.parseFloat(provider.getRating()));
-            Glide.with(baseActivity())
-                    .load(provider.getAvatar())
-                    .apply(RequestOptions
-                            .placeholderOf(R.drawable.ic_user_placeholder)
-                            .dontAnimate()
-                            .error(R.drawable.ic_user_placeholder))
-                    .into(avatar);
+            //firstName.setText(String.format("%s %s", provider.getFirstName(), provider.getLastName()));
             providerPhoneNumber = provider.getMobile();
         }
-
+        source.setText(datum.getDAddress());
         ServiceType serviceType = datum.getServiceType();
         if (serviceType != null) {
            // serviceTypeName.setText(serviceType.getName());
-            Glide.with(baseActivity())
-                    .load(serviceType.getImage())
-                    .apply(RequestOptions.placeholderOf(R.drawable.ic_car)
-                            .dontAnimate()
-                            .error(R.drawable.ic_car))
-                    .into(image);
+            fareLabel.setText(getString(R.string.trip_fare_label, (int) serviceType.getPrice()));
         }
 
 
         ProviderService providerService = datum.getProviderService();
         if (providerService != null) {
           //  serviceNumber.setText(providerService.getServiceNumber());
-         //   serviceModel.setText(providerService.getServiceModel());
+            statusDesc.setText(providerService.getServiceModel());
         }
-
-        otp.setText(getString(R.string.otp_, datum.getOtp()));
-        otp.setVisibility(showOTP ? View.VISIBLE : View.GONE);
 
         shareRideText = getString(R.string.app_name) + ": "
                 + datum.getUser().getFirstName() + " " + datum.getUser().getLastName() + " voyage avec "
@@ -226,14 +189,14 @@ public class ServiceFlowFragment extends BaseFragment
 
         switch (datum.getStatus()) {
             case STARTED:
-                status.setText(R.string.driver_accepted_your_request);
+                statusTitle.setText(R.string.trip_title_arrived);
                 break;
             case ARRIVED:
-                status.setText(R.string.driver_has_arrived_your_location);
+                statusTitle.setText(getString(R.string.trip_title_started, datum.getOtp()));
                 break;
             case PICKED_UP:
-                status.setText(R.string.you_are_on_ride);
-                cancel.setVisibility(View.GONE);
+                //status.setText(R.string.you_are_on_ride);
+               // cancel.setVisibility(View.GONE);
                 break;
             default:
                 break;
@@ -249,17 +212,6 @@ public class ServiceFlowFragment extends BaseFragment
             ((MainActivity) Objects.requireNonNull(getActivity())).drawRoute(origin, destination);
         }
 
-    }
-
-
-    private void sos() {
-        new AlertDialog.Builder(getContext())
-                .setTitle(getContext().getResources().getString(R.string.sos_alert))
-                .setMessage(R.string.are_sure_you_want_to_emergency_alert)
-                .setCancelable(true)
-                .setPositiveButton(getContext().getResources().getString(R.string.yes), (dialog, which) -> callPhoneNumber(SharedHelper.getKey(getContext(), SOS_NUMBER)))
-                .setNegativeButton(getContext().getResources().getString(R.string.no), (dialog, which) -> dialog.cancel())
-                .show();
     }
 
     private void callPhoneNumber(String mobileNumber) {
@@ -344,7 +296,6 @@ public class ServiceFlowFragment extends BaseFragment
 
     @Override
     public void onDestroy() {
-        Log.d("ghshdhbh", "onDestroy Serc");
         presenter.onDetach();
         if (mcoundowntimer != null) {
             mcoundowntimer.cancel();
@@ -358,7 +309,6 @@ public class ServiceFlowFragment extends BaseFragment
     @Override
     public void onStop() {
         super.onStop();
-        Log.d("ghshdhbh", "onStop Serc");
         if (handler != null) handler.removeCallbacks(runnable);
     }
 
@@ -366,7 +316,6 @@ public class ServiceFlowFragment extends BaseFragment
     @Override
     public void onResume() {
         System.out.println("RRR ServiceFlowFragment.onResume");
-        Log.d("ghshdhbh", "onResume Serc");
         super.onResume();
         handler = new Handler();
         runnable = () -> {

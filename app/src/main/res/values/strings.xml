@@ -167,7 +167,8 @@
     <string name="sos">SOS</string>
     <string name="sos_alert">SOS Alert</string>
     <string name="are_sure_you_want_to_emergency_alert">Are you sure you want to proceed with emergency alert?</string>
-    <string name="finding_driver">Finding driver…</string>
+    <string name="finding_driver">Поиск машины</string>
+    <string name="finding_driver_desc">Ищем ближайщие машины доступные для вашей поездки.</string>
     <string name="cancel_request">Cancel Request</string>
     <string name="are_sure_you_want_to_cancel_the_request">Are you sure you want to cancel the request</string>
     <string name="invalid_first_name">Please enter first name</string>
@@ -449,6 +450,8 @@
     <string name="trip_fare">Детали заказа</string>
     <string name="trip_fare_label">Ваш тариф %d ₸</string>
     <string name="trip_cancel">Отменить</string>
+    <string name="trip_title_arrived">Водитель прибыл</string>
+    <string name="trip_title_started">Приедет через %s</string>
 
     <string name="find_on_map">Указать на карте</string>
     <string name="mapbox_access_token">sk.eyJ1IjoieWFzc3ktdGF4aSIsImEiOiJja21idnp0dWcxYmdjMndwaHQ2OWVrNXo0In0.PeBoVsfxaNMfF_344xbApw</string>
