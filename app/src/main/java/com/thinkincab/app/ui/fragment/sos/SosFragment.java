@@ -1,5 +1,7 @@
 package com.thinkincab.app.ui.fragment.sos;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 
@@ -8,8 +10,13 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.thinkincab.app.R;
 import com.thinkincab.app.base.BaseBottomSheetDialogFragment;
+import com.thinkincab.app.data.SharedHelper;
+import com.thinkincab.app.ui.activity.main.MainActivity;
 
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+
+import static com.thinkincab.app.data.SharedHelper.key.SOS_NUMBER;
 
 public class SosFragment extends BaseBottomSheetDialogFragment {
 
@@ -35,5 +42,17 @@ public class SosFragment extends BaseBottomSheetDialogFragment {
         });
         ButterKnife.bind(this, view);
        // presenter.attachView(this);
+    }
+
+    @OnClick(R.id.form_btn)
+    public void onViewClicked() {
+        String phone = SharedHelper.getKey(requireContext(), SOS_NUMBER);
+        if (phone != null) {
+            try {
+                startActivity(new Intent(Intent.ACTION_DIAL).setData(Uri.parse("tel:" + phone)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

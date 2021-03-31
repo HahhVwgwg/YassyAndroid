@@ -63,6 +63,12 @@ public class ServiceFlowFragment extends BaseFragment
     TextView paymentValue;
     @BindView(R.id.fare_label)
     TextView fareLabel;
+    @BindView(R.id.go_btn)
+    View goBtn;
+    @BindView(R.id.cancel_btn)
+    View cancelBtn;
+    @BindView(R.id.label_go_btn)
+    View labelGoBtn;
 
     private Runnable runnable;
     private Handler handler;
@@ -70,8 +76,7 @@ public class ServiceFlowFragment extends BaseFragment
     public int PERMISSIONS_REQUEST_PHONE = 4;
 
     private String providerPhoneNumber = null;
-    private String shareRideText = "";
-    private ServiceFlowPresenter<ServiceFlowFragment> presenter = new ServiceFlowPresenter<>();
+    private final ServiceFlowPresenter<ServiceFlowFragment> presenter = new ServiceFlowPresenter<>();
     private CancelRequestInterface callback;
 
     @Override
@@ -99,10 +104,10 @@ public class ServiceFlowFragment extends BaseFragment
                             Date dd = sdf.parse(mdataResponse.getData().get(0).getCreatedAt());
                             long timestarted = dd.getTime() + renthours * 3600 * 1000;
                             if (System.currentTimeMillis() > timestarted) {
-                               // secondSplitUp(0, tvTimer);
+                                // secondSplitUp(0, tvTimer);
                             } else {
 
-                               // secondSplitUp((timestarted - System.currentTimeMillis()) / 1000, tvTimer);
+                                // secondSplitUp((timestarted - System.currentTimeMillis()) / 1000, tvTimer);
                             }
 
                         } catch (ParseException e) {
@@ -137,7 +142,7 @@ public class ServiceFlowFragment extends BaseFragment
         super.onDestroyView();
     }
 
-    @OnClick({R.id.go_btn, R.id.cancel_btn, R.id.call_btn, R.id.chat_btn})
+    @OnClick({R.id.go_btn, R.id.cancel_btn, R.id.call_btn, R.id.chat_btn, R.id.payment_wrapper, R.id.fare_wrapper})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.go_btn:
@@ -171,32 +176,30 @@ public class ServiceFlowFragment extends BaseFragment
         source.setText(datum.getDAddress());
         ServiceType serviceType = datum.getServiceType();
         if (serviceType != null) {
-           // serviceTypeName.setText(serviceType.getName());
+            // serviceTypeName.setText(serviceType.getName());
             fareLabel.setText(getString(R.string.trip_fare_label, (int) serviceType.getPrice()));
         }
 
-
         ProviderService providerService = datum.getProviderService();
         if (providerService != null) {
-          //  serviceNumber.setText(providerService.getServiceNumber());
+            //  serviceNumber.setText(providerService.getServiceNumber());
             statusDesc.setText(providerService.getServiceModel());
         }
 
-        shareRideText = getString(R.string.app_name) + ": "
-                + datum.getUser().getFirstName() + " " + datum.getUser().getLastName() + " voyage avec "
-                + datum.getServiceType().getName() + ". et l\'emplacement actuel "
-                + "http://maps.google.com/maps?q=loc:" + datum.getDLatitude() + "," + datum.getDLongitude();
-
         switch (datum.getStatus()) {
             case STARTED:
-                statusTitle.setText(R.string.trip_title_arrived);
+                statusTitle.setText(getString(R.string.trip_title_started, datum.getOtp()));
+                goBtn.setVisibility(View.GONE);
+                labelGoBtn.setVisibility(View.GONE);
                 break;
             case ARRIVED:
-                statusTitle.setText(getString(R.string.trip_title_started, datum.getOtp()));
+                statusTitle.setText(R.string.trip_title_arrived);
+                goBtn.setVisibility(View.VISIBLE);
+                labelGoBtn.setVisibility(View.VISIBLE);
                 break;
             case PICKED_UP:
-                //status.setText(R.string.you_are_on_ride);
-               // cancel.setVisibility(View.GONE);
+                //statusTitle.setText(R.string.you_are_on_ride);
+                cancelBtn.setVisibility(View.GONE);
                 break;
             default:
                 break;
@@ -234,21 +237,6 @@ public class ServiceFlowFragment extends BaseFragment
             //customHandler.postDelayed(this, 1000);
         }
     };
-
-
-    private void sharedRide() {
-        try {
-            String appName = getString(R.string.app_name) + " " + getString(R.string.share_ride);
-            Intent sendIntent = new Intent();
-            sendIntent.setAction(Intent.ACTION_SEND);
-            sendIntent.putExtra(Intent.EXTRA_TEXT, shareRideText);
-            sendIntent.putExtra(Intent.EXTRA_SUBJECT, appName);
-            sendIntent.setType("text/plain");
-            startActivity(sendIntent);
-        } catch (Exception e) {
-            Toast.makeText(baseActivity(), "applications non trouvées!", Toast.LENGTH_SHORT).show();
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
@@ -382,16 +370,10 @@ public class ServiceFlowFragment extends BaseFragment
 
     @Override
     public void onSuccess(DataResponse dataResponse) {
-
         mdataResponse = dataResponse;
-
         if ((dataResponse.getData().get(0).getRent_plan() != null) && (dataResponse.getData().get(0).getServicerequired().equals("rental"))) {
-
-            //mcoundowntimer.start();
             renthours = Integer.parseInt(dataResponse.getData().get(0).getRent_plan().getHour());
-            // renthours=5;
         }
-
 
     }
 }

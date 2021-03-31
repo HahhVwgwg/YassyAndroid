@@ -7,6 +7,9 @@
     <dimen name="nav_header_height_1">30dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
 
+    <dimen name="rippleStrokeWidth">1dp</dimen>
+    <dimen name="rippleRadius">20dp</dimen>
+
     <dimen name="text_12">12sp</dimen>
     <dimen name="text_10">10sp</dimen>
     <dimen name="text_14">14sp</dimen>

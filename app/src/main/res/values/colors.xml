@@ -39,4 +39,5 @@
     <color name="app_divider_form">#F6F6F6</color>
     <color name="app_divider_list">#F2F2F2</color>
     <color name="app_border_grey">#F0F0F0</color>
+    <color name="app_pink_search">#80FEA972</color>
 </resources>

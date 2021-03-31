@@ -7,17 +7,20 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import android.view.View;
+import android.widget.TextView;
 
 import com.thinkincab.app.MvpApplication;
 import com.thinkincab.app.R;
 import com.thinkincab.app.base.BaseBottomSheetDialogFragment;
 import com.thinkincab.app.base.BaseFragment;
+import com.thinkincab.app.common.RippleSearchView;
 import com.thinkincab.app.data.network.model.Datum;
 import com.thinkincab.app.ui.activity.main.MainActivity;
 
 import java.util.HashMap;
 import java.util.Objects;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -29,6 +32,9 @@ import static com.thinkincab.app.common.Constants.RIDE_REQUEST.DEST_LONG;
 import static com.thinkincab.app.common.Constants.Status.EMPTY;
 
 public class SearchingFragment extends BaseFragment implements SearchingIView {
+
+    @BindView(R.id.search)
+    RippleSearchView search;
 
     private SearchingPresenter<SearchingFragment> presenter = new SearchingPresenter<>();
 
@@ -44,6 +50,17 @@ public class SearchingFragment extends BaseFragment implements SearchingIView {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        search.startRippleAnimation();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        search.stopRippleAnimation();
+    }
 
     @Override
     public void onDestroyView() {

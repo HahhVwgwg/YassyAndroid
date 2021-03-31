@@ -145,7 +145,7 @@ public class MainActivity extends BaseActivity implements
     private static String CURRENT_STATUS = EMPTY;
     private final MainPresenter<MainActivity> mainPresenter = new MainPresenter<>();
 
-    private final int[] transitions = new int[] {R.id.tr_to_trip, R.id.tr_to_map, R.id.tr_to_service, R.id.tr};
+    private final int[] transitions = new int[]{R.id.tr_to_trip, R.id.tr_to_map, R.id.tr_to_service, R.id.tr};
 
     @BindView(R.id.container)
     FrameLayout container;
@@ -222,6 +222,7 @@ public class MainActivity extends BaseActivity implements
     private LatLng lastPoint;
 
     private MapSelectFragment mapSelectFragment;
+    private Fragment currentTripFragment;
 
     private int selectedEditText;
 
@@ -662,8 +663,6 @@ public class MainActivity extends BaseActivity implements
         dismissDialog(RATING);
         switch (status) {
             case EMPTY:
-                Log.d("TRIP_INFO", "tr - " + topLayout.getTransitionName());
-
                 CURRENT_STATUS = EMPTY;
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, findViewById(R.id.nav_view));
                 menuApp.setVisibility(View.VISIBLE);
@@ -805,6 +804,9 @@ public class MainActivity extends BaseActivity implements
     public void changeFragment(Fragment fragment) {
         if (isFinishing()) return;
         if (fragment != null) {
+            if (currentTripFragment != null && currentTripFragment instanceof ServiceFlowFragment && fragment instanceof ServiceFlowFragment) {
+                return;
+            }
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             if (fragment instanceof RateCardFragment) {
                 fragmentTransaction.addToBackStack(fragment.getTag());
@@ -822,10 +824,13 @@ public class MainActivity extends BaseActivity implements
             try {
                 fragmentTransaction.replace(R.id.container, fragment, fragment.getTag());
                 fragmentTransaction.commitAllowingStateLoss();
+                currentTripFragment = fragment;
             } catch (Exception e) {
+                currentTripFragment = null;
                 e.printStackTrace();
             }
         } else {
+            currentTripFragment = null;
             mapSelectFragment = null;
             for (Fragment fragmentd : getSupportFragmentManager().getFragments()) {
                 if (fragmentd instanceof ServiceFlowFragment) {
