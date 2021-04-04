@@ -57,6 +57,7 @@ import com.thinkincab.app.MvpApplication;
 import com.thinkincab.app.R;
 import com.thinkincab.app.base.BaseActivity;
 import com.thinkincab.app.chat.ChatActivity;
+import com.thinkincab.app.common.ConnectionLiveData;
 import com.thinkincab.app.common.Constants;
 import com.thinkincab.app.common.LocaleHelper;
 import com.thinkincab.app.data.SharedHelper;
@@ -70,6 +71,7 @@ import com.thinkincab.app.data.network.model.SearchRoute;
 import com.thinkincab.app.data.network.model.SettingsResponse;
 import com.thinkincab.app.data.network.model.User;
 import com.thinkincab.app.data.network.model.UserAddress;
+import com.thinkincab.app.ui.activity.favorites.FavoritesActivity;
 import com.thinkincab.app.ui.activity.help.HelpActivity;
 import com.thinkincab.app.ui.activity.payment.PaymentActivity;
 import com.thinkincab.app.ui.activity.setting.SettingsActivity;
@@ -79,6 +81,7 @@ import com.thinkincab.app.ui.adapter.SearchAddressAdapter;
 import com.thinkincab.app.ui.adapter.UserAddressAdapter;
 import com.thinkincab.app.ui.fragment.RateCardFragment;
 import com.thinkincab.app.ui.fragment.book_ride.BookRideFragment;
+import com.thinkincab.app.ui.fragment.error.ErrorFragment;
 import com.thinkincab.app.ui.fragment.invoice.InvoiceFragment;
 import com.thinkincab.app.ui.fragment.map.IMapView;
 import com.thinkincab.app.ui.fragment.map.MapFragment;
@@ -183,6 +186,8 @@ public class MainActivity extends BaseActivity implements
     FrameLayout onMap;
     @BindView(R.id.main_pin)
     View mainPin;
+    @BindView(R.id.alert_wrapper)
+    View alertWrapper;
 
     private KeyboardHeightProvider keyboardHeightProvider;
 
@@ -190,6 +195,7 @@ public class MainActivity extends BaseActivity implements
     private boolean isMapMoved = false;
     private boolean isDragging = false;
     private boolean isExpanded = false;
+    private boolean connected = false;
 
     private static final long REQUEST_PLACES_DELAY = 1000;
     private Timer timer = new Timer();
@@ -507,6 +513,15 @@ public class MainActivity extends BaseActivity implements
         ConcatAdapter adapter = new ConcatAdapter(userAddressAdapter, new EmptyAddressAdapter(1), searchAddressAdapter);
         addressesList.addItemDecoration(new ListOffset(DisplayUtils.dpToPx(24)));
         addressesList.setAdapter(adapter);
+        ConnectionLiveData connectionLiveData = new ConnectionLiveData(this);
+        connectionLiveData.observe(this, connected -> {
+            this.connected = connected != null ? connected : false;
+            if (this.connected) {
+                alertWrapper.setVisibility(View.GONE);
+            } else {
+                alertWrapper.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     @Override
@@ -607,6 +622,8 @@ public class MainActivity extends BaseActivity implements
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 isLocationPermissionGranted = true;
                 getDeviceLocation();
+            } else {
+                showLocationError();
             }
     }
 
@@ -858,6 +875,11 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
+    private void showLocationError() {
+        ErrorFragment errorFragment = ErrorFragment.newInstance(ErrorFragment.LOCATION);
+        errorFragment.show(getSupportFragmentManager(), "ERROR");
+    }
+
     private void getDeviceLocation() {
         try {
             if (isLocationPermissionGranted) {
@@ -917,6 +939,7 @@ public class MainActivity extends BaseActivity implements
                             .build()));
                     mapFragment.enableMyLocation(false);
                 }
+                showLocationError();
             }
         }
     }
@@ -1261,14 +1284,14 @@ public class MainActivity extends BaseActivity implements
                 if (home != null) {
                     updateSavedAddress(home);
                 } else {
-
+                    startActivity(new Intent(this, FavoritesActivity.class).putExtra(FavoritesActivity.TYPE, "home"));
                 }
                 break;
             case R.id.btn_work:
                 if (work != null) {
                     updateSavedAddress(work);
                 } else {
-
+                    startActivity(new Intent(this, FavoritesActivity.class).putExtra(FavoritesActivity.TYPE, "work"));
                 }
                 break;
         }
@@ -1288,6 +1311,8 @@ public class MainActivity extends BaseActivity implements
             startActivity(new Intent(this, SettingsActivity.class));
         } else if (menu instanceof MenuDrawer.MenuHelp) {
             startActivity(new Intent(this, HelpActivity.class));
+        } else if (menu instanceof MenuDrawer.MenuFavorites) {
+            startActivity(new Intent(this, FavoritesActivity.class));
         } else if (menu instanceof MenuDrawer.MenuDriver) {
             alertBecomeDriver();
         } else if (menu instanceof MenuDrawer.MenuLogout) {

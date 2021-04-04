@@ -105,7 +105,7 @@
     <string name="no_data_found">No data found</string>
     <string name="booking_id">Booking ID</string>
     <string name="settings">Settings</string>
-    <string name="favorites">Favorites</string>
+    <string name="favorites">Избранные адреса</string>
     <string name="choose_language">Choose Language</string>
     <string name="lost_my_item">Lost my item</string>
     <string name="incorrect_charge_dispute">Incorrect charge dispute</string>
@@ -131,9 +131,10 @@
     <string name="pickup_location">Откуда поедете?</string>
     <string name="add_home">Добавить дом</string>
     <string name="add_work">Добавить работу</string>
+    <string name="add_address">Другой адрес</string>
     <string name="location">Location</string>
-    <string name="home">Home</string>
-    <string name="work">Work</string>
+    <string name="home">Дом</string>
+    <string name="work">Работа</string>
     <string name="driver_has_arrived_your_location">Driver has arrived at your location</string>
     <string name="due_to_peek_hours">Due to peek hours, Charges will be varied based on availability of providers.</string>
     <string name="cancel">Cancel</string>
@@ -430,6 +431,14 @@
     <string name="drawer_menu_early_order">Ранний заказ</string>
     <string name="drawer_menu_help">Помощь</string>
     <string name="drawer_menu_payments">Способы оплаты</string>
+
+    <string name="alert_dept_title">Долг за платное ожидание %d ₸</string>
+    <string name="alert_dept_desc">Привяжите карту, чтобы расплатить долг.</string>
+    <string name="alert_net_title">Нет подключения</string>
+    <string name="alert_net_desc">Пожалуйста, проверьте подключение к сети</string>
+    <string name="error_area_title">К сожалению, мы не работаем в вашем регионе</string>
+    <string name="error_location_title">Не удалось найти вас :(</string>
+    <string name="error_location_desc">Разрешите доступ к геолокаций, чтобы определить ваше местополжение</string>
 
     <string name="sos_btn">SOS</string>
     <string name="sos_title">Экстренная ситуация</string>

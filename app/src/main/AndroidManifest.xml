@@ -170,6 +170,12 @@
             android:parentActivityName="com.thinkincab.app.ui.activity.main.MainActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name="com.thinkincab.app.ui.activity.favorites.FavoritesActivity"
+            android:label="@string/favorites"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName="com.thinkincab.app.ui.activity.main.MainActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name="com.thinkincab.app.ui.activity.wallet.WalletActivity"
             android:label="@string/wallet"
             android:parentActivityName="com.thinkincab.app.ui.activity.main.MainActivity"
