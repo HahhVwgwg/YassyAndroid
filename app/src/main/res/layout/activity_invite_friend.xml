@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/grey_material"
-    tools:context=".ui.activity.invite_friend.InviteFriendActivity">
+    tools:context="kz.yassy.taxi.ui.activity.invite_friend.InviteFriendActivity">
 
     <LinearLayout
         android:id="@+id/lnrInviteFriend"

@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:clickable="true"
     android:orientation="vertical"
-    tools:context=".ui.fragment.schedule.ScheduleFragment">
+    tools:context="kz.yassy.taxi.ui.fragment.schedule.ScheduleFragment">
 
     <TextView
         android:layout_width="match_parent"

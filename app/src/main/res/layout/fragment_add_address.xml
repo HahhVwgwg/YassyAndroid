@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/transparent"
+    android:paddingTop="@dimen/_15sdp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/form_bg"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <View
+            android:id="@+id/form_dash"
+            android:layout_width="33dp"
+            android:layout_height="4dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/form_dash" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/form_dash"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginHorizontal="30dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="15dp"
+                android:background="@drawable/ripple_square_btn"
+                android:elevation="20dp"
+                android:outlineAmbientShadowColor="#B0B0B0"
+                android:outlineSpotShadowColor="#B0B0B0"
+                tools:ignore="UnusedAttribute">
+
+                <RelativeLayout
+                    android:id="@+id/llDropLocationContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginHorizontal="20dp">
+
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/dest_icon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="14dp"
+                        android:src="@drawable/ic_search_orange" />
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/destination"
+                        style="@style/TextDesc.Dark"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_toEndOf="@+id/dest_icon"
+                        android:background="@null"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:hint="Укажите адрес"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="12dp"
+                        android:singleLine="true"
+                        android:textColor="@color/app_black"
+                        android:textSize="15sp" />
+
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/erase_dest"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="@drawable/shape"
+                        android:padding="8dp"
+                        android:visibility="gone"
+                        app:srcCompat="@drawable/ic_cancel_small" />
+
+                </RelativeLayout>
+            </FrameLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/addresses"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:elevation="6dp"
+                android:fadingEdge="vertical"
+                android:fadingEdgeLength="24dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="15dp"
+                android:requiresFadingEdge="vertical"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <FrameLayout
+                android:id="@+id/on_map"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_gravity="bottom|end"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="100dp"
+                android:background="@drawable/ripple_square_btn"
+                android:elevation="20dp"
+                android:outlineAmbientShadowColor="#B0B0B0"
+                android:outlineSpotShadowColor="#B0B0B0"
+                android:visibility="visible"
+                tools:ignore="UnusedAttribute">
+
+                <TextView
+                    style="@style/TextService"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:drawablePadding="8dp"
+                    android:gravity="center"
+                    android:text="@string/find_on_map"
+                    app:drawableStartCompat="@drawable/ic_pin_map_color" />
+
+            </FrameLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

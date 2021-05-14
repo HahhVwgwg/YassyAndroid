@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:keepScreenOn="true"
     android:animateLayoutChanges="true"
-    android:fitsSystemWindows="false"
+    android:fitsSystemWindows="true"
     tools:openDrawer="start">
 
     <include
@@ -21,11 +21,11 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         android:background="@android:color/transparent"
-        tools:context=".ui.activity.main.MainActivity">
+        tools:context="kz.yassy.taxi.ui.activity.main.MainActivity">
 
         <fragment
             android:id="@+id/drawer"
-            android:name="com.thinkincab.app.ui.activity.main.DrawerFragment"
+            android:name="kz.yassy.taxi.ui.activity.main.DrawerFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:tag="NavigationMenuFragment" />

@@ -55,6 +55,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="@string/auth_phone_hint"
+        android:textColor="@color/grey_material"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/line" />
@@ -78,7 +79,7 @@
         android:layout_height="58dp"
         android:layout_marginStart="@dimen/_24sdp"
         android:layout_marginEnd="@dimen/_24sdp"
-        android:layout_marginBottom="@dimen/_68sdp"
+        android:layout_marginBottom="@dimen/_44sdp"
         android:text="@string/auth_phone_btn"
         android:textAllCaps="false"
         android:textColor="@color/white"

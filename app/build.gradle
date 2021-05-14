@@ -11,14 +11,14 @@ android {
             storePassword 'yassit'
         }
     }
-    compileSdkVersion 29
+    compileSdkVersion 30
     defaultConfig {
-        resConfigs "en","ar"
-        applicationId "kz.yassy.taxi.user"
+        resConfigs "ru","kk"
+        applicationId "kz.yassy.taxi"
         minSdkVersion 21
-        targetSdkVersion 29
-        versionCode 2
-        versionName "1"
+        targetSdkVersion 30
+        versionCode 6
+        versionName "1.3"
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         //applicationIdSuffix '.app'
@@ -30,10 +30,9 @@ android {
 
         //Demo credentials
         buildConfigField "String", "BASE_URL", '"https://my.yassy.taxi/"'
-        buildConfigField "String", "BASE_IMAGE_URL", '"https://yassy.taxi/storage/"'
+        buildConfigField "String", "BASE_IMAGE_URL", '"https://my.yassy.taxi/storage/"'
         buildConfigField "String", "TERMS_CONDITIONS", '"https://yassy.taxi/privacy"'
         buildConfigField "String", "SITE_URL", '"https://yassy.taxi/"'
-
 
         buildConfigField "String", "DRIVER_PACKAGE", '"kz.yassy.taxi.driver"'
         buildConfigField "String", "CLIENT_SECRET", '"nMljNEA3v4ZQzrsrBk31xz5nXz0moM2hrieFbDG8"'
@@ -45,6 +44,8 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            testCoverageEnabled = false
+            debuggable false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
         }
@@ -130,4 +131,12 @@ dependencies {
     implementation 'com.ryanjeffreybrooks:indefinitepagerindicator:1.0.9'
     implementation 'com.facebook.shimmer:shimmer:0.4.0'
     implementation 'com.hold1:keyboardheightprovider:0.0.9'
+    //ssl certificate
+    implementation 'com.github.mklimek:ssl-utils-android:1.0.1'
+    //round elevation to imageview
+    implementation 'com.mikhaellopez:circularimageview:4.2.0'
+    //edittext for mask card details
+    implementation 'com.github.santalu:mask-edittext:1.1.1'
+    //metrica yandex
+    implementation 'com.yandex.android:mobmetricalib:3.20.1'
 }

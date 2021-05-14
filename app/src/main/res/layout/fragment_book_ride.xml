@@ -40,13 +40,17 @@
             android:layout_width="match_parent"
             android:layout_height="48dp">
 
-            <androidx.appcompat.widget.AppCompatImageView
+            <com.mikhaellopez.circularimageview.CircularImageView
                 android:id="@+id/src_icon"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="14dp"
-                android:src="@drawable/ic_point_off" />
+                android:outlineProvider="bounds"
+                android:src="@drawable/ic_point"
+                app:civ_shadow="true"
+                app:civ_shadow_color="@color/grey_material"
+                app:civ_shadow_radius="1dp" />
 
             <TextView
                 android:id="@+id/source"
@@ -71,12 +75,16 @@
             android:layout_width="match_parent"
             android:layout_height="48dp">
 
-            <androidx.appcompat.widget.AppCompatImageView
+            <com.mikhaellopez.circularimageview.CircularImageView
                 android:id="@+id/dest_icon"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="14dp"
+                android:outlineProvider="bounds"
+                app:civ_shadow="true"
+                app:civ_shadow_color="@color/grey_material"
+                app:civ_shadow_radius="1dp"
                 android:src="@drawable/ic_point_on" />
 
             <TextView
@@ -201,13 +209,12 @@
 
         </LinearLayout>
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="24dp"
-            android:layout_marginEnd="24dp"
-            android:orientation="horizontal">
+            android:layout_marginEnd="24dp">
 
             <TextView
                 android:id="@+id/estimated_payment_mode"
@@ -219,11 +226,27 @@
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLines="1"
+                android:layout_alignParentStart="true"
                 android:text="@string/cash"
                 app:drawableEndCompat="@drawable/ic_dropdown_dark"
                 app:drawableStartCompat="@drawable/ic_money_grey" />
 
-        </LinearLayout>
+            <TextView
+                android:id="@+id/notes"
+                style="@style/TextDesc.Grey"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="10dp"
+                android:background="?attr/selectableItemBackground"
+                android:drawablePadding="6dp"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:text="Примечания"
+                app:drawableEndCompat="@drawable/ic_dropdown_dark"
+                app:drawableStartCompat="@drawable/ic_money_grey" />
+        </RelativeLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

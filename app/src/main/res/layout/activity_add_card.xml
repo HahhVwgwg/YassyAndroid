@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.activity.add_card.AddCardActivity">
+    tools:context="kz.yassy.taxi.ui.activity.add_card.AddCardActivity">
 
     <com.braintreepayments.cardform.view.CardForm
         android:id="@+id/card_form"

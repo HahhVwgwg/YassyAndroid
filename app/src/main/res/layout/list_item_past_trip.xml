@@ -1,92 +1,178 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_view"
     android:layout_width="match_parent"
+    android:background="@drawable/backminne"
     android:layout_height="wrap_content"
+    android:elevation="10dp"
+    android:orientation="vertical"
+    android:transitionName="item_view"
     android:layout_margin="16dp">
+
+    <ImageView
+        android:id="@+id/static_map"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:background="@drawable/ic_launcher_background"
+        android:contentDescription="@string/app_name"
+        android:scaleType="centerCrop"
+        android:transitionName="static_map"
+        android:visibility="gone" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/timestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@id/status"
+            android:text="Сегодня, 16:45"
+            android:textColor="@color/app_black" />
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="Водитель отменил"
+            android:textAllCaps="true"
+            android:textColor="@color/app_orange" />
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/app_divider_list" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="10dp"
         android:orientation="vertical">
-
-        <ImageView
-            android:id="@+id/static_map"
-            android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:background="@drawable/ic_launcher_background"
-            android:contentDescription="@string/app_name"
-            android:scaleType="centerCrop"
-            android:transitionName="static_map" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="4dp">
+            android:layout_marginTop="10dp">
 
             <ImageView
-                android:id="@+id/avatar"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:contentDescription="@string/app_name"
-                android:padding="4dp"
-                android:scaleType="centerInside"
-                android:src="@drawable/ic_user_placeholder" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center_vertical"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/finished_at"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/clanpro_narrnews"
-                    android:textColor="@color/colorPrimaryText"
-                    android:textSize="@dimen/text_14" />
-
-                <TextView
-                    android:id="@+id/booking_id"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/booking_id"
-                    android:textColor="@color/colorSecondaryText"
-                    android:textSize="@dimen/text_12" />
-
-            </LinearLayout>
-
-            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/top_dark" />
+
+            <TextView
+                android:id="@+id/s_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:layout_marginStart="10dp"
+                android:gravity="center_vertical"
+                android:textColor="@color/text_black"
+                android:textSize="16sp"
+                tools:text="Амангелді 45/2" />
+        </LinearLayout>
 
-                <TextView
-                    android:id="@+id/payable"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/clanpro_narrnews"
-                    android:hint="@string/dash"
-                    android:textColor="@color/colorPrimaryText"
-                    android:textSize="@dimen/text_14" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/serviceType"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="-"
-                    android:textColor="@color/colorSecondaryText"
-                    android:textSize="@dimen/text_12" />
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_bottom" />
 
-            </LinearLayout>
+            <TextView
+                android:id="@+id/d_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="10dp"
+                android:gravity="center_vertical"
+                android:textColor="@color/text_black"
+                android:textSize="16sp"
+                tools:text="Городская больница" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="4dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/avatar"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:contentDescription="@string/app_name"
+            android:padding="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_user_placeholder"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/finished_at"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/clanpro_narrnews"
+                android:textColor="@color/colorPrimaryText"
+                android:textSize="@dimen/text_14" />
+
+            <TextView
+                android:id="@+id/booking_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/booking_id"
+                android:textColor="@color/colorSecondaryText"
+                android:textSize="@dimen/text_12" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/payable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/clanpro_narrnews"
+                android:hint="@string/dash"
+                android:textColor="@color/colorPrimaryText"
+                android:textSize="@dimen/text_14" />
+
+            <TextView
+                android:id="@+id/serviceType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="-"
+                android:textColor="@color/colorSecondaryText"
+                android:textSize="@dimen/text_12" />
 
         </LinearLayout>
 
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+</LinearLayout>

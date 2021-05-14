@@ -21,7 +21,7 @@
     <color name="close_bg">#ffe7ed</color>
     <color name="close_word">#ee1b50</color>
 
-    <color name="app_status">#888888</color>
+    <color name="app_status">#ffffff</color>
     <color name="app_black">#000000</color>
     <color name="app_orange">#FC7822</color>
     <color name="app_grey">#D4D4D4</color>
@@ -40,4 +40,5 @@
     <color name="app_divider_list">#F2F2F2</color>
     <color name="app_border_grey">#F0F0F0</color>
     <color name="app_pink_search">#80FEA972</color>
+    <color name="transparent">#00000000</color>
 </resources>

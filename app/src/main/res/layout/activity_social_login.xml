@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ui.activity.social.SocialLoginActivity">
+    tools:context="kz.yassy.taxi.ui.activity.social.SocialLoginActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

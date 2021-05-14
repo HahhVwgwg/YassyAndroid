@@ -92,7 +92,7 @@
         android:layout_height="58dp"
         android:layout_marginStart="@dimen/_24sdp"
         android:layout_marginEnd="@dimen/_24sdp"
-        android:layout_marginBottom="@dimen/_68sdp"
+        android:layout_marginBottom="@dimen/_44sdp"
         android:text="@string/auth_code_btn"
         android:textAllCaps="false"
         android:textColor="@color/white"

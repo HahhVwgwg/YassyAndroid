@@ -74,7 +74,7 @@
     <string name="faq_support">FAQ Support</string>
     <string name="terms_and_conditions">Terms and Conditions</string>
     <string name="privacy_policy">Privacy Policy</string>
-    <string name="logout">Logout</string>
+    <string name="logout">Выйти из аккаунта</string>
     <string name="save">Save</string>
     <string name="looking_to_change_password">Looking to change password</string>
     <string name="profile">Profile</string>
@@ -88,8 +88,8 @@
     <string name="upcoming">Upcoming</string>
     <string name="wallet_history">Wallet History</string>
     <string name="coupon_history">Coupon History</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
     <string name="use_wallet_amount">Use Wallet</string>
     <string name="past_trip_details">Past Trip Details</string>
     <string name="payment_method">Payment Method</string>
@@ -99,9 +99,9 @@
     <string name="comments">Comments</string>
     <string name="dispute">Dispute</string>
     <string name="view_receipt">View Receipt</string>
-    <string name="upcoming_trip_details">Upcoming Trip Details</string>
-    <string name="no_past_found">No Past Trips found</string>
-    <string name="no_upcoming_found">No Upcoming Trips found</string>
+    <string name="upcoming_trip_details">Предстоящие детали поездки</string>
+    <string name="no_past_found">Прошлые поездки не найдены</string>
+    <string name="no_upcoming_found">Не нашли предстоящие поездки</string>
     <string name="no_data_found">No data found</string>
     <string name="booking_id">Booking ID</string>
     <string name="settings">Settings</string>
@@ -171,7 +171,7 @@
     <string name="finding_driver">Поиск машины</string>
     <string name="finding_driver_desc">Ищем ближайщие машины доступные для вашей поездки.</string>
     <string name="cancel_request">Cancel Request</string>
-    <string name="are_sure_you_want_to_cancel_the_request">Are you sure you want to cancel the request</string>
+    <string name="are_sure_you_want_to_cancel_the_request">Вы действительно хотите отменить заказ?</string>
     <string name="invalid_first_name">Please enter first name</string>
     <string name="invalid_last_name">Please enter last name</string>
     <string name="invalid_mobile">Please enter mobile</string>
@@ -193,7 +193,7 @@
     <string name="internal_server_error">Internal Server Error :(</string>
     <string name="dismiss">Dismiss</string>
     <string name="logout_successfully">Logout Successfully</string>
-    <string name="are_sure_you_want_to_logout">Are sure you want to logout?</string>
+    <string name="are_sure_you_want_to_logout">Вы уверены, что хотите выйти?</string>
     <string name="driver_accepted_your_request">Driver accepted your request</string>
     <string name="driver_accepted_your_request_">Driver accepted your request! will reach you in %1$s</string>
     <string name="you_are_on_ride">You are on Ride</string>
@@ -202,8 +202,8 @@
     <string name="card_added">Card Added</string>
     <string name="something_went_wrong">Something went wrong</string>
     <string name="card_">XXXX-XXXX-XXXX-%1$s</string>
-    <string name="are_sure_you_want_to_delete">Are sure you want to delete?</string>
-    <string name="delete">Delete</string>
+    <string name="are_sure_you_want_to_delete">Вы уверены, что хотите удалить?</string>
+    <string name="delete">Удалить</string>
     <string name="no_services">No Services</string>
     <string name="invalid_amount">Please enter amount</string>
     <string name="add_new_card">Add New Card</string>
@@ -291,7 +291,7 @@
     <string name="miles">miles</string>
     <string name="select_location">Select location</string>
     <string name="please_wait">Please wait</string>
-    <string name="fetching_current_location">Fetching current location…</string>
+    <string name="fetching_current_location">Получение текущего местоположения…</string>
 
     <string name="server_down">Unable to reach server</string>
     <string name="no_internet_connection">Please check your internet connection</string>
@@ -352,7 +352,7 @@
     <string name="referral_code_hint">Referral Code</string>
     <string name="referral_code">Referral Code (Optional)</string>
     <string name="under_dev">Under Development…</string>
-    <string name="profile_updated">Profile updated successfully</string>
+    <string name="profile_updated">Фото профиля успешно обновлено</string>
     <string name="your_referral_code">Your Referral Code</string>
     <string name="referral_amount">Referral Amount:</string>
     <string name="you">You</string>
@@ -413,10 +413,10 @@
     <string name="auth_code_hint">* * * * * *</string>
     <string name="auth_phone_btn">Отправить код</string>
     <string name="auth_phone_title">Введите номер телефона</string>
-    <string name="auth_phone_desc">На ваш Watsapp номер будет\nотправлен код</string>
+    <string name="auth_phone_desc">На ваш WhatsApp номер будет\nотправлен код</string>
     <string name="auth_code_btn">Продолжить</string>
     <string name="auth_code_title">Введите код</string>
-    <string name="auth_code_desc">На ваш Whatsapp номер\nотправлен код. Введите его.</string>
+    <string name="auth_code_desc">На ваш WhatsApp номер\nотправлен код. Введите его.</string>
     <string name="auth_code_error">Неправильно введён код.\nПопробуйте ещё раз.</string>
 
     <string name="drawer_menu_profile">Мой профиль</string>
@@ -457,7 +457,7 @@
     <string name="trip_where_label">Куда</string>
     <string name="trip_payment_label">Изменить способ оплаты</string>
     <string name="trip_fare">Детали заказа</string>
-    <string name="trip_fare_label">Ваш тариф %d ₸</string>
+    <string name="trip_fare_label">Ваш тариф </string>
     <string name="trip_cancel">Отменить</string>
     <string name="trip_title_arrived">Водитель прибыл</string>
     <string name="trip_title_started">Приедет через %s</string>

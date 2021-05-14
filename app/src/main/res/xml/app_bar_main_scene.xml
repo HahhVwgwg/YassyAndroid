@@ -14,6 +14,9 @@
         <Constraint android:id="@id/menu_app">
             <PropertySet app:visibilityMode="ignore" />
         </Constraint>
+        <Constraint android:id="@id/view">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
         <Constraint android:id="@id/menu_back">
             <PropertySet app:visibilityMode="ignore" />
         </Constraint>
@@ -107,6 +110,9 @@
         <Constraint android:id="@id/menu_app">
             <PropertySet app:visibilityMode="ignore" />
         </Constraint>
+        <Constraint android:id="@id/view">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
         <Constraint android:id="@id/menu_back">
             <PropertySet app:visibilityMode="ignore" />
         </Constraint>
@@ -126,7 +132,7 @@
                 android:layout_marginTop="26dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/menu_app" />
+                app:layout_constraintTop_toBottomOf="@+id/view" />
             <PropertySet android:alpha="1" />
         </Constraint>
         <Constraint android:id="@id/form_background">
@@ -137,7 +143,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/menu_app" />
+                app:layout_constraintTop_toBottomOf="@+id/view" />
             <PropertySet android:alpha="1" />
         </Constraint>
         <Constraint android:id="@id/pick_location_layout">
@@ -177,6 +183,9 @@
             <PropertySet android:visibility="invisible" />
         </Constraint>
         <Constraint android:id="@id/menu_app">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
+        <Constraint android:id="@id/view">
             <PropertySet app:visibilityMode="ignore" />
         </Constraint>
         <Constraint android:id="@id/menu_back">
@@ -251,6 +260,9 @@
             <PropertySet android:visibility="visible" />
         </Constraint>
         <Constraint android:id="@id/menu_app">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
+        <Constraint android:id="@id/view">
             <PropertySet app:visibilityMode="ignore" />
         </Constraint>
         <Constraint android:id="@id/menu_back">
@@ -334,6 +346,9 @@
         <Constraint android:id="@id/menu_app">
             <PropertySet app:visibilityMode="ignore" />
         </Constraint>
+        <Constraint android:id="@id/view">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
         <Constraint android:id="@id/menu_back">
             <PropertySet app:visibilityMode="ignore" />
         </Constraint>
@@ -406,6 +421,9 @@
             <PropertySet android:visibility="visible" />
         </Constraint>
         <Constraint android:id="@id/menu_app">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
+        <Constraint android:id="@id/view">
             <PropertySet app:visibilityMode="ignore" />
         </Constraint>
         <Constraint android:id="@id/menu_back">
@@ -489,6 +507,9 @@
         <Constraint android:id="@id/menu_app">
             <PropertySet app:visibilityMode="ignore" />
         </Constraint>
+        <Constraint android:id="@id/view">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
         <Constraint android:id="@id/menu_back">
             <PropertySet app:visibilityMode="ignore" />
         </Constraint>
@@ -558,11 +579,14 @@
         <Constraint android:id="@id/container">
             <Layout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent" />
             <PropertySet android:visibility="visible" />
         </Constraint>
         <Constraint android:id="@id/menu_app">
+            <PropertySet app:visibilityMode="ignore" />
+        </Constraint>
+        <Constraint android:id="@id/view">
             <PropertySet app:visibilityMode="ignore" />
         </Constraint>
         <Constraint android:id="@id/menu_back">

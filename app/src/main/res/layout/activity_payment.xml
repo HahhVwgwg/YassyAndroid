@@ -3,30 +3,165 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#FFF"
     android:orientation="vertical"
-    tools:context=".ui.activity.payment.PaymentActivity">
+    tools:context="kz.yassy.taxi.ui.activity.payment.PaymentActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <RelativeLayout
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="56dp">
+
+            <ImageView
+                android:id="@+id/back_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="20dp"
+                android:background="@drawable/ripple_square_btn"
+                android:elevation="1dp"
+                android:padding="12dp"
+                android:src="@drawable/ic_menu_burger"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                style="@style/TextSubTitle.20"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center_vertical"
+                android:text="Способы оплаты" />
+
+            <TextView
+                style="@style/TextAppearance.MaterialComponents.Subtitle2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerInParent="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="20dp"
+                android:text="Изменить" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/staticLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/payment_list">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="25dp"
+                android:paddingVertical="4dp">
+
+                <ImageView
+                    android:id="@+id/static1"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerVertical="true"
+                    app:srcCompat="@drawable/ic_payment_cash" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_toEndOf="@id/static1"
+                    android:fontFamily="@font/clanpro_book"
+                    android:padding="12dp"
+                    android:text="Наличные"
+                    android:textColor="@color/text_black"
+                    android:textSize="18sp" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    app:srcCompat="@drawable/ic_done_added" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="25dp"
+                android:layout_marginTop="2dp"
+                android:background="@color/grey" />
+
+            <RelativeLayout
+                android:id="@+id/add_payment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="25dp"
+                android:paddingVertical="4dp">
+
+                <ImageView
+                    android:id="@+id/static2"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/ic_debit_card_add"
+                    android:backgroundTint="@color/app_grey_disabled" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_toEndOf="@id/static2"
+                    android:fontFamily="@font/clanpro_book"
+                    android:padding="12dp"
+                    android:text="Привязать карту"
+                    android:textColor="@color/app_grey_disabled"
+                    android:textSize="18sp" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:visibility="invisible"
+                    app:srcCompat="@drawable/right_ios" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="25dp"
+                android:layout_marginTop="3dp"
+                android:background="@color/grey" />
+
+        </LinearLayout>
+
         <LinearLayout
             android:id="@+id/llCashContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="visible">
+            android:visibility="gone">
 
             <!--<TextView-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:fontFamily="@font/clanpro_medium"-->
-                <!--android:padding="16dp"-->
-                <!--android:text="@string/other_payment"-->
-                <!--android:textColor="@color/colorPrimaryText"-->
-                <!--android:textSize="@dimen/text_18" />-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:fontFamily="@font/clanpro_medium"-->
+            <!--android:padding="16dp"-->
+            <!--android:text="@string/other_payment"-->
+            <!--android:textColor="@color/colorPrimaryText"-->
+            <!--android:textSize="@dimen/text_18" />-->
 
             <TextView
                 android:id="@+id/cash"
@@ -123,6 +258,7 @@
             android:id="@+id/llCardContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:orientation="vertical">
 
             <TextView

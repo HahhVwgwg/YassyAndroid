@@ -10,7 +10,7 @@
         android:background="@drawable/pink_round"
         android:layout_height="20dp"/>
 
-    <com.thinkincab.app.common.RippleSearchView
+    <kz.yassy.taxi.common.RippleSearchView
         android:id="@+id/search"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -20,9 +20,18 @@
         app:rb_rippleAmount="4"
         app:rb_scale="6" />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomsheet"
+        android:clickable="true"
+        android:elevation="2dp"
+        android:focusable="true" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:clickable="true"
+        android:id="@+id/bottomsheet"
         android:focusable="true"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -56,6 +65,7 @@
             android:layout_marginBottom="38dp"
             android:paddingStart="28dp"
             android:paddingEnd="28dp"
+            android:elevation="3dp"
             android:text="@string/trip_cancel"
             android:textColor="@color/text_black"
             app:backgroundTint="@color/white"

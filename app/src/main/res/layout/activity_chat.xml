@@ -1,13 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".chat.ChatActivity">
+    tools:context="kz.yassy.taxi.chat.ChatActivity">
 
+    <RelativeLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/back_btn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="20dp"
+            android:background="@drawable/ripple_square_btn"
+            android:elevation="1dp"
+            android:padding="12dp"
+            android:src="@drawable/ic_back_main"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            style="@style/TextSubTitle.20"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center_vertical"
+            android:text="Чат с водителем" />
+
+    </RelativeLayout>
     <ListView
         android:id="@+id/chat_lv"
+        android:layout_below="@id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/chat_controls_layout"
@@ -21,33 +55,38 @@
         android:id="@+id/chat_controls_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:elevation="20dp"
         android:layout_alignParentBottom="true"
+        android:paddingHorizontal="15dp"
         android:background="#FFF"
-        android:elevation="1dp"
+        android:paddingVertical="7dp"
         android:orientation="horizontal">
 
         <EditText
             android:id="@+id/message"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@null"
-            android:hint="@string/write_something"
+            android:layout_marginEnd="10dp"
             android:imeOptions="actionSend"
-            android:inputType="textAutoCorrect|textPersonName|textCapWords"
+            android:background="@drawable/bg_grey_round_border"
+            android:inputType="textNoSuggestions"
             android:maxLines="1"
-            android:padding="12dp"
+            android:padding="7dp"
+            android:textCursorDrawable="@drawable/color_cursor"
             android:textColor="@color/colorPrimaryText" />
 
         <ImageView
             android:id="@+id/send"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/colorAccent"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
             android:contentDescription="@string/app_name"
-            android:padding="16dp"
-            android:src="@drawable/send"
-            android:tint="#FFF" />
+            android:background="@drawable/chat_send_background"
+            android:paddingVertical="11dp"
+            android:paddingStart="5dp"
+            android:src="@drawable/ic_send"
+            app:tint="#FFF" />
 
     </LinearLayout>
 
