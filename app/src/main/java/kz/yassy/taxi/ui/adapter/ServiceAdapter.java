@@ -20,7 +20,6 @@ import kz.yassy.taxi.ui.fragment.service.ServiceTypesFragment;
 
 import static kz.yassy.taxi.MvpApplication.RIDE_REQUEST;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.ESTIMATED_FARE;
-import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SERVICE_TYPE;
 
 public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHolder> {
 
@@ -104,9 +103,10 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHo
                         if (lastCheckedPos == position) {
                             mListener.whenClicked(position);
                         } else {
-                            lastCheckedPos = position;
-                            RIDE_REQUEST.put(SERVICE_TYPE, object.getId());
-                            notifyDataSetChanged();
+//                            lastCheckedPos = position;
+//                            RIDE_REQUEST.put(SERVICE_TYPE, object.getId());
+//                            notifyDataSetChanged();
+                            mListener.whenClicked(position);
                         }
                     }
                 }

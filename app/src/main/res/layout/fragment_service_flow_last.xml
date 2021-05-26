@@ -160,6 +160,7 @@
             android:id="@+id/payment_icon_arrow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:layout_alignParentEnd="true"
             android:layout_marginTop="24dp"
             android:layout_marginEnd="24dp"
@@ -190,7 +191,7 @@
             android:layout_toEndOf="@+id/payment_icon"
             android:ellipsize="end"
             android:gravity="center_vertical"
-            android:text="@string/trip_payment_label" />
+            android:text="Способ оплаты" />
 
     </RelativeLayout>
 

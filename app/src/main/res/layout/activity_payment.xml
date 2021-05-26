@@ -44,6 +44,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerInParent="true"
+                android:visibility="invisible"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="20dp"
                 android:text="Изменить" />
@@ -61,6 +62,7 @@
             app:layout_constraintTop_toBottomOf="@+id/payment_list">
 
             <RelativeLayout
+                android:id="@+id/cash"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackground"
@@ -86,6 +88,7 @@
                     android:textSize="18sp" />
 
                 <ImageView
+                    android:id="@+id/cashCheck"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_alignParentEnd="true"
@@ -98,6 +101,63 @@
                 android:layout_height="1dp"
                 android:layout_marginHorizontal="25dp"
                 android:layout_marginTop="2dp"
+                android:background="@color/grey" />
+
+            <RelativeLayout
+                android:id="@+id/business"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="25dp"
+                android:paddingVertical="4dp">
+
+                <ImageView
+                    android:id="@+id/static3"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="4dp"
+                    app:srcCompat="@drawable/ic_business" />
+
+                <TextView
+                    android:id="@+id/businessTV"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="22dp"
+                    android:layout_toEndOf="@id/static3"
+                    android:fontFamily="@font/clanpro_book"
+                    android:paddingVertical="12dp"
+                    android:text="Бизнес аккаунт"
+                    android:textColor="@color/text_hint"
+                    android:textSize="18sp" />
+
+                <ImageView
+                    android:id="@+id/info"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_toEndOf="@id/businessTV"
+                    android:contentDescription="@string/app_name"
+                    android:src="@drawable/ic_information_icon" />
+
+                <ImageView
+                    android:id="@+id/businessCheck"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:contentDescription="@null"
+                    android:visibility="invisible"
+                    app:srcCompat="@drawable/ic_done_added" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="25dp"
+                android:layout_marginTop="3dp"
                 android:background="@color/grey" />
 
             <RelativeLayout
@@ -164,7 +224,7 @@
             <!--android:textSize="@dimen/text_18" />-->
 
             <TextView
-                android:id="@+id/cash"
+                android:id="@+id/cash2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?android:attr/selectableItemBackground"

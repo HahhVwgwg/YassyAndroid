@@ -22,7 +22,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import kz.yassy.taxi.MvpApplication;
 import kz.yassy.taxi.R;
 import kz.yassy.taxi.base.BaseFragment;
 import kz.yassy.taxi.data.network.model.Datum;
@@ -153,10 +152,11 @@ public class PastTripFragment extends BaseFragment implements PastTripIView {
             public void onClick(View view) {
                 int position = getAdapterPosition();
                 if (view.getId() == R.id.item_view) {
-                    MvpApplication.DATUM = list.get(position);
+//                    MvpApplication.DATUM = ;
                     ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation
                             (baseActivity(), itemView, ViewCompat.getTransitionName(itemView));
                     Intent intent = new Intent(getActivity(), PastTripDetailForHistoryActivity.class);
+                    intent.putExtra("datumId", list.get(position).getId());
                     startActivity(intent, options.toBundle());
                 }
             }

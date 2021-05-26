@@ -28,11 +28,22 @@ public class BookRidePresenter<V extends BookRideIView> extends BasePresenter<V>
                 .subscribeOn(Schedulers.io())
                 .subscribe(getMvpView()::onSuccessCoupon, getMvpView()::onError));
     }
+
     @Override
     public void services() {
         getCompositeDisposable().add(APIClient
                 .getAPIClient()
                 .services()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(getMvpView()::onSuccess, getMvpView()::onError));
+    }
+
+    @Override
+    public void profile() {
+        getCompositeDisposable().add(APIClient
+                .getAPIClient()
+                .profile()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribe(getMvpView()::onSuccess, getMvpView()::onError));

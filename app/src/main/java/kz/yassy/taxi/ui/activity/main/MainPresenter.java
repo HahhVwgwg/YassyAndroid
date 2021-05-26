@@ -61,7 +61,7 @@ public class MainPresenter<V extends MainIView> extends BasePresenter<V> impleme
                     .checkStatus()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
-                    .subscribe(getMvpView()::onSuccessCheckStatus, getMvpView()::onError));
+                    .subscribe(getMvpView()::onSuccessCheckStatus, getMvpView()::onErrorCheckStatus));
         }
     }
 

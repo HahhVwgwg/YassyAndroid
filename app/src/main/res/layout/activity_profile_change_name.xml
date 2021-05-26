@@ -24,6 +24,7 @@
             tools:ignore="ContentDescription" />
 
         <TextView
+            android:id="@+id/title"
             style="@style/TextSubTitle.20"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

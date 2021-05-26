@@ -3,7 +3,6 @@ package kz.yassy.taxi.ui.activity.help;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +45,7 @@ public class HelpAdapter extends RecyclerView.Adapter<HelpAdapter.MyViewHolder> 
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        private TextView text;
+        private final TextView text;
 
         MyViewHolder(View view) {
             super(view);
@@ -59,9 +58,12 @@ public class HelpAdapter extends RecyclerView.Adapter<HelpAdapter.MyViewHolder> 
             int position = getAdapterPosition();
             if (view.getId() == R.id.item_view) {
                 if (helpLocals.get(position).getOpenType() >= 100) {
-                    Log.e("EEEEEEEEEEEEEE", "EEEEEEEEEEE");
                     Intent intent = new Intent(mContext, HelpChildActivity.class);
                     intent.putExtra("type", helpLocals.get(position).getOpenType());
+                    mContext.startActivity(intent);
+                } else {
+                    Intent intent = new Intent(mContext, HelpDetailsActivity.class);
+                    intent.putExtra("id", helpLocals.get(position).getOpenType());
                     mContext.startActivity(intent);
                 }
             }

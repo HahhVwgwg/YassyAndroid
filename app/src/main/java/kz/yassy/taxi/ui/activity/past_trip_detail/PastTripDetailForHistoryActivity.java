@@ -78,13 +78,12 @@ public class PastTripDetailForHistoryActivity extends BaseActivity implements Pa
         presenter.attachView(this);
         mapFragment = new MapFragment();
         getSupportFragmentManager().beginTransaction().add(R.id.map, mapFragment).commit();
-
-        Log.e("PastTripDatum", DATUM.toString());
-        if (DATUM != null) {
-            showLoading();
-            Log.e("PastTrip", "getPastTrip");
-            presenter.getPastTripDetails(DATUM.getId());
-        }
+        showLoading();
+        Log.e("PastTrip", "getPastTrip");
+        presenter.getPastTripDetails(getIntent().getExtras().getInt("datumId"));
+//        if (DATUM != null) {
+//
+//        }
     }
 
     @Override
@@ -117,7 +116,7 @@ public class PastTripDetailForHistoryActivity extends BaseActivity implements Pa
         name.setText(String.format("%s %s", pastTrip.getProviderFirstName(), pastTrip.getProviderLastName()));
         phoneNumber.setText(pastTrip.getProviderNumber());
         tarif.setText(pastTrip.getServiceTypeName());
-        paymentMode.setText(pastTrip.getPaymentMode().equals("CASH") ? "Наличными" : "Картой");
+        paymentMode.setText(pastTrip.getPaymentMode().equals("CASH") ? "Наличными" : "Бизнес аккаунт");
         payable.setText(pastTrip.getTotal() + " ₸");
         if (pastTrip.getStatus().equals("COMPLETED")) {
             status.setText("Поездка завершена");

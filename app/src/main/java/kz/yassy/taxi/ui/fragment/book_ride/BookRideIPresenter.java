@@ -11,4 +11,6 @@ public interface BookRideIPresenter<V extends BookRideIView> extends MvpPresente
     void getCouponList();
 
     void services();
+
+    void profile();
 }

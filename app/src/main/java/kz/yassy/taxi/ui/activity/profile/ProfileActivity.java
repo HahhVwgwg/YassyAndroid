@@ -80,6 +80,7 @@ public class ProfileActivity extends BaseActivity implements ProfileIView {
     private String userAvatar;
     @BindView(R.id.sexy_spinner)
     AppCompatSpinner sexy_Spinner;
+
     @Override
     public int getLayoutId() {
         return R.layout.activity_profile;
@@ -194,13 +195,14 @@ public class ProfileActivity extends BaseActivity implements ProfileIView {
         } else updateDetails();
     }
 
-    private void setupSpinnerCities(){
+    private void setupSpinnerCities() {
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getApplicationContext(),
                 R.array.gender_list, R.layout.spinner);
         adapter.setDropDownViewResource(R.layout.spinner);
         sexy_Spinner.setAdapter(adapter);
     }
+
     private void updateDetails() {
         HashMap<String, RequestBody> map = new HashMap<>();
         map.put("first_name", RequestBody.create(MediaType.parse("text/plain"), firstName.getText().toString()));
@@ -208,7 +210,7 @@ public class ProfileActivity extends BaseActivity implements ProfileIView {
         map.put("email", RequestBody.create(MediaType.parse("text/plain"), email.getText().toString()));
         map.put("mobile", RequestBody.create(MediaType.parse("text/plain"), mobile.getText().toString()));
         map.put("country_code", RequestBody.create(MediaType.parse("text/plain"), SharedHelper.getKey(ProfileActivity.this, "country_code")));
-        map.put("gender",RequestBody.create(MediaType.parse("text/plain"),(sexy_Spinner.getSelectedItem().toString())));
+        map.put("gender", RequestBody.create(MediaType.parse("text/plain"), (sexy_Spinner.getSelectedItem().toString())));
         MultipartBody.Part filePart = null;
         if (imgFile != null)
             try {
@@ -287,7 +289,6 @@ public class ProfileActivity extends BaseActivity implements ProfileIView {
             e.printStackTrace();
         }
         finish();
-        Toasty.success(this, getText(R.string.profile_updated), Toast.LENGTH_SHORT).show();
     }
 
     @Override

@@ -65,4 +65,14 @@ public class PaymentPresenter<V extends PaymentIView> extends BasePresenter<V> i
                 .subscribeOn(Schedulers.io())
                 .subscribe(getMvpView()::onSuccess, getMvpView()::onError));
     }
+
+    @Override
+    public void profile() {
+        getCompositeDisposable().add(APIClient
+                .getAPIClient()
+                .profile()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(getMvpView()::onSuccess, getMvpView()::onError));
+    }
 }

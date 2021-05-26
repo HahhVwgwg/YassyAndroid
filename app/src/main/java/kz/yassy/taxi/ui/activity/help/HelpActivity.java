@@ -41,7 +41,7 @@ public class HelpActivity extends BaseActivity implements HelpIView {
         helpLocals.add(new HelpLocal("В машине остались вещи", 0));
         helpLocals.add(new HelpLocal("Что-то с деньгами", 100));
         helpLocals.add(new HelpLocal("Хочу пожаловаться", 101));
-        helpLocals.add(new HelpLocal("Всё сломалось", 102));
+        helpLocals.add(new HelpLocal("Рассказать об ошибке", 102));
         helpLocals.add(new HelpLocal("Экстренная ситуация", 1));
         helpLocals.add(new HelpLocal("Частые вопросы", 103));
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));

@@ -180,6 +180,43 @@ public class Provider {
         this.fleet = fleet;
     }
 
+    @Override
+    public String toString() {
+        return "Provider{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", gender='" + gender + '\'' +
+                ", mobile='" + mobile + '\'' +
+                ", countryCode='" + countryCode + '\'' +
+                ", avatar='" + avatar + '\'' +
+                ", rating='" + rating + '\'' +
+                ", status='" + status + '\'' +
+                ", fleet=" + fleet +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", city='" + city + '\'' +
+                ", cityLatitude=" + cityLatitude +
+                ", cityLongitude=" + cityLongitude +
+                ", referralId=" + referralId +
+                ", referralCode='" + referralCode + '\'' +
+                ", usageCount=" + usageCount +
+                ", referralEarning=" + referralEarning +
+                ", usageLimit=" + usageLimit +
+                ", expiredAt='" + expiredAt + '\'' +
+                ", otp=" + otp +
+                ", tripType='" + tripType + '\'' +
+                ", outstationType='" + outstationType + '\'' +
+                ", walletBalance=" + walletBalance +
+                ", createdAt='" + createdAt + '\'' +
+                ", updatedAt='" + updatedAt + '\'' +
+                ", loginBy='" + loginBy + '\'' +
+                ", socialUniqueId=" + socialUniqueId +
+                ", providerService=" + providerService +
+                '}';
+    }
+
     public double getLatitude() {
         return latitude;
     }
@@ -348,40 +385,4 @@ public class Provider {
         this.providerService = providerService;
     }
 
-    @Override
-    public String toString() {
-        return "Provider{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", gender='" + gender + '\'' +
-                ", mobile='" + mobile + '\'' +
-                ", countryCode='" + countryCode + '\'' +
-                ", avatar='" + avatar + '\'' +
-                ", rating='" + rating + '\'' +
-                ", status='" + status + '\'' +
-                ", fleet=" + fleet +
-                ", latitude=" + latitude +
-                ", longitude=" + longitude +
-                ", city='" + city + '\'' +
-                ", cityLatitude=" + cityLatitude +
-                ", cityLongitude=" + cityLongitude +
-                ", referralId=" + referralId +
-                ", referralCode='" + referralCode + '\'' +
-                ", usageCount=" + usageCount +
-                ", referralEarning=" + referralEarning +
-                ", usageLimit=" + usageLimit +
-                ", expiredAt='" + expiredAt + '\'' +
-                ", otp=" + otp +
-                ", tripType='" + tripType + '\'' +
-                ", outstationType='" + outstationType + '\'' +
-                ", walletBalance=" + walletBalance +
-                ", createdAt='" + createdAt + '\'' +
-                ", updatedAt='" + updatedAt + '\'' +
-                ", loginBy='" + loginBy + '\'' +
-                ", socialUniqueId=" + socialUniqueId +
-                ", providerService=" + providerService +
-                '}';
-    }
 }

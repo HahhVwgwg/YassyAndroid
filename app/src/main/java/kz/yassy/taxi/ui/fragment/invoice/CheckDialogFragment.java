@@ -36,11 +36,13 @@ public class CheckDialogFragment extends BaseDialogFragment implements PastTripD
     TextView dAddress;
     TextView paymentMode;
     TextView payable;
+    TextView waitingTime;
 
     private Datum datum;
 
     private PastTripDetailsPresenter<CheckDialogFragment> presenter = new PastTripDetailsPresenter();
     private TextView estimatedFare, waitingAmount;
+
 
     @Override
     public int getLayoutId() {
@@ -78,6 +80,7 @@ public class CheckDialogFragment extends BaseDialogFragment implements PastTripD
         payable = view.findViewById(R.id.payable);
         estimatedFare = view.findViewById(R.id.estimated_fare);
         waitingAmount = view.findViewById(R.id.waiting_amount);
+        waitingTime = view.findViewById(R.id.waiting_time);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(view);
@@ -100,9 +103,11 @@ public class CheckDialogFragment extends BaseDialogFragment implements PastTripD
         Log.e("PastTrip", pastTrip.toString());
         sAddress.setText(pastTrip.getsAddress());
         dAddress.setText(pastTrip.getdAddress());
-        payable.setText((Integer.parseInt(pastTrip.getTotal()) + pastTrip.getWaitingAmount()) + " ₸");
+        paymentMode.setText(pastTrip.getPaymentMode().equals("COMPANY") ? "Бизнес аккаунт" : getString(R.string.cash));
+        payable.setText(pastTrip.getTotal() + " ₸");
         waitingAmount.setText(pastTrip.getWaitingAmount() + " ₸");
         estimatedFare.setText(pastTrip.getEstimatedFare() + " ₸");
+        waitingTime.setText(pastTrip.getWaitingTime() + " мин.");
     }
 
     @Override

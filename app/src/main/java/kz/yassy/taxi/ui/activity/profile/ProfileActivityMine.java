@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -72,13 +73,18 @@ public class ProfileActivityMine extends BaseActivity implements ProfileIView {
                         .dontAnimate()
                         .error(R.drawable.ic_user_placeholder))
                 .into(picture);
+        showLoading();
+        profilePresenter.profile();
+        SharedHelper.putKey(getApplicationContext(), "isRefreshNeed", false);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        showLoading();
-        profilePresenter.profile();
+        if (SharedHelper.getKey(getApplicationContext(), "isRefreshNeed", false)) {
+            showLoading();
+            profilePresenter.profile();
+        }
     }
 
     @OnClick({R.id.back_btn, R.id.logout, R.id.changeName, R.id.changeEmail, R.id.picture})
@@ -139,13 +145,12 @@ public class ProfileActivityMine extends BaseActivity implements ProfileIView {
         updateDetails();
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateDetails() {
         HashMap<String, RequestBody> map = new HashMap<>();
-        map.put("first_name", RequestBody.create(MediaType.parse("text/plain"), fullName.getText().toString().split(" ")[0]));
-        map.put("last_name", RequestBody.create(MediaType.parse("text/plain"), fullName.getText().toString().split(" ").length > 1 ? fullName.getText().toString().split(" ")[1] : ""));
-        map.put("email", RequestBody.create(MediaType.parse("text/plain"), email.getText().toString()));
+//        map.put("email", RequestBody.create(MediaType.parse("text/plain"), email.getText().toString()));
         map.put("mobile", RequestBody.create(MediaType.parse("text/plain"), mobile.getText().toString()));
-        map.put("country_code", RequestBody.create(MediaType.parse("text/plain"), SharedHelper.getKey(ProfileActivityMine.this, "country_code")));
+        map.put("country_code", RequestBody.create(MediaType.parse("text/plain"), "7"));
         map.put("gender", RequestBody.create(MediaType.parse("text/plain"), ("Male")));
         MultipartBody.Part filePart = null;
         if (imgFile != null)
@@ -174,6 +179,7 @@ public class ProfileActivityMine extends BaseActivity implements ProfileIView {
     @Override
     public void onSuccess(User user) {
         hideLoading();
+        Log.e("user", user.toString());
         fullName.setText(user.getFirstName().equals("") ? "Ваше имя" : user.getFirstName() + " " + user.getLastName());
         mobile.setText(user.getMobile());
         if (user.getEmail().equals("yassy@gmail.com") || user.getMobile().equals(user.getEmail())) {
@@ -191,7 +197,8 @@ public class ProfileActivityMine extends BaseActivity implements ProfileIView {
 
     @Override
     public void onUpdateSuccess(User user) {
-        Toasty.success(this, getText(R.string.profile_updated), Toast.LENGTH_SHORT).show();
+        if (imgFile != null)
+            Toasty.success(this, getText(R.string.profile_updated), Toast.LENGTH_SHORT).show();
         Glide.with(baseActivity())
                 .load(BuildConfig.BASE_IMAGE_URL + user.getPicture())
                 .apply(RequestOptions
@@ -209,5 +216,11 @@ public class ProfileActivityMine extends BaseActivity implements ProfileIView {
     @Override
     public void onVerifyPhoneNumberError(Throwable e) {
 
+    }
+
+    @Override
+    public void onError(Throwable e) {
+        hideLoading();
+        Log.e("userMine", e.toString());
     }
 }

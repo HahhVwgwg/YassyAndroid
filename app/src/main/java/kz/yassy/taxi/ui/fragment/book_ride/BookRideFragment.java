@@ -26,13 +26,13 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 import kz.yassy.taxi.R;
 import kz.yassy.taxi.base.BaseFragment;
-import kz.yassy.taxi.common.Constants;
 import kz.yassy.taxi.data.SharedHelper;
 import kz.yassy.taxi.data.network.APIClient;
 import kz.yassy.taxi.data.network.model.PromoList;
 import kz.yassy.taxi.data.network.model.PromoResponse;
 import kz.yassy.taxi.data.network.model.Service;
 import kz.yassy.taxi.data.network.model.Tariffs;
+import kz.yassy.taxi.data.network.model.User;
 import kz.yassy.taxi.ui.activity.main.MainActivity;
 import kz.yassy.taxi.ui.adapter.ServiceAdapter;
 import kz.yassy.taxi.ui.fragment.payment.NotesFragment;
@@ -79,6 +79,22 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
     @BindView(R.id.estimated_payment_mode)
     TextView estimatedPaymentMode;
 
+    private final ServiceTypesFragment.ServiceListener mListener = pos -> {
+        System.out.println(pos + " position");
+        if (pos == 0) {
+            if (mPrices.size() == 0) {
+                mPrices.add(0);
+                mPrices.add(0);
+            } else if (mPrices.size() == 1) {
+                mPrices.add(0);
+            }
+            ServiceTypesFragment serviceTypesFragment = ServiceTypesFragment.create(mServices, mPrices, pos);
+            serviceTypesFragment.show(getChildFragmentManager(), SERVICE);
+        } else {
+            Toast.makeText(getContext(), "Пока этот тариф не доступен", Toast.LENGTH_SHORT).show();
+        }
+    };
+    private boolean isCash = true;
     private String paymentMode;
     private String noteLocal = "";
     private ServiceAdapter adapter;
@@ -92,18 +108,7 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
         return R.layout.fragment_book_ride;
     }
 
-    @SuppressLint("SetTextI18n")
-    @Override
-    public View initView(View view) {
-        unbinder = ButterKnife.bind(this, view);
-        presenter.attachView(this);
-        presenter.services();
-        hideLoading();
-        Log.e("RIDE_REQUEST", RIDE_REQUEST.toString());
-        destination.setText((String) RIDE_REQUEST.get(DEST_ADD));
-        source.setText((String) RIDE_REQUEST.get(SRC_ADD));
-        return view;
-    }
+    private User user;
 
     private void setDataOnUi(String serviceName, Tariffs fare) {
         if (serviceName != null && !serviceName.isEmpty()) {
@@ -122,6 +127,30 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
         super.onDestroyView();
     }
 
+    @SuppressLint("SetTextI18n")
+    @Override
+    public View initView(View view) {
+        unbinder = ButterKnife.bind(this, view);
+        presenter.attachView(this);
+        presenter.services();
+        presenter.profile();
+        hideLoading();
+        Log.e("RIDE_REQUEST", RIDE_REQUEST.toString());
+        isCash = SharedHelper.getBoolKey(getContext(), "isSelectedCardIsCash", true);
+        estimatedPaymentMode.setText(isCash ? getString(R.string.cash) : "Бизнес аккаунт");
+        destination.setText((String) RIDE_REQUEST.get(DEST_ADD));
+        source.setText((String) RIDE_REQUEST.get(SRC_ADD));
+        SharedHelper.putKey(getContext(), "notes", "");
+        return view;
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void onSuccess(User user) {
+        hideLoading();
+        this.user = user;
+    }
+
     @OnClick({R.id.schedule_ride, R.id.ride_now, R.id.estimated_payment_mode, R.id.source, R.id.destination, R.id.notes})
     public void onViewClicked(View view) {
         switch (view.getId()) {
@@ -129,19 +158,14 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                 ((MainActivity) Objects.requireNonNull(getActivity())).changeFragment(new ScheduleFragment());
                 break;
             case R.id.ride_now:
-                if (Objects.requireNonNull(RIDE_REQUEST.get(PAYMENT_MODE)).toString()
-                        .equals(Constants.PaymentMode.CARD)) {
-                    if (RIDE_REQUEST.containsKey(CARD_LAST_FOUR))
-                        sendRequest();
-                    else
-                        Toast.makeText(getActivity().getApplicationContext(),
-                                getResources().getString(R.string.choose_card), Toast.LENGTH_SHORT)
-                                .show();
-                } else
-                    sendRequest();
+                sendRequest();
                 break;
             case R.id.estimated_payment_mode:
-                PaymentFragment paymentFragment = new PaymentFragment();
+                ServiceTypesFragment.ServiceListener listener = pos -> {
+                    isCash = pos == 0;
+                    estimatedPaymentMode.setText(isCash ? getString(R.string.cash) : "Бизнес аккаунт");
+                };
+                PaymentFragment paymentFragment = new PaymentFragment(user, isCash, listener);
                 paymentFragment.show(getChildFragmentManager(), PAYMENT);
                 break;
             case R.id.source:
@@ -157,22 +181,6 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
         }
     }
 
-    public void sendRequest() {
-        HashMap<String, Object> map = new HashMap<>(RIDE_REQUEST);
-        map.put("service_required", "none");
-        if (paymentMode != null && !paymentMode.equalsIgnoreCase(""))
-            map.put("payment_mode", paymentMode);
-        else map.put("payment_mode", "CASH");
-        map.put("notes", SharedHelper.getKey(getContext(), "notes", ""));
-        Log.e("SERVICEINADAPTER", map.toString());
-        showLoading();
-        try {
-            presenter.rideNow(map);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public void onSuccess(@NonNull Object object) {
         baseActivity().sendBroadcast(new Intent(INTENT_FILTER));
@@ -184,12 +192,20 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
         }
     }
 
-    @Override
-    public void onError(Throwable e) {
-//        handleError(e);
-        hideLoading();
-        Log.e("BookRideFragment", "asdfa");
-        ((MainActivity) Objects.requireNonNull(getActivity())).showError(1);
+    public void sendRequest() {
+        HashMap<String, Object> map = new HashMap<>(RIDE_REQUEST);
+        map.put("service_required", "none");
+        if (paymentMode != null && !paymentMode.equalsIgnoreCase(""))
+            map.put("payment_mode", paymentMode);
+        else map.put("payment_mode", isCash ? "CASH" : "COMPANY");
+        map.put("notes", SharedHelper.getKey(getContext(), "notes", ""));
+        Log.e("SERVICEINADAPTER", map.toString());
+        showLoading();
+        try {
+            presenter.rideNow(map);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -224,16 +240,13 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
 
     private Tariffs mEstimateFare;
 
-    private final ServiceTypesFragment.ServiceListener mListener = pos -> {
-        if (mPrices.size() == 0) {
-            mPrices.add(0);
-            mPrices.add(0);
-        } else if (mPrices.size() == 1) {
-            mPrices.add(0);
-        }
-        ServiceTypesFragment serviceTypesFragment = ServiceTypesFragment.create(mServices, mPrices, pos);
-        serviceTypesFragment.show(getChildFragmentManager(), SERVICE);
-    };
+    @Override
+    public void onError(Throwable e) {
+//        handleError(e);
+        hideLoading();
+        Log.e("BookRideFragment", e.getMessage());
+        ((MainActivity) Objects.requireNonNull(getActivity())).showError(1);
+    }
 
     private void estimatedApiCall() {
         HashMap<String, Object> request = new HashMap<>();
@@ -298,14 +311,14 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
                 RIDE_REQUEST.put(CARD_ID, data.getStringExtra("card_id"));
                 RIDE_REQUEST.put(CARD_LAST_FOUR, data.getStringExtra("card_last_four"));
             }
-            initPayment(estimatedPaymentMode);
+//            initPayment(estimatedPaymentMode);
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        initPayment(estimatedPaymentMode);
+//        initPayment(estimatedPaymentMode);
     }
 
     public interface CouponListener {

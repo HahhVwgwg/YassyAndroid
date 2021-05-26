@@ -31,9 +31,9 @@ public class InfoActivity extends BaseActivity {
 
     private List<HelpLocal> getHelpOptions(int type) {
         List<HelpLocal> locals = new ArrayList<>();
-        locals.add(new HelpLocal("О Приложении", 22));
-        locals.add(new HelpLocal("Пользовательское соглашения", 23));
-        locals.add(new HelpLocal("Политика конфеденциальности", 24));
+        locals.add(new HelpLocal("О Приложении", 25));
+        locals.add(new HelpLocal("Пользовательское соглашения", 26));
+        locals.add(new HelpLocal("Политика конфеденциальности", 27));
         return locals;
     }
 

@@ -110,6 +110,12 @@
                                       </entry>
                                     </map>
                                   </option>
+                                  <option name="values">
+                                    <map>
+                                      <entry key="backgroundAssetType" value="COLOR" />
+                                      <entry key="backgroundColor" value="fc7822" />
+                                    </map>
+                                  </option>
                                 </PersistentState>
                               </value>
                             </entry>
@@ -297,8 +303,8 @@
                         <option name="values">
                           <map>
                             <entry key="assetSourceType" value="FILE" />
-                            <entry key="outputName" value="ic_attach" />
-                            <entry key="sourceFile" value="C:\Users\acer\Downloads\YassyTaxiSVG\attach.svg" />
+                            <entry key="outputName" value="ic_business" />
+                            <entry key="sourceFile" value="C:\Users\acer\Downloads\YassyTaxiSVG\business.svg" />
                           </map>
                         </option>
                       </PersistentState>

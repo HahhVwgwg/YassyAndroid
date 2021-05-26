@@ -68,7 +68,6 @@ import kz.yassy.taxi.data.SharedHelper;
 import kz.yassy.taxi.ui.activity.WelcomeActivityNew;
 import kz.yassy.taxi.ui.activity.login.EmailActivity;
 import kz.yassy.taxi.ui.activity.login.PasswordActivity;
-import kz.yassy.taxi.ui.activity.login.PhoneActivity;
 import kz.yassy.taxi.ui.activity.register.RegisterActivity;
 import kz.yassy.taxi.ui.activity.social.SocialLoginActivity;
 import kz.yassy.taxi.ui.activity.splash.SplashActivity;
@@ -284,6 +283,7 @@ public abstract class BaseActivity extends AppCompatActivity
 
     protected void pickImage() {
         EasyImage.openChooserWithGallery(this, "", 0);
+
     }
 
     @SuppressLint("StringFormatInvalid")
@@ -539,7 +539,8 @@ public abstract class BaseActivity extends AppCompatActivity
         MvpApplication.RIDE_REQUEST.clear();
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
-        startActivity(new Intent(this, PhoneActivity.class));
+//        startActivity(new Intent(this, PhoneActivity.class));
+        startActivity(new Intent(this, WelcomeActivityNew.class));
         finishAffinity();
     }
 

@@ -71,7 +71,7 @@ public class MvpApplication extends Application {
             Stetho.initializeWithDefaults(this);
         Mapbox.getInstance(getApplicationContext(), getString(R.string.mapbox_access_token));
         MultiDex.install(this);
-        YandexMetricaConfig config = YandexMetricaConfig.newConfigBuilder("b1e02f51-830b-49df-b363-66952ab62c7b").build();
+        YandexMetricaConfig config = YandexMetricaConfig.newConfigBuilder("5d1606b0-ba86-4b7c-a5ee-0117c5036d3e").build();
         // Initializing the AppMetrica SDK.
         YandexMetrica.activate(getApplicationContext(), config);
         // Automatic tracking of user activity.

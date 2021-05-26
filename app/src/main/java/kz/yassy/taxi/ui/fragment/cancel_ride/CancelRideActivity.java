@@ -107,24 +107,24 @@ public class CancelRideActivity extends BaseActivity implements CancelRideIView 
 //        animationView.setMinFrame(120);
 //        animationView.setMaxFrame(386);
 //        animationView.playAnimation();
-//        animationView.addAnimatorListener(new Animator.AnimatorListener() {
+//        animationView.addAnimatorListener(new AnimateTaxi.AnimatorListener() {
 //            @Override
-//            public void onAnimationStart(Animator animation) {
+//            public void onAnimationStart(AnimateTaxi animation) {
 //
 //            }
 //
 //            @Override
-//            public void onAnimationEnd(Animator animation) {
+//            public void onAnimationEnd(AnimateTaxi animation) {
 //                finish();
 //            }
 //
 //            @Override
-//            public void onAnimationCancel(Animator animation) {
+//            public void onAnimationCancel(AnimateTaxi animation) {
 //
 //            }
 //
 //            @Override
-//            public void onAnimationRepeat(Animator animation) {
+//            public void onAnimationRepeat(AnimateTaxi animation) {
 //
 //            }
 //        });
@@ -141,24 +141,24 @@ public class CancelRideActivity extends BaseActivity implements CancelRideIView 
 //        animationView.setMinFrame(400);
 //        animationView.setMaxFrame(841);
 //        animationView.playAnimation();
-//        animationView.addAnimatorListener(new Animator.AnimatorListener() {
+//        animationView.addAnimatorListener(new AnimateTaxi.AnimatorListener() {
 //            @Override
-//            public void onAnimationStart(Animator animation) {
+//            public void onAnimationStart(AnimateTaxi animation) {
 //
 //            }
 //
 //            @Override
-//            public void onAnimationEnd(Animator animation) {
+//            public void onAnimationEnd(AnimateTaxi animation) {
 //                finish();
 //            }
 //
 //            @Override
-//            public void onAnimationCancel(Animator animation) {
+//            public void onAnimationCancel(AnimateTaxi animation) {
 //
 //            }
 //
 //            @Override
-//            public void onAnimationRepeat(Animator animation) {
+//            public void onAnimationRepeat(AnimateTaxi animation) {
 //
 //            }
 //        });

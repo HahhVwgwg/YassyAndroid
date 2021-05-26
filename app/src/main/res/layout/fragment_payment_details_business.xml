@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/form_bg">
+
+    <View
+        android:id="@+id/form_dash"
+        android:layout_width="33dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="26dp"
+        android:background="@drawable/form_dash"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/form_title"
+        style="@style/TextSubTitle.20"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="26dp"
+        android:layout_marginEnd="24dp"
+        android:gravity="center"
+        android:text="Бизнес аккаунт"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/form_dash" />
+
+    <LinearLayout
+        android:id="@+id/staticLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/form_title">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="4dp">
+
+            <ImageView
+                android:id="@+id/static1"
+                android:layout_width="37dp"
+                android:layout_height="37dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_work_orange" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_toEndOf="@id/static1"
+                android:fontFamily="@font/clanpro_book"
+                android:padding="12dp"
+                android:text="Компания:"
+                android:textColor="@color/text_black"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/companyName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="4dp" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="25dp"
+            android:layout_marginTop="2dp"
+            android:background="@color/grey" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="25dp"
+            android:paddingVertical="4dp">
+
+            <ImageView
+                android:id="@+id/static2"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_centerVertical="true"
+                app:srcCompat="@drawable/ic_profile" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_toEndOf="@id/static2"
+                android:fontFamily="@font/clanpro_book"
+                android:padding="12dp"
+                android:text="Должность:"
+                android:textColor="@color/text_black"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="25dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="26dp"
+            android:background="@color/grey" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/form_btn"
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="26dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="50dp"
+        android:text="Создать компанию"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:backgroundTint="@color/color_btn_simple_bg"
+        app:cornerRadius="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/staticLayout" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

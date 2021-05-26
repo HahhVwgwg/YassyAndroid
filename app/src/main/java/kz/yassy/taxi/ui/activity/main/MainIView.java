@@ -37,6 +37,8 @@ public interface MainIView extends MvpView {
 
     void onError(Throwable e);
 
+    void onErrorCheckStatus(Throwable e);
+
     void onSettingError(Throwable e);
 
     void onSearchError(Throwable e);

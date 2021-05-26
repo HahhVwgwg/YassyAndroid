@@ -67,6 +67,18 @@ public class ProviderService {
         return serviceModel;
     }
 
+    @Override
+    public String toString() {
+        return "ProviderService{" +
+                "id=" + id +
+                ", providerId=" + providerId +
+                ", serviceTypeId=" + serviceTypeId +
+                ", status='" + status + '\'' +
+                ", serviceNumber='" + serviceNumber + '\'' +
+                ", serviceModel='" + serviceModel + '\'' +
+                '}';
+    }
+
     public void setServiceModel(String serviceModel) {
         this.serviceModel = serviceModel;
     }

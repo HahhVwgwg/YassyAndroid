@@ -61,6 +61,8 @@ public class RatingDialogFragment extends BaseBottomSheetDialogFragment implemen
     @BindView(R.id.rcvReason)
     RecyclerView rcvReason;
 
+    private boolean[] isSelected = new boolean[]{false, false, false};
+
     private RatingPresenter<RatingDialogFragment> presenter = new RatingPresenter<>();
     private List<String> cancelResponseList = new ArrayList<>(Arrays.asList("Комфортная поездка", "Вежливый водитель", "Хорошая музыка"));
     private RatingAdapter adapter;
@@ -108,7 +110,7 @@ public class RatingDialogFragment extends BaseBottomSheetDialogFragment implemen
         rating.setOnRatingBarChangeListener((ratingBar, rating, fromUser) -> {
             if (Math.round(rating) < 4) {
                 if (isRatingPositive) {
-                    last_selected_location = -1;
+                    isSelected = new boolean[]{false, false, false};
                 }
                 cancelResponseList = new ArrayList<>(Arrays.asList("Грубый водитель", "Неприятный запах в авто", "Испачкан салон"));
                 rcvReason.setAdapter(new RatingAdapter(cancelResponseList));
@@ -116,7 +118,7 @@ public class RatingDialogFragment extends BaseBottomSheetDialogFragment implemen
                 ratingsName.setText("Что вам не понравилось?");
             } else {
                 if (!isRatingPositive) {
-                    last_selected_location = -1;
+                    isSelected = new boolean[]{false, false, false};
                 }
                 cancelResponseList = new ArrayList<>(Arrays.asList("Комфортная поездка", "Вежливый водитель", "Хорошая музыка"));
                 rcvReason.setAdapter(new RatingAdapter(cancelResponseList));
@@ -151,6 +153,7 @@ public class RatingDialogFragment extends BaseBottomSheetDialogFragment implemen
         super.onDestroyView();
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.submit)
     public void onViewClicked() {
         if (DATUM != null) {
@@ -158,7 +161,15 @@ public class RatingDialogFragment extends BaseBottomSheetDialogFragment implemen
             HashMap<String, Object> map = new HashMap<>();
             map.put("request_id", datum.getId());
             map.put("rating", Math.round(rating.getRating()));
-            map.put("comment", last_selected_location == -1 ? "" : cancelResponseList.get(last_selected_location));
+            StringBuilder comment = new StringBuilder();
+            for (int i = 0; i < isSelected.length; i++) {
+                if (isSelected[i])
+                    comment.append(cancelResponseList.get(i)).append(", ");
+            }
+            if (comment.length() != 0) {
+                comment = new StringBuilder(comment.substring(0, comment.length() - 2));
+            }
+            map.put("comment", comment.toString());
             showLoading();
             presenter.rate(map);
         }
@@ -191,7 +202,7 @@ public class RatingDialogFragment extends BaseBottomSheetDialogFragment implemen
         public void onBindViewHolder(@NonNull RatingAdapter.MyViewHolder holder, int position) {
             String data = list.get(position);
             holder.tvReason.setText(data);
-            holder.done.setVisibility(last_selected_location == position ? View.VISIBLE : View.INVISIBLE);
+            holder.done.setVisibility(isSelected[position] ? View.VISIBLE : View.INVISIBLE);
         }
 
         @Override
@@ -217,7 +228,7 @@ public class RatingDialogFragment extends BaseBottomSheetDialogFragment implemen
             public void onClick(View view) {
                 int position = getAdapterPosition();
                 submit.setEnabled(true);
-                last_selected_location = position;
+                isSelected[position] = !isSelected[position];
                 notifyDataSetChanged();
             }
         }

@@ -142,6 +142,13 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" />
         <activity
+            android:name="kz.yassy.taxi.ui.activity.help.HelpDetailsActivity"
+            android:label="@string/help"
+            android:parentActivityName="kz.yassy.taxi.ui.activity.main.MainActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name="kz.yassy.taxi.ui.activity.profile.ProfileChangePasswordActivity"
             android:label="@string/help"
             android:parentActivityName="kz.yassy.taxi.ui.activity.main.MainActivity"

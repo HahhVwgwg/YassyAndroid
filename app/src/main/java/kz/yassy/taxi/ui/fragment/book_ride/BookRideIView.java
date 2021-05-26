@@ -5,6 +5,7 @@ import java.util.List;
 import kz.yassy.taxi.base.MvpView;
 import kz.yassy.taxi.data.network.model.PromoResponse;
 import kz.yassy.taxi.data.network.model.Service;
+import kz.yassy.taxi.data.network.model.User;
 
 
 public interface BookRideIView extends MvpView {
@@ -15,4 +16,6 @@ public interface BookRideIView extends MvpView {
     void onSuccessCoupon(PromoResponse promoResponse);
 
     void onSuccess(List<Service> serviceList);
+
+    void onSuccess(User user);
 }

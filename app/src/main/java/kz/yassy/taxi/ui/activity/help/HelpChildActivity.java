@@ -60,21 +60,21 @@ public class HelpChildActivity extends BaseActivity {
             locals.add(new HelpLocal("Работа сервиса", 14));
             locals.add(new HelpLocal("Настройки приложения", 104));
             locals.add(new HelpLocal("Заказ и оплата поездки", 105));
-            locals.add(new HelpLocal("Безопасность", 15));
-            locals.add(new HelpLocal("Сотрудничество", 16));
+            locals.add(new HelpLocal("Безопасность", 23));
+            locals.add(new HelpLocal("Сотрудничество", 24));
         } else if (type == 104) {
             title = "Настройки приложения";
-            locals.add(new HelpLocal("Добавить или удалить аккаунт", 14));
-            locals.add(new HelpLocal("Добавить или удалить карту", 15));
+            locals.add(new HelpLocal("Добавить или удалить аккаунт", 15));
+            locals.add(new HelpLocal("Добавить или удалить карту", 16));
             locals.add(new HelpLocal("Включить пуш-уведомления", 105));
-            locals.add(new HelpLocal("Сменить язык в приложении", 16));
-            locals.add(new HelpLocal("Удалить историю поездок", 17));
+            locals.add(new HelpLocal("Сменить язык в приложении", 17));
+            locals.add(new HelpLocal("Удалить историю поездок", 18));
         } else if (type == 105) {
             title = "Заказ и оплата поездки";
-            locals.add(new HelpLocal("Заказать поездку", 18));
-            locals.add(new HelpLocal("Выбрать способ оплаты", 19));
-            locals.add(new HelpLocal("Оставить чаевые водителю", 20));
-            locals.add(new HelpLocal("Получить чек за поездку", 21));
+            locals.add(new HelpLocal("Заказать поездку", 19));
+            locals.add(new HelpLocal("Выбрать способ оплаты", 20));
+            locals.add(new HelpLocal("Оставить чаевые водителю", 21));
+            locals.add(new HelpLocal("Получить чек за поездку", 22));
         }
         ((TextView) findViewById(R.id.title)).setText(title);
         return locals;

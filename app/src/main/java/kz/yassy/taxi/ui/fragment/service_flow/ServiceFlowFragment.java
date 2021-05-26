@@ -3,20 +3,10 @@ package kz.yassy.taxi.ui.fragment.service_flow;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.media.AudioAttributes;
-import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.util.Log;
@@ -26,8 +16,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -48,7 +36,6 @@ import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import kz.yassy.taxi.MvpApplication;
 import kz.yassy.taxi.R;
 import kz.yassy.taxi.base.BaseFragment;
 import kz.yassy.taxi.chat.Chat;
@@ -63,7 +50,6 @@ import kz.yassy.taxi.data.network.model.Provider;
 import kz.yassy.taxi.ui.activity.main.MainActivity;
 import kz.yassy.taxi.ui.activity.past_trip_detail.PastTripDetailActivity;
 import kz.yassy.taxi.ui.fragment.cancel_ride.CancelRideActivity;
-import kz.yassy.taxi.ui.fragment.payment.PaymentFragment;
 
 import static kz.yassy.taxi.MvpApplication.DATUM;
 import static kz.yassy.taxi.MvpApplication.RIDE_REQUEST;
@@ -73,7 +59,6 @@ import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.ESTIMATED_FARE;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_LAT;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_LONG;
 import static kz.yassy.taxi.common.Constants.Status.ARRIVED;
-import static kz.yassy.taxi.common.Constants.Status.PAYMENT;
 import static kz.yassy.taxi.common.Constants.Status.PICKED_UP;
 import static kz.yassy.taxi.common.Constants.Status.STARTED;
 
@@ -214,8 +199,11 @@ public class ServiceFlowFragment extends BaseFragment
                 labelGoBtn.setVisibility(View.GONE);
                 break;
             case R.id.payment_wrapper:
-                PaymentFragment paymentFragment = new PaymentFragment();
-                paymentFragment.show(getChildFragmentManager(), PAYMENT);
+
+//                PaymentFragment paymentFragment = new PaymentFragment(new User(), true, pos -> {
+//
+//                });
+//                paymentFragment.show(getChildFragmentManager(), PAYMENT);
                 break;
             case R.id.cancel_btn:
                 startActivity(new Intent(baseActivity(), CancelRideActivity.class));
@@ -297,6 +285,7 @@ public class ServiceFlowFragment extends BaseFragment
     private void initView(Datum datum) {
         providerPhoneNumber = "8" + datum.getProviderNumber().replace(" ", "");
         source.setText(datum.getDAddress());
+        paymentValue.setText(datum.getPaymentMode().equals("COMPANY") ? "Бизнес аккаунт" : getString(R.string.cash));
         fareLabel.setText(getString(R.string.trip_fare_label) + " " + RIDE_REQUEST.get(ESTIMATED_FARE) + " ₸");
         presenter.getPastTripDetails(datum.getId());
         switch (datum.getStatus()) {
@@ -341,7 +330,7 @@ public class ServiceFlowFragment extends BaseFragment
         } catch (Exception e) {
             ((MainActivity) Objects.requireNonNull(getActivity())).deleteAndDrawRoute(new LatLng((double) RIDE_REQUEST.get(SRC_LAT), (double) RIDE_REQUEST.get(SRC_LONG)), new LatLng((double) RIDE_REQUEST.get(DEST_LAT), (double) RIDE_REQUEST.get(DEST_LONG)));
         }
-        initChatView(String.valueOf(DATUM.getId()));
+//        initChatView(String.valueOf(DATUM.getId()));
     }
 
     public void secondSplitUp(long biggy, TextView tvTimer) {
@@ -432,9 +421,6 @@ public class ServiceFlowFragment extends BaseFragment
         handler = new Handler();
         runnable = () -> {
             try {
-                LatLng src = null;
-                LatLng des = null;
-
                 if (DATUM.getStatus().equalsIgnoreCase(STARTED)
                         || DATUM.getStatus().equalsIgnoreCase(ARRIVED)) {
 //                    src = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
@@ -444,11 +430,11 @@ public class ServiceFlowFragment extends BaseFragment
                 }
                 long time = SharedHelper.getKey(getContext(), "timeEstimated", 0);
                 if (DATUM.getStatus().equalsIgnoreCase(STARTED)) {
-                    statusTitle.setText(getString(R.string.trip_title_started, (time == 0 ? 1 : time) + " минут"));
+                    statusTitle.setText(getString(R.string.trip_title_started, (time == 0 ? "меньше минуты" : time + " минут")));
                 } else if (DATUM.getStatus().equalsIgnoreCase(PICKED_UP)) {
-                    statusTitle.setText("Осталось " + (time == 0 ? 1 : time) + " минут");
+                    statusTitle.setText("Осталось " + (time == 0 ? "меньше минуты" : time + " минут"));
                 }
-                handler.postDelayed(runnable, 5000);
+                handler.postDelayed(runnable, 1000);
             } catch (Exception e) {
                 handler.postDelayed(runnable, 5000);
                 e.printStackTrace();
@@ -479,67 +465,5 @@ public class ServiceFlowFragment extends BaseFragment
     @Override
     public void onErrorProvider(Throwable e) {
 
-    }
-
-    private void sendNotification(String messageBody, MvpApplication instance, String request) {
-
-
-//        MvpApplication.canGoToChatScreen = true;
-        Intent intent = new Intent(instance.getApplicationContext(), ChatActivity.class);
-        intent.putExtra("request_id", request);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pIntent = PendingIntent.getActivity
-                (instance.getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
-
-        NotificationManager nm = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
-        String channelId = getString(R.string.notification_manager);
-        //  soundUri = Uri.parse("android.resource://" + getApplicationContext().getPackageName() + "/" + R.raw.alert_tone);
-
-        Uri songUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(Objects.requireNonNull(instance.getApplicationContext()), channelId)
-                .setLargeIcon(BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_logo))
-                .setSmallIcon(R.drawable.ic_logo)
-                .setColor(ContextCompat.getColor(instance.getApplicationContext(), R.color.app_orange))
-                .setContentTitle(getString(R.string.app_name))
-                .setContentText("У вас новое уведомление")
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setWhen(System.currentTimeMillis())
-                .setAutoCancel(true) // clear notification after click
-                .setContentIntent(pIntent)
-                .setSound(songUri)
-                .setTicker("Hearty365")
-                .setAutoCancel(true);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Audio attributes
-            // soundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE+ "://" +getApplicationContext().getPackageName()+"/"+R.raw.alert_tone);
-
-
-            NotificationManager notificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationChannel channel = new NotificationChannel(channelId, "Channel human readable title", NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription(messageBody);
-            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-            channel.enableLights(true);
-            channel.setLightColor(Color.RED);
-            channel.setVibrationPattern(new long[]{0, 1000, 500, 1000});
-            // channel.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION), attributes);
-            //channel.setSound(soundUri,audioAttributes);
-
-            AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .build();
-
-            if (songUri != null)
-                channel.setSound(songUri, audioAttributes);
-            channel.enableVibration(true);
-            notificationManager.createNotificationChannel(channel);
-            notificationManager.notify(400, notificationBuilder.build());
-            //playNotificationSound();
-        } else {
-            nm.notify(0, notificationBuilder.build());
-        }
     }
 }

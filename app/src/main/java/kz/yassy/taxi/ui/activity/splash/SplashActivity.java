@@ -50,7 +50,6 @@ import kz.yassy.taxi.data.network.model.CheckVersion;
 import kz.yassy.taxi.data.network.model.Service;
 import kz.yassy.taxi.data.network.model.User;
 import kz.yassy.taxi.ui.activity.WelcomeActivityNew;
-import kz.yassy.taxi.ui.activity.login.PhoneActivity;
 import kz.yassy.taxi.ui.activity.main.MainActivity;
 
 import static kz.yassy.taxi.data.SharedHelper.putKey;
@@ -206,7 +205,8 @@ public class SplashActivity extends BaseActivity implements SplashIView,
             startActivity(new Intent(SplashActivity.this, MainActivity.class));
             finish();
         } else {
-            Intent nextScreen = new Intent(SplashActivity.this, SharedHelper.getKey(getApplicationContext(), "showOnBoarding", false) ? WelcomeActivityNew.class : PhoneActivity.class);
+//            Intent nextScreen = new Intent(SplashActivity.this, SharedHelper.getKey(getApplicationContext(), "showOnBoarding", true) ? WelcomeActivityNew.class : PhoneActivity.class);
+            Intent nextScreen = new Intent(SplashActivity.this, WelcomeActivityNew.class);
             nextScreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(nextScreen);
             finishAffinity();

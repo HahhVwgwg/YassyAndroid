@@ -38,6 +38,9 @@ public class User {
     @SerializedName("device_id")
     @Expose
     private String deviceId;
+    @SerializedName("is_business")
+    @Expose
+    private int isBusiness = 2;
     @SerializedName("device_type")
     @Expose
     private String deviceType;
@@ -123,6 +126,42 @@ public class User {
     @SerializedName("qrcode_url")
     @Expose
     private String qrcode_url;
+
+    @SerializedName("business_url")
+    @Expose
+    private String businessUrl;
+
+    @SerializedName("business_name")
+    @Expose
+    private String businessName;
+
+    @SerializedName("business_position")
+    @Expose
+    private String businessPosition;
+
+    public String getBusinessUrl() {
+        return businessUrl;
+    }
+
+    public void setBusinessUrl(String businessUrl) {
+        this.businessUrl = businessUrl;
+    }
+
+    public String getBusinessName() {
+        return businessName;
+    }
+
+    public void setBusinessName(String businessName) {
+        this.businessName = businessName;
+    }
+
+    public String getBusinessPosition() {
+        return businessPosition;
+    }
+
+    public void setBusinessPosition(String businessPosition) {
+        this.businessPosition = businessPosition;
+    }
 
     public String getCountryCode() {
         return countryCode;
@@ -418,5 +457,57 @@ public class User {
 
     public void setRide_otp(String ride_otp) {
         this.ride_otp = ride_otp;
+    }
+
+    public int getIsBusiness() {
+        return isBusiness;
+    }
+
+    public void setIsBusiness(int isBusiness) {
+        this.isBusiness = isBusiness;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", paymentMode='" + paymentMode + '\'' +
+                ", email='" + email + '\'' +
+                ", gender='" + gender + '\'' +
+                ", mobile='" + mobile + '\'' +
+                ", countryCode='" + countryCode + '\'' +
+                ", picture='" + picture + '\'' +
+                ", deviceToken='" + deviceToken + '\'' +
+                ", deviceId='" + deviceId + '\'' +
+                ", isBusiness=" + isBusiness +
+                ", deviceType='" + deviceType + '\'' +
+                ", loginBy='" + loginBy + '\'' +
+                ", socialUniqueId='" + socialUniqueId + '\'' +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", stripeCustId='" + stripeCustId + '\'' +
+                ", walletBalance=" + walletBalance +
+                ", rating='" + rating + '\'' +
+                ", otp=" + otp +
+                ", language='" + language + '\'' +
+                ", updatedAt='" + updatedAt + '\'' +
+                ", currency='" + currency + '\'' +
+                ", sos='" + sos + '\'' +
+                ", appContact='" + appContact + '\'' +
+                ", measurement='" + measurement + '\'' +
+                ", stripeSecretKey='" + stripeSecretKey + '\'' +
+                ", stripePublishableKey='" + stripePublishableKey + '\'' +
+                ", referral_count='" + referral_count + '\'' +
+                ", referral_unique_id='" + referral_unique_id + '\'' +
+                ", referral_text='" + referral_text + '\'' +
+                ", referral_total_amount='" + referral_total_amount + '\'' +
+                ", referral_total_count='" + referral_total_count + '\'' +
+                ", referral_total_text='" + referral_total_text + '\'' +
+                ", referral_amount='" + referral_amount + '\'' +
+                ", ride_otp='" + ride_otp + '\'' +
+                ", qrcode_url='" + qrcode_url + '\'' +
+                '}';
     }
 }

@@ -8,6 +8,7 @@ import kz.yassy.taxi.base.MvpView;
 import kz.yassy.taxi.data.network.model.BrainTreeResponse;
 import kz.yassy.taxi.data.network.model.Card;
 import kz.yassy.taxi.data.network.model.CheckSumData;
+import kz.yassy.taxi.data.network.model.User;
 
 public interface PaymentIView extends MvpView {
 
@@ -20,6 +21,8 @@ public interface PaymentIView extends MvpView {
     void onAddCardSuccess(Object cards);
 
     void onError(Throwable e);
+
+    void onSuccess(User user);
 
     void onPayumoneyCheckSumSucess(CheckSumData checkSumData);
 

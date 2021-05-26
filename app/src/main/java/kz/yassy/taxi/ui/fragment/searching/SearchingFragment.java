@@ -1,12 +1,15 @@
 package kz.yassy.taxi.ui.fragment.searching;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.turf.TurfMeasurement;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +22,7 @@ import kz.yassy.taxi.MvpApplication;
 import kz.yassy.taxi.R;
 import kz.yassy.taxi.base.BaseFragment;
 import kz.yassy.taxi.common.RippleSearchView;
+import kz.yassy.taxi.data.SharedHelper;
 import kz.yassy.taxi.data.network.model.Datum;
 import kz.yassy.taxi.data.network.model.Provider;
 import kz.yassy.taxi.ui.activity.main.MainActivity;
@@ -29,16 +33,19 @@ import static kz.yassy.taxi.common.Constants.BroadcastReceiver.INTENT_FILTER;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.DEST_ADD;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.DEST_LAT;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.DEST_LONG;
+import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_LAT;
+import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_LONG;
 import static kz.yassy.taxi.common.Constants.Status.EMPTY;
 
 public class SearchingFragment extends BaseFragment implements SearchingIView {
 
-    @BindView(R.id.search)
-    RippleSearchView search;
+    private final SearchingPresenter<SearchingFragment> presenter = new SearchingPresenter<>();
     private Runnable runnable;
     private Handler handler;
-
-    private SearchingPresenter<SearchingFragment> presenter = new SearchingPresenter<>();
+    @SuppressLint("NonConstantResourceId")
+    @BindView(R.id.search)
+    RippleSearchView search;
+    private int index = 0;
 
     @Override
     public int getLayoutId() {
@@ -51,10 +58,10 @@ public class SearchingFragment extends BaseFragment implements SearchingIView {
         presenter.attachView(this);
         if (DATUM != null) {
             HashMap<String, Object> map = new HashMap<>();
-            map.put("latitude", RIDE_REQUEST.get(DEST_LAT));
-            map.put("longitude", RIDE_REQUEST.get(DEST_LONG));
+            map.put("latitude", RIDE_REQUEST.get(SRC_LAT));
+            map.put("longitude", RIDE_REQUEST.get(SRC_LONG));
+            ((MainActivity) Objects.requireNonNull(getActivity())).centerElementCustom(new LatLng(DATUM.getSLatitude(), DATUM.getSLongitude()), 11);
             presenter.getProviders(map);
-            ((MainActivity) Objects.requireNonNull(getActivity())).centerElement();
         }
         return view;
     }
@@ -64,15 +71,26 @@ public class SearchingFragment extends BaseFragment implements SearchingIView {
         Log.e("Providers", objects.toString());
         handler = new Handler();
         runnable = () -> {
-            try {
-//                ((MainActivity) Objects.requireNonNull(getActivity())).drawRoute(new LatLng(43.20787215, 76.66984601),new LatLng(objects.get(0).getLatitude(),objects.get(0).getLongitude()));
-                ((MainActivity) Objects.requireNonNull(getActivity())).addMarker(new LatLng(objects.get(0).getLatitude(), objects.get(0).getLongitude()));
-//                ((MainActivity) Objects.requireNonNull(getActivity())).drawRoute(new LatLng(43.20787215,76.66984601),new LatLng(objects.get(0).getLatitude(),objects.get(0).getLongitude()));
-                handler.postDelayed(runnable, 10000);
-            } catch (Exception e) {
-                handler.postDelayed(runnable, 100);
-                e.printStackTrace();
+            if (index >= objects.size()) {
+                handler.removeCallbacks(runnable);
+                Log.e("indexMine", "return ");
+                return;
             }
+            int distance = ((int) TurfMeasurement.distance(Point.fromLngLat(objects.get(index).getLongitude(), objects.get(index).getLatitude()), Point.fromLngLat(DATUM.getSLongitude(), DATUM.getSLatitude()), "meters"));
+            int zoom;
+            Log.e("indexMine", " " + index);
+            if (distance > 2700)
+                zoom = 11;
+            else if (distance < 1200)
+                zoom = 13;
+            else
+                zoom = 12;
+            Log.e("indexMine", "before");
+            ((MainActivity) Objects.requireNonNull(getActivity())).centerElementCustom(new LatLng(DATUM.getSLatitude(), DATUM.getSLongitude()), zoom);
+            ((MainActivity) Objects.requireNonNull(getActivity())).drawRouteWithoutTaxiAnimation(new LatLng(objects.get(index).getLatitude(), objects.get(index).getLongitude()), new LatLng(DATUM.getSLatitude(), DATUM.getSLongitude()));
+            Log.e("indexMine", "after");
+            index++;
+            handler.postDelayed(runnable, 4000);
         };
         handler.postDelayed(runnable, 100);
     }
@@ -100,6 +118,7 @@ public class SearchingFragment extends BaseFragment implements SearchingIView {
     public void onDestroyView() {
         super.onDestroyView();
         presenter.onDetach();
+        index = 0;
     }
 
     @Override
@@ -115,6 +134,7 @@ public class SearchingFragment extends BaseFragment implements SearchingIView {
         if (handler != null) handler.removeCallbacks(runnable);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.cancel)
     public void onViewClicked() {
         alertCancel();
@@ -147,14 +167,13 @@ public class SearchingFragment extends BaseFragment implements SearchingIView {
         MvpApplication.RIDE_REQUEST.remove(DEST_ADD);
         MvpApplication.RIDE_REQUEST.remove(DEST_LAT);
         MvpApplication.RIDE_REQUEST.remove(DEST_LONG);
-
+        SharedHelper.putKey(Objects.requireNonNull(getContext()), "cancelRideActivity", true);
         baseActivity().sendBroadcast(new Intent(INTENT_FILTER));
         ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(EMPTY, true);
     }
 
     @Override
     public void onError(Throwable e) {
-//        handleError(e);
         ((MainActivity) Objects.requireNonNull(getActivity())).showError(2);
         baseActivity().sendBroadcast(new Intent(INTENT_FILTER));
         ((MainActivity) Objects.requireNonNull(getContext())).changeFlow(EMPTY, true);

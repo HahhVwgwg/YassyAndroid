@@ -231,6 +231,16 @@
                 app:drawableEndCompat="@drawable/ic_dropdown_dark"
                 app:drawableStartCompat="@drawable/ic_money_grey" />
 
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="8dp"
+                android:layout_toStartOf="@id/notes"
+                android:background="@drawable/ic_pen"
+                android:backgroundTint="@color/text_dark_grey"
+                android:contentDescription="@null" />
+
             <TextView
                 android:id="@+id/notes"
                 style="@style/TextDesc.Grey"
@@ -244,8 +254,7 @@
                 android:gravity="center_vertical"
                 android:maxLines="1"
                 android:text="Примечания"
-                app:drawableEndCompat="@drawable/ic_dropdown_dark"
-                app:drawableStartCompat="@drawable/ic_money_grey" />
+                app:drawableEndCompat="@drawable/ic_dropdown_dark" />
         </RelativeLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout

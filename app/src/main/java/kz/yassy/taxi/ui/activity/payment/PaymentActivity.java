@@ -1,5 +1,6 @@
 package kz.yassy.taxi.ui.activity.payment;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -28,16 +29,18 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import kz.yassy.taxi.R;
 import kz.yassy.taxi.base.BaseActivity;
+import kz.yassy.taxi.data.SharedHelper;
 import kz.yassy.taxi.data.network.model.BrainTreeResponse;
 import kz.yassy.taxi.data.network.model.Card;
 import kz.yassy.taxi.data.network.model.CheckSumData;
+import kz.yassy.taxi.data.network.model.User;
 import kz.yassy.taxi.ui.fragment.invoice.InvoiceFragment;
+import kz.yassy.taxi.ui.fragment.payment.PaymentDetailsBusinessFragment;
 
 import static kz.yassy.taxi.MvpApplication.RIDE_REQUEST;
 import static kz.yassy.taxi.MvpApplication.isCard;
 import static kz.yassy.taxi.MvpApplication.isCash;
 import static kz.yassy.taxi.MvpApplication.isDebitMachine;
-import static kz.yassy.taxi.common.Constants.PaymentMode.CASH;
 import static kz.yassy.taxi.common.Constants.PaymentMode.DEBIT_MACHINE;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.CARD_ID;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.CARD_LAST_FOUR;
@@ -49,7 +52,12 @@ import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.PAYMENT_MODE;
 //TODO ALLAN - Alterações débito na máquina e voucher
 
 public class PaymentActivity extends BaseActivity implements PaymentIView {
-
+    @BindView(R.id.businessTV)
+    TextView business;
+    @BindView(R.id.businessCheck)
+    ImageView businessCheck;
+    @BindView(R.id.cashCheck)
+    ImageView cashCheck;
     public static final int PICK_PAYMENT_METHOD = 12;
     private static final int STRIPE_PAYMENT_REQUEST_CODE = 100;
     private static final int BRAINTREE_PAYMENT_REQUEST_CODE = 101;
@@ -61,13 +69,14 @@ public class PaymentActivity extends BaseActivity implements PaymentIView {
     @BindView(R.id.back_btn)
     View back;
     @BindView(R.id.cash)
-    TextView tvCash;
+    RelativeLayout cash;
     @BindView(R.id.cards_rv)
     RecyclerView cardsRv;
     @BindView(R.id.llCardContainer)
     LinearLayout llCardContainer;
     @BindView(R.id.llCashContainer)
     LinearLayout llCashContainer;
+
 
     //TODO ALLAN - Alterações débito na máquina e voucher
     @BindView(R.id.credit_card)
@@ -86,6 +95,9 @@ public class PaymentActivity extends BaseActivity implements PaymentIView {
     private PaymentPresenter<PaymentActivity> presenter = new PaymentPresenter<>();
 
     private static final String TAG = "PaymentActivity";
+    private boolean isSelectedCardIsCash;
+    private boolean isBusiness;
+    private User user;
 
     @Override
     public int getLayoutId() {
@@ -96,12 +108,17 @@ public class PaymentActivity extends BaseActivity implements PaymentIView {
     public void initView() {
         ButterKnife.bind(this);
         presenter.attachView(this);
-
+//        PBHelper.Builder builder = new PBHelper.Builder(getApplicationContext(),secretKey,merchantId);
+//        builder.setPaymentSystem(Constants.PBPAYMENT_SYSTEM.EPAYWEBKZT);
+//        builder.setPaymentCurrency(Constants.CURRENCY.KZT);
+//        builder.setUserInfo(email, 8777*******);
 //        Bundle extras = getIntent().getExtras();
 //        if (extras != null) {
 //            boolean hideCash = extras.getBoolean("hideCash", false);
 //            tvCash.setVisibility(hideCash ? View.GONE : View.VISIBLE);
 //        }
+        showLoading();
+        presenter.profile();
 
         //TODO ALLAN - Alterações débito na máquina e voucher
         credit_card.setVisibility(isCard ? View.VISIBLE : View.GONE);
@@ -146,7 +163,7 @@ public class PaymentActivity extends BaseActivity implements PaymentIView {
 
     //TODO ALLAN - Alterações débito na máquina e voucher
 //    @OnClick({R.id.add_card, R.id.cash, R.id.braintree, R.id.paytm, R.id.payumoney})
-    @OnClick({R.id.add_card, R.id.cash, R.id.debit_machine, R.id.credit_card, R.id.back_btn})
+    @OnClick({R.id.add_card, R.id.cash, R.id.debit_machine, R.id.credit_card, R.id.back_btn, R.id.business, R.id.info, R.id.businessTV})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.add_card:
@@ -156,14 +173,21 @@ public class PaymentActivity extends BaseActivity implements PaymentIView {
                 //  intent.putExtra("stripe_token", SharedHelper.getKey(this, "stripe_publishable_key"));
                 //  startActivityForResult(intent, STRIPE_PAYMENT_REQUEST_CODE);
                 break;
-            case R.id.cash:
-                finishResult(CASH);
-                break;
             case R.id.debit_machine:
                 finishResult(DEBIT_MACHINE);
                 break;
             case R.id.back_btn:
                 onBackPressed();
+                break;
+            case R.id.business:
+                setSelected(false);
+                break;
+            case R.id.cash:
+                setSelected(true);
+                break;
+            case R.id.info:
+            case R.id.businessTV:
+                new PaymentDetailsBusinessFragment(user).show(getSupportFragmentManager(), null);
                 break;
 //            case R.id.braintree:
 ////                finishResult(BRAINTREE);
@@ -194,6 +218,33 @@ public class PaymentActivity extends BaseActivity implements PaymentIView {
         intent.putExtra("payment_mode", mode);
         setResult(Activity.RESULT_OK, intent);
         finish();
+    }
+
+    private void setSelected(boolean isCash) {
+        if (isCash) {
+            if (businessCheck.getVisibility() == View.VISIBLE) {
+                businessCheck.setVisibility(View.GONE);
+                cashCheck.setVisibility(View.VISIBLE);
+                SharedHelper.putKey(getApplicationContext(), "isSelectedCardIsCash", true);
+            }
+        } else {
+            if (isBusiness) {
+                businessCheck.setVisibility(View.VISIBLE);
+                cashCheck.setVisibility(View.GONE);
+                SharedHelper.putKey(getApplicationContext(), "isSelectedCardIsCash", false);
+            }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void onSuccess(User user) {
+        hideLoading();
+        this.user = user;
+        isBusiness = user.getIsBusiness() == 1;
+        business.setTextColor(isBusiness ? getApplicationContext().getResources().getColor(R.color.text_black) : getApplicationContext().getResources().getColor(R.color.text_service_grey));
+        isSelectedCardIsCash = SharedHelper.getBoolKey(getApplicationContext(), "isSelectedCardIsCash", false);
+        setSelected(isSelectedCardIsCash);
     }
 
     @Override
@@ -262,9 +313,9 @@ public class PaymentActivity extends BaseActivity implements PaymentIView {
             Log.d("_D", "onActivityResult: " + data.getStringExtra("status"));
             //                presenter.addCard(data.getStringExtra("stripetoken"));
         } else if (requestCode == BRAINTREE_PAYMENT_REQUEST_CODE) {
-           // String paymentNonce = data.getStringExtra(BrainTreePaymentActivity.PAYMENT_NONCE);
+            // String paymentNonce = data.getStringExtra(BrainTreePaymentActivity.PAYMENT_NONCE);
             //Log.v(TAG, "braintree payment nonce " + paymentNonce);
-           // Toasty.success(PaymentActivity.this, "Payment nonce " + paymentNonce, Toast.LENGTH_SHORT).show();
+            // Toasty.success(PaymentActivity.this, "Payment nonce " + paymentNonce, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -286,7 +337,7 @@ public class PaymentActivity extends BaseActivity implements PaymentIView {
         @Override
         public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
             Card item = list.get(position);
-            holder.card.setText(getString(R.string.card_ ,item.getLastFour()));
+            holder.card.setText(getString(R.string.card_, item.getLastFour()));
             if (item.getIsDefault() == 1) holder.ivDefaultCard.setVisibility(View.VISIBLE);
             else holder.ivDefaultCard.setVisibility(View.INVISIBLE);
         }

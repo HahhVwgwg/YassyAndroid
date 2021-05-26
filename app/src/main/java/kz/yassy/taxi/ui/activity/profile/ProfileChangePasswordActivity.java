@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.HashMap;
@@ -52,8 +53,10 @@ public class ProfileChangePasswordActivity extends BaseActivity implements Profi
         ButterKnife.bind(this);
         profilePresenter.attachView(this);
         type = getIntent().getExtras().getInt("type");
+        SharedHelper.putKey(getApplicationContext(), "isRefreshNeed", false);
         if (type == 3) {
             editText.setHint("Введите свою почту");
+            ((TextView) findViewById(R.id.title)).setText("Почта");
         }
         editText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -98,10 +101,10 @@ public class ProfileChangePasswordActivity extends BaseActivity implements Profi
         if (type == 1) {
             map.put("first_name", RequestBody.create(MediaType.parse("text/plain"), editText.getText().toString().split(" ")[0]));
             map.put("last_name", RequestBody.create(MediaType.parse("text/plain"), editText.getText().toString().split(" ").length > 1 ? editText.getText().toString().split(" ")[1] : ""));
-            map.put("email", RequestBody.create(MediaType.parse("text/plain"), getIntent().getExtras().getString("email")));
+//            map.put("email", RequestBody.create(MediaType.parse("text/plain"), getIntent().getExtras().getString("email")));
         } else {
-            map.put("first_name", RequestBody.create(MediaType.parse("text/plain"), getIntent().getExtras().getString("fullName").split(" ")[0]));
-            map.put("last_name", RequestBody.create(MediaType.parse("text/plain"), getIntent().getExtras().getString("fullName").split(" ").length > 1 ? getIntent().getExtras().getString("fullName").split(" ")[1] : ""));
+//            map.put("first_name", RequestBody.create(MediaType.parse("text/plain"), getIntent().getExtras().getString("fullName").split(" ")[0]));
+//            map.put("last_name", RequestBody.create(MediaType.parse("text/plain"), getIntent().getExtras().getString("fullName").split(" ").length > 1 ? getIntent().getExtras().getString("fullName").split(" ")[1] : ""));
             map.put("email", RequestBody.create(MediaType.parse("text/plain"), editText.getText().toString()));
         }
         map.put("mobile", RequestBody.create(MediaType.parse("text/plain"), getIntent().getExtras().getString("mobile")));
@@ -128,7 +131,7 @@ public class ProfileChangePasswordActivity extends BaseActivity implements Profi
     @Override
     public void onUpdateSuccess(User user) {
         hideLoading();
-        Log.e("ErrorMine", "success");
+        SharedHelper.putKey(getApplicationContext(), "isRefreshNeed", true);
         finish();
     }
 

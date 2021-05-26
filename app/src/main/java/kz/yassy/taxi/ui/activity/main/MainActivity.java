@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -55,7 +56,6 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.hold1.keyboardheightprovider.KeyboardHeightProvider;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -63,6 +63,7 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -75,6 +76,8 @@ import kz.yassy.taxi.BuildConfig;
 import kz.yassy.taxi.MvpApplication;
 import kz.yassy.taxi.R;
 import kz.yassy.taxi.base.BaseActivity;
+import kz.yassy.taxi.base.KeyboardHeightObserver;
+import kz.yassy.taxi.base.KeyboardHeightProvider;
 import kz.yassy.taxi.chat.ChatActivity;
 import kz.yassy.taxi.common.ConnectionLiveData;
 import kz.yassy.taxi.common.Constants;
@@ -99,6 +102,7 @@ import kz.yassy.taxi.ui.activity.payment.PaymentActivity;
 import kz.yassy.taxi.ui.activity.setting.SettingsActivity;
 import kz.yassy.taxi.ui.activity.your_trips.YourTripActivity;
 import kz.yassy.taxi.ui.adapter.EmptyAddressAdapter;
+import kz.yassy.taxi.ui.adapter.RecentAddressAdapter;
 import kz.yassy.taxi.ui.adapter.SearchAddressAdapter;
 import kz.yassy.taxi.ui.adapter.UserAddressAdapter;
 import kz.yassy.taxi.ui.fragment.RateCardFragment;
@@ -122,16 +126,11 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static kz.yassy.taxi.MvpApplication.DATUM;
 import static kz.yassy.taxi.MvpApplication.RIDE_REQUEST;
 import static kz.yassy.taxi.MvpApplication.canGoToChatScreen;
-import static kz.yassy.taxi.MvpApplication.isCard;
-import static kz.yassy.taxi.MvpApplication.isCash;
 import static kz.yassy.taxi.MvpApplication.isChatScreenOpen;
-import static kz.yassy.taxi.MvpApplication.isDebitMachine;
-import static kz.yassy.taxi.MvpApplication.isVoucher;
 import static kz.yassy.taxi.common.Constants.BroadcastReceiver.INTENT_FILTER;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.DEST_ADD;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.DEST_LAT;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.DEST_LONG;
-import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.PAYMENT_MODE;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_ADD;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_LAT;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_LONG;
@@ -152,35 +151,14 @@ import static kz.yassy.taxi.data.SharedHelper.key.SOS_NUMBER;
 public class MainActivity extends BaseActivity implements
         MainIView,
         IMapView,
-        DrawerMenuListener {
+        DrawerMenuListener, KeyboardHeightObserver {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static String CURRENT_STATUS = EMPTY;
     private final MainPresenter<MainActivity> mainPresenter = new MainPresenter<>();
-
-    private final int[] transitions = new int[]{R.id.tr_to_trip, R.id.tr_to_map, R.id.tr_to_service, R.id.tr};
-
     @BindView(R.id.container)
     FrameLayout container;
-    private final TextWatcher filterTextWatcher = new TextWatcher() {
-
-
-        public void afterTextChanged(Editable editable) {
-            eraseSrc.setVisibility(sourceTxt.hasFocus() && editable.length() > 0 ? View.VISIBLE : View.INVISIBLE);
-            eraseDest.setVisibility(destinationTxt.hasFocus() && editable.length() > 0 ? View.VISIBLE : View.INVISIBLE);
-            Log.e("searchText", editable.toString());
-            requestPlacesByDelay(editable);
-        }
-
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-        }
-
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-        }
-
-    };
+    private HashSet<Integer> hashSetA = new HashSet<>();
     @BindView(R.id.menu_back)
     ImageView menuBack;
     @BindView(R.id.menu_app)
@@ -250,6 +228,31 @@ public class MainActivity extends BaseActivity implements
     private boolean isDoubleBackPressed = false;
     private boolean isLocationPermissionGranted;
     private int getProviderHitCheck;
+    private HashSet<Integer> hashSetB = new HashSet<>();
+    private final BroadcastReceiver myReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getBooleanExtra("map", false)) {
+                topLayout.transitionToStart();
+            } else {
+                mainPresenter.checkStatus();
+            }
+            Log.e("af;ldjfalk;fdja;lf", "outside");
+            if (SharedHelper.getKey(getApplicationContext(), "cancelRideActivity", false)) {
+                MvpApplication.RIDE_REQUEST.remove(DEST_ADD);
+                MvpApplication.RIDE_REQUEST.remove(DEST_LAT);
+                MvpApplication.RIDE_REQUEST.remove(DEST_LONG);
+                destinationTxt.setText("");
+                isEditable = true;
+                hashSetA.clear();
+                hashSetB.clear();
+                Log.e("af;ldjfalk;fdja;lf", "inside");
+                changeFlow("EMPTY", true);
+                SharedHelper.putKey(getApplicationContext(), "cancelRideActivity", false);
+                mainPresenter.checkStatus();
+            }
+        }
+    };
 
     private Location mLastKnownLocation;
 
@@ -257,6 +260,7 @@ public class MainActivity extends BaseActivity implements
     private UserAddress home = null, work = null;
     private UserAddressAdapter userAddressAdapter;
     private SearchAddressAdapter searchAddressAdapter;
+    private RecentAddressAdapter recentAddressAdapter;
     @BindView(R.id.error)
     TextView error;
 
@@ -265,6 +269,27 @@ public class MainActivity extends BaseActivity implements
     private Handler h;
 
     private LatLng lastPoint;
+    private final TextWatcher filterTextWatcher = new TextWatcher() {
+
+
+        public void afterTextChanged(Editable editable) {
+            eraseSrc.setVisibility(sourceTxt.hasFocus() && editable.length() > 0 ? View.VISIBLE : View.INVISIBLE);
+            eraseDest.setVisibility(destinationTxt.hasFocus() && editable.length() > 0 ? View.VISIBLE : View.INVISIBLE);
+            recentAddressAdapter.updateVisibility(destinationTxt.length() == 0);
+            Log.e("searchText", " " + destinationTxt.length() + " " + editable.toString());
+            if ((eraseDest.getVisibility() == View.VISIBLE || eraseSrc.getVisibility() == View.VISIBLE) && editable.length() > 0)
+                requestPlacesByDelay(editable);
+        }
+
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+        }
+
+    };
 
     private MapSelectFragment mapSelectFragment;
     private Fragment currentTripFragment;
@@ -277,6 +302,7 @@ public class MainActivity extends BaseActivity implements
     private RatingDialogFragment ratingDialogFragment;
     private double theLastLatitude, theLastLongitude;
     private BottomSheetBehavior<LinearLayout> bottomSheetBehavior;
+    private boolean isFirstCallOfDriver = true;
 
     @OnFocusChange({R.id.source, R.id.destination})
     public void onFocusChanged(View view, boolean focused) {
@@ -304,24 +330,7 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
-    private final BroadcastReceiver myReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getBooleanExtra("map", false)) {
-                topLayout.transitionToStart();
-                Log.e("af;ldjfalk;fdja;lf", "afkjaf;lkajsdflajf");
-            } else {
-                mainPresenter.checkStatus();
-            }
-            if (SharedHelper.getKey(getApplicationContext(), "cancelRideActivity", false)) {
-                MvpApplication.RIDE_REQUEST.remove(DEST_ADD);
-                MvpApplication.RIDE_REQUEST.remove(DEST_LAT);
-                MvpApplication.RIDE_REQUEST.remove(DEST_LONG);
-                changeFlow("EMPTY", true);
-                SharedHelper.putKey(getApplicationContext(), "cancelRideActivity", false);
-            }
-        }
-    };
+    private boolean firstSuccessCallProviders = true;
 
     @Override
     public int getLayoutId() {
@@ -338,11 +347,13 @@ public class MainActivity extends BaseActivity implements
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         keyboardHeightProvider = new KeyboardHeightProvider(this);
-        keyboardHeightProvider.addKeyboardListener(height -> {
-            //addressesList.setPadding(0, 0, 0, height);
-            ((ViewGroup.MarginLayoutParams) onMap.getLayoutParams()).bottomMargin = height + DisplayUtils.dpToPx(60);
-            onMap.requestLayout();
-        });
+        View viewMine = findViewById(R.id.drawer_layout);
+        viewMine.post(() -> keyboardHeightProvider.start());
+//        keyboardHeightProvider.addKeyboardListener(height -> {
+//            //addressesList.setPadding(0, 0, 0, height);
+//            ((ViewGroup.MarginLayoutParams) onMap.getLayoutParams()).bottomMargin = height + DisplayUtils.dpToPx(60);
+//            onMap.requestLayout();
+//        });
         SharedHelper.putKey(getApplicationContext(), "showLocationError", false);
         drawerFragment = (DrawerFragment) getSupportFragmentManager().findFragmentById(R.id.drawer);
         registerReceiver(myReceiver, new IntentFilter(INTENT_FILTER));
@@ -405,24 +416,36 @@ public class MainActivity extends BaseActivity implements
             }
             mainPresenter.checkStatus();
             if (CURRENT_STATUS.equals(SERVICE) || CURRENT_STATUS.equals(EMPTY)) {
-                if (mLastKnownLocation != null) {
+                mapFragment.hideTaxiAnimation();
+                if (lastPoint != null) {
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put("latitude", lastPoint.getLatitude());
+                    map.put("longitude", lastPoint.getLongitude());
+                    mainPresenter.getProviders(map);
+                } else if (mLastKnownLocation != null) {
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("latitude", mLastKnownLocation.getLatitude());
                     map.put("longitude", mLastKnownLocation.getLongitude());
                     mainPresenter.getProviders(map);
                 }
+                if (!isFirstCallOfDriver)
+                    isFirstCallOfDriver = true;
             } else if (CURRENT_STATUS.equals(STARTED) || CURRENT_STATUS.equals(ARRIVED) || CURRENT_STATUS.equals(PICKED_UP)) {
-                try {
-                    if ((CURRENT_STATUS.equals(STARTED) || CURRENT_STATUS.equals(ARRIVED)) && DATUM != null) {
-                        mapFragment.clearAllMarker();
-                        addMarker(new LatLng(DATUM.getProviderLatitude(), DATUM.getProviderLongitude()));
-                        drawRoute(new LatLng(DATUM.getProviderLatitude(), DATUM.getProviderLongitude()), new LatLng(DATUM.getSLatitude(), DATUM.getSLongitude()), getProviderHitCheck < 2);
-                    } else if (CURRENT_STATUS.equals(PICKED_UP) && DATUM != null) {
-                        mapFragment.clearAllMarker();
-                        addMarker(new LatLng(DATUM.getProviderLatitude(), DATUM.getProviderLongitude()));
-                        drawRoute(new LatLng(new LatLng(DATUM.getProviderLatitude(), DATUM.getProviderLongitude())), new LatLng(new LatLng(DATUM.getDLatitude(), DATUM.getDLongitude())), getProviderHitCheck < 2);
-                    }
-                    Log.e("LatLng", DATUM.getProviderLatitude() + " " + DATUM.getProviderLongitude());
+//                try {
+                if (isFirstCallOfDriver) {
+                    mapFragment.clearAllMarker();
+                    isFirstCallOfDriver = false;
+                }
+                if ((CURRENT_STATUS.equals(STARTED) || CURRENT_STATUS.equals(ARRIVED)) && DATUM != null) {
+//                        mapFragment.clearAllMarker();
+//                        mapFragment.addMarker(new LatLng(DATUM.getProviderLatitude(), DATUM.getProviderLongitude()), DATUM.getServiceType().getId() != 1, DATUM.getProviderId());
+                    drawRoute(new LatLng(DATUM.getProviderLatitude(), DATUM.getProviderLongitude()), new LatLng(DATUM.getSLatitude(), DATUM.getSLongitude()), getProviderHitCheck < 2);
+                } else if (CURRENT_STATUS.equals(PICKED_UP) && DATUM != null) {
+//                        mapFragment.clearAllMarker();
+//                        mapFragment.addMarker(new LatLng(DATUM.getProviderLatitude(), DATUM.getProviderLongitude()), DATUM.getServiceType().getId() != 1, DATUM.getProviderId());
+                    drawRoute(new LatLng(new LatLng(DATUM.getProviderLatitude(), DATUM.getProviderLongitude())), new LatLng(new LatLng(DATUM.getDLatitude(), DATUM.getDLongitude())), getProviderHitCheck < 2);
+                }
+                Log.e("LatLng", DATUM.getProviderLatitude() + " " + DATUM.getProviderLongitude());
 //                    Toast.makeText(getApplicationContext(), DATUM.getProviderLatitude() + " " + DATUM.getProviderLongitude(), Toast.LENGTH_SHORT).show();
 //                        LatLngBounds.Builder builder = new LatLngBounds.Builder();
 //                        builder.include(new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG)));
@@ -436,9 +459,9 @@ public class MainActivity extends BaseActivity implements
 //                                    )
 //                            );
 //                        }
-                } catch (Exception e) {
-
-                }
+//                } catch (Exception e) {
+//                    throw new e;
+//                }
             }
             Log.e("dartMine", "dart");
             getProviderHitCheck++;
@@ -498,10 +521,10 @@ public class MainActivity extends BaseActivity implements
 //                menuBack.setVisibility(View.VISIBLE);
                 //need improvement
                 menuApp.setVisibility(View.VISIBLE);
-                Log.e("This is called", "outside");
+                Log.e("Blablablabla", "outside");
                 if (i == R.id.start) {
                     isExpanded = false;
-                    Log.e("This is called", "start");
+                    Log.e("Blablablabla", "start");
                     KeyboardUtils.hideKeyboard(MainActivity.this, sourceTxt, destinationTxt);
                     pickLocationLayout.requestFocus();
                     topLayout.enableTransition(R.id.tr, false);
@@ -511,10 +534,12 @@ public class MainActivity extends BaseActivity implements
                         changeFlow(CURRENT_STATUS, false);
                         motionLayout.setTransition(R.id.tr_to_map);
                         motionLayout.transitionToEnd();
+                        Log.e("Blablablabla", "map");
                     } else if (RIDE_REQUEST.containsKey(SRC_ADD)
                             && RIDE_REQUEST.containsKey(DEST_ADD)
                             && CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
                         CURRENT_STATUS = SERVICE;
+                        Log.e("Blablablabla", "Service");
                         changeFlow(CURRENT_STATUS, false);
                         LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
                         LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
@@ -544,22 +569,22 @@ public class MainActivity extends BaseActivity implements
                     isExpanded = true;
                     menuApp.setVisibility(View.GONE);
                     menuBack.setVisibility(View.GONE);
-                    Log.e("This is called", "end");
+                    Log.e("Blablablabla", "end");
                     //need improvement
                 } else if (i == R.id.start_trip) {
                     isExpanded = false;
                     motionLayout.setTransition(R.id.tr);
-                    Log.e("This is called", "starttrip");
+                    Log.e("Blablablabla", "starttrip");
                 } else if (i == R.id.start_service) {
                     isExpanded = false;
                     motionLayout.setTransition(R.id.tr);
                     CURRENT_STATUS = EMPTY;
                     changeFlow(CURRENT_STATUS, false);
                     returnToInitial();
-                    Log.e("This is called", "startService");
+                    Log.e("Blablablabla", "startService");
                 } else if (i == R.id.start_map) {
                     isExpanded = false;
-                    Log.e("This is called", "startmap");
+                    Log.e("Blablablabla", "startmap");
                     motionLayout.setTransition(R.id.tr);
                     if (RIDE_REQUEST.containsKey(DEST_ADD) && RIDE_REQUEST.get(DEST_ADD) != destinationTxt.getText().toString()) {
                         isEditable = false;
@@ -568,6 +593,7 @@ public class MainActivity extends BaseActivity implements
                     }
                     if (RIDE_REQUEST.containsKey(SRC_ADD)
                             && RIDE_REQUEST.containsKey(DEST_ADD)) {
+                        Log.e("Blablablabla", "Service");
                         CURRENT_STATUS = SERVICE;
                         changeFlow(CURRENT_STATUS, false);
                         LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
@@ -580,7 +606,7 @@ public class MainActivity extends BaseActivity implements
                         changeFlow(CURRENT_STATUS, false);
                     }
                 } else if (i == R.id.end_map) {
-                    Log.e("This is called", "endmap");
+                    Log.e("Blablablabla", "endmap");
                     if (mapSelectFragment != null && lastPoint != null) {
                         mapSelectFragment.onActionUp(lastPoint);
                     }
@@ -600,14 +626,72 @@ public class MainActivity extends BaseActivity implements
         addresses.add(UserAddress.createEmptyHomeAddress());
         addresses.add(UserAddress.createEmptyWorkAddress());
         userAddressAdapter = new UserAddressAdapter(addresses, item -> {
-            Log.e("typeMine", item.getType());
-            if (item.getType().equalsIgnoreCase("home")) {
-                updateSavedAddress(home);
-            } else {
-                updateSavedAddress(work);
+            if (selectedEditText == R.id.source) {
+                if (mapFragment != null) {
+                    isMapMoved = true;
+                    mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+                            .target(new LatLng(
+                                            item.getLatitude(),
+                                            item.getLongitude()
+                                    )
+                            )
+                            .padding(
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    getActualPadding()
+                            )
+                            .zoom(DEFAULT_ZOOM)
+                            .build()));
+                }
+                if (item.getType().equalsIgnoreCase("home")) {
+                    setStartAddress(home);
+                } else {
+                    setStartAddress(work);
+                }
+                topLayout.transitionToStart();
+            } else if (selectedEditText == R.id.destination) {
+                isEditable = false;
+                destinationTxt.setText(item.getAddress());
+                RIDE_REQUEST.put(DEST_ADD, item.getAddress());
+                RIDE_REQUEST.put(DEST_LONG, item.getLongitude());
+                RIDE_REQUEST.put(DEST_LAT, item.getLatitude());
+                isEditable = true;
+                topLayout.transitionToStart();
             }
         });
         emptyAddressAdapter = new EmptyAddressAdapter(1);
+        recentAddressAdapter = new RecentAddressAdapter(new ArrayList<>(), item -> {
+            if (selectedEditText == R.id.source) {
+                if (mapFragment != null) {
+                    isMapMoved = true;
+                    mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+                            .target(new LatLng(
+                                            item.getLatitude(),
+                                            item.getLongitude()
+                                    )
+                            )
+                            .padding(
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    getActualPadding()
+                            )
+                            .zoom(DEFAULT_ZOOM)
+                            .build()));
+                }
+                setStartAddress(item);
+                topLayout.transitionToStart();
+            } else if (selectedEditText == R.id.destination) {
+                isEditable = false;
+                destinationTxt.setText(item.getAddress());
+                RIDE_REQUEST.put(DEST_ADD, item.getAddress());
+                RIDE_REQUEST.put(DEST_LONG, item.getLongitude());
+                RIDE_REQUEST.put(DEST_LAT, item.getLatitude());
+                isEditable = true;
+                topLayout.transitionToStart();
+            }
+        });
         searchAddressAdapter = new SearchAddressAdapter(new ArrayList<>(), item -> {
             if (selectedEditText == R.id.source) {
                 if (mapFragment != null) {
@@ -639,7 +723,7 @@ public class MainActivity extends BaseActivity implements
                 topLayout.transitionToStart();
             }
         });
-        ConcatAdapter adapter = new ConcatAdapter(userAddressAdapter, searchAddressAdapter, emptyAddressAdapter);
+        ConcatAdapter adapter = new ConcatAdapter(userAddressAdapter, searchAddressAdapter, recentAddressAdapter, emptyAddressAdapter);
         addressesList.addItemDecoration(new ListOffset(DisplayUtils.dpToPx(24)));
         addressesList.setAdapter(adapter);
         ConnectionLiveData connectionLiveData = new ConnectionLiveData(this);
@@ -658,7 +742,7 @@ public class MainActivity extends BaseActivity implements
     protected void onPause() {
         super.onPause();
         if (keyboardHeightProvider != null) {
-            keyboardHeightProvider.onPause();
+            keyboardHeightProvider.setKeyboardHeightObserver(null);
         }
     }
 
@@ -667,7 +751,7 @@ public class MainActivity extends BaseActivity implements
     public void onResume() {
         super.onResume();
         if (keyboardHeightProvider != null) {
-            keyboardHeightProvider.onResume();
+            keyboardHeightProvider.setKeyboardHeightObserver(this);
         }
         if (showRatingDialogFragment) {
             ratingDialogFragment.show(getSupportFragmentManager(), null);
@@ -688,9 +772,19 @@ public class MainActivity extends BaseActivity implements
     }
 
     @Override
+    public void onKeyboardHeightChanged(int height, int orientation) {
+        String orientationLabel = orientation == Configuration.ORIENTATION_PORTRAIT ? "portrait" : "landscape";
+        Log.i("af;ldjfalk;fdja;lf", "onKeyboardHeightChanged in pixels: " + height + " " + orientationLabel);
+        // color the keyboard height view, this will remain visible when you close the keyboard
+        ((ViewGroup.MarginLayoutParams) onMap.getLayoutParams()).bottomMargin = height + DisplayUtils.dpToPx(30);
+        onMap.requestLayout();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         mainPresenter.onDetach();
+        keyboardHeightProvider.close();
         unregisterReceiver(myReceiver);
         if (r != null) h.removeCallbacks(r);
     }
@@ -869,6 +963,8 @@ public class MainActivity extends BaseActivity implements
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, findViewById(R.id.nav_view));
                 menuApp.setVisibility(View.GONE);
                 menuBack.setVisibility(View.GONE);
+                topLayout.setTransition(R.id.tr_to_trip);
+                topLayout.transitionToEnd();
                 pickLocationLayout.setVisibility(View.GONE);
                 updatePaymentEntities();
                 Log.e("searchingFragment", "activated");
@@ -931,6 +1027,11 @@ public class MainActivity extends BaseActivity implements
                 if (DATUM != null)
                     FirebaseMessaging.getInstance().unsubscribeFromTopic(String.valueOf(DATUM.getId()));
                 showRatingDialogFragment = false;
+                mapFragment.setStartPosition(null);
+                mapFragment.clearAllMarker();
+                mapFragment.hideTaxiAnimation();
+                hashSetA.clear();
+                hashSetB.clear();
                 try {
                     if (ratingDialogFragment != null
                             && ratingDialogFragment.getDialog() != null
@@ -962,6 +1063,25 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
+    private void setStartAddress(@Nullable UserAddress address) {
+        if (address != null) {
+            isEditable = false;
+            sourceTxt.setText(address.getAddress());
+            RIDE_REQUEST.put(SRC_ADD, address.getAddress());
+            RIDE_REQUEST.put(SRC_LAT, address.getLatitude());
+            RIDE_REQUEST.put(SRC_LONG, address.getLongitude());
+            isEditable = true;
+        } else {
+            isEditable = false;
+            sourceTxt.setText("");
+            eraseSrc.setVisibility(View.INVISIBLE);
+            RIDE_REQUEST.remove(SRC_ADD);
+            RIDE_REQUEST.remove(SRC_LAT);
+            RIDE_REQUEST.remove(SRC_LONG);
+            isEditable = true;
+        }
+    }
+
     private void setStartAddress(@Nullable SearchAddress address) {
         if (address != null) {
             isEditable = false;
@@ -986,24 +1106,32 @@ public class MainActivity extends BaseActivity implements
         RIDE_REQUEST.put(DEST_LAT, userAddress.getLatitude());
         RIDE_REQUEST.put(DEST_LONG, userAddress.getLongitude());
         destinationTxt.setText(String.valueOf(RIDE_REQUEST.get(DEST_ADD)));
-
         if (RIDE_REQUEST.containsKey(SRC_ADD) && RIDE_REQUEST.containsKey(DEST_ADD)) {
-            LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
-            LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
-            drawRoute(origin, destination);
-            CURRENT_STATUS = SERVICE;
-            changeFlow(CURRENT_STATUS, true);
+//            LatLng origin = new LatLng((Double) RIDE_REQUEST.get(SRC_LAT), (Double) RIDE_REQUEST.get(SRC_LONG));
+//            LatLng destination = new LatLng((Double) RIDE_REQUEST.get(DEST_LAT), (Double) RIDE_REQUEST.get(DEST_LONG));
+//            drawRoute(origin, destination);
+            Log.e("Blablablabla", "updateSavedAddress");
+            CURRENT_STATUS = EMPTY;
+            topLayout.transitionToEnd();
+            topLayout.setTransition(R.id.tr);
+            topLayout.transitionToStart();
         }
     }
 
     public void drawRoute(LatLng source, LatLng destination) {
-        Log.e("draweRoute", "here");
+        Log.e("draweRoute", "drawRouteWithoutSimple");
 //        mainPresenter.getRoute(source.getLatitude(), source.getLongitude(), destination.getLatitude(), destination.getLongitude());
         mapFragment.getRoute(Point.fromLngLat(source.getLongitude(), source.getLatitude()), Point.fromLngLat(destination.getLongitude(), destination.getLatitude()));
     }
 
+    public void drawRouteWithoutTaxiAnimation(LatLng source, LatLng destination) {
+        Log.e("draweRoute", "drawRouteWithoutTaxiAnimation");
+//        mainPresenter.getRoute(source.getLatitude(), source.getLongitude(), destination.getLatitude(), destination.getLongitude());
+        mapFragment.getRouteWithoutTaxiAnimation(Point.fromLngLat(source.getLongitude(), source.getLatitude()), Point.fromLngLat(destination.getLongitude(), destination.getLatitude()));
+    }
+
     public void drawRoute(LatLng source, LatLng destination, boolean animation) {
-        Log.e("draweRoute", "here");
+        Log.e("draweRoute", "drawRouteAnimation");
 //        mainPresenter.getRoute(source.getLatitude(), source.getLongitude(), destination.getLatitude(), destination.getLongitude());
         mapFragment.getRoute(Point.fromLngLat(source.getLongitude(), source.getLatitude()), Point.fromLngLat(destination.getLongitude(), destination.getLatitude()), animation);
     }
@@ -1252,13 +1380,13 @@ public class MainActivity extends BaseActivity implements
             if (checkStatusResponse.getOnline() == 0) {
                 online = true;
             }
-            isDebitMachine = checkStatusResponse.getDebitMachine() == 1;
-            isVoucher = checkStatusResponse.getVoucher() == 1;
-            if (isCash) RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.CASH);
-            else if (isCard) RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.CARD);
-            else if (isDebitMachine)
-                RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.DEBIT_MACHINE);
-            else if (isVoucher) RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.VOUCHER);
+//            isDebitMachine = checkStatusResponse.getDebitMachine() == 1;
+//            isVoucher = checkStatusResponse.getVoucher() == 1;
+//            if (isCash) RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.CASH);
+//            else if (isCard) RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.CARD);
+//            else if (isDebitMachine)
+//                RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.DEBIT_MACHINE);
+//            else if (isVoucher) RIDE_REQUEST.put(PAYMENT_MODE, Constants.PaymentMode.VOUCHER);
         }
     }
 
@@ -1348,10 +1476,10 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void onSuccessCheckStatus(DataResponse dataResponse) {
         this.checkStatusResponse = dataResponse;
-        Log.e("StatusChange", dataResponse.getData().getStatus());
         updatePaymentEntities();
         SharedHelper.putKey(this, SOS_NUMBER, checkStatusResponse.getSos());
         if (dataResponse.getData() != null) {
+            Log.e("StatusChange", dataResponse.getData().getStatus());
             if (firstIn) {
                 DATUM = dataResponse.getData();
                 final boolean rollback = DATUM.getStatus().equals(EMPTY) && !CURRENT_STATUS.equals(EMPTY);
@@ -1359,8 +1487,6 @@ public class MainActivity extends BaseActivity implements
                 Log.e("euieuiuieiu", "firstIn" + dataResponse.getData().getStatus());
                 changeFlow(CURRENT_STATUS, rollback);
                 firstIn = false;
-//                h.removeCallbacks(r);
-//                h.postDelayed(r, 0);
             }
             if (!CURRENT_STATUS.equals(dataResponse.getData().getStatus())) {
                 DATUM = dataResponse.getData();
@@ -1369,16 +1495,21 @@ public class MainActivity extends BaseActivity implements
                 Log.e("euieuiuieiu", "euiiiuiiui" + dataResponse.getData().getStatus());
                 changeFlow(CURRENT_STATUS, rollback);
                 getProviderHitCheck = 0;
-//                h.removeCallbacks(r);
-//                h.postDelayed(r, 0);
             }
             DATUM = dataResponse.getData();
         } else if (CURRENT_STATUS.equals(SERVICE) || CURRENT_STATUS.equals(MAP)) {
-            System.out.println("RRR CURRENT_STATUS = " + CURRENT_STATUS);
+            Log.e("StatusChange", "status clear - " + CURRENT_STATUS);
         } else {
-            Log.e("TRIP_INFO", "status clear - " + CURRENT_STATUS);
-            CURRENT_STATUS = EMPTY;
-            changeFlow(CURRENT_STATUS, false);
+            Log.e("StatusChange", "status clear - " + CURRENT_STATUS);
+            if (!CURRENT_STATUS.equals(EMPTY)) {
+                MvpApplication.RIDE_REQUEST.remove(DEST_ADD);
+                MvpApplication.RIDE_REQUEST.remove(DEST_LAT);
+                MvpApplication.RIDE_REQUEST.remove(DEST_LONG);
+                destinationTxt.setText("");
+                isEditable = true;
+                CURRENT_STATUS = EMPTY;
+                changeFlow(CURRENT_STATUS, true);
+            }
         }
         if (CURRENT_STATUS.equals(STARTED)
                 || CURRENT_STATUS.equals(ARRIVED)
@@ -1432,10 +1563,6 @@ public class MainActivity extends BaseActivity implements
         Log.e("showRouteErrorOutside", e.getMessage());
     }
 
-    public void addMarker(LatLng latLng) {
-        mapFragment.addMarker(latLng);
-    }
-
 
     @Override
     public void onSuccessRoute(SearchRoute o) {
@@ -1469,10 +1596,32 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void onSuccessProvers(List<Provider> providers) {
         Log.e("Providers", providers.toString());
-        mapFragment.clearAllMarker();
-        for (int i = 0; i < providers.size(); i++) {
-            addMarker(new LatLng(providers.get(i).getLatitude(), providers.get(i).getLongitude()));
+        if (firstSuccessCallProviders) {
+            for (int i = 0; i < providers.size(); i++) {
+                mapFragment.addMarker(new LatLng(providers.get(i).getLatitude(), providers.get(i).getLongitude()), providers.get(i).getProviderService().getServiceTypeId() != 1, providers.get(i).getId());
+                hashSetA.add(providers.get(i).getId());
+            }
+        } else {
+            for (int i = 0; i < providers.size(); i++) {
+                if (hashSetA.contains(providers.get(i).getId())) {
+                    mapFragment.updateMarker(new LatLng(providers.get(i).getLatitude(), providers.get(i).getLongitude()), providers.get(i).getProviderService().getServiceTypeId() != 1, providers.get(i).getId());
+                } else {
+                    mapFragment.addMarker(new LatLng(providers.get(i).getLatitude(), providers.get(i).getLongitude()), providers.get(i).getProviderService().getServiceTypeId() != 1, providers.get(i).getId());
+                }
+                hashSetB.add(providers.get(i).getId());
+            }
         }
+        if (!firstSuccessCallProviders) {
+            for (Integer id : hashSetA) {
+                if (!hashSetB.contains(id)) {
+                    mapFragment.deleteMarker(id);
+                }
+            }
+            hashSetA.clear();
+            hashSetA.addAll(hashSetB);
+            hashSetB.clear();
+        } else
+            firstSuccessCallProviders = false;
     }
 
     @Override
@@ -1510,7 +1659,8 @@ public class MainActivity extends BaseActivity implements
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        Log.e("SearchList", " " + addresses.size());
+        recentAddressAdapter.updateVisibility(false);
         emptyAddressAdapter.update(addresses.size() > 2 ? 0 : 1);
         searchAddressAdapter.update(addresses);
     }
@@ -1596,6 +1746,7 @@ public class MainActivity extends BaseActivity implements
         }
         btnHomeValue.setText(home != null ? R.string.home : R.string.add_home);
         btnWorkValue.setText(work != null ? R.string.work : R.string.add_work);
+        recentAddressAdapter.update(response.getRecent());
     }
 
 //    @Override
@@ -1605,6 +1756,12 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     public void onError(Throwable e) {
+        Log.e("ErrorMine", e.getMessage());
+    }
+
+    @Override
+    public void onErrorCheckStatus(Throwable e) {
+        Log.e("onErrorCheckStatus", e.getMessage());
 
     }
 
@@ -1660,11 +1817,13 @@ public class MainActivity extends BaseActivity implements
                 sosFragment.show(getSupportFragmentManager(), SOS);
                 break;
             case R.id.menu_back:
+                Log.e("Blablablabla", "really here");
+//                topLayout.setTransition(R.id.tr);
+//                topLayout.transitionToEnd();
                 topLayout.transitionToStart();
-                Log.e("I am here", "really here");
                 break;
             case R.id.erase_src:
-                setStartAddress(null);
+                setStartAddress((SearchAddress) null);
                 break;
             case R.id.erase_dest:
                 destinationTxt.setText("");
@@ -1730,6 +1889,21 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
+    public void centerElementCustom(LatLng latLng, double zoom) {
+        if (mapFragment != null) {
+            mapFragment.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
+                    .target(latLng)
+                    .padding(
+                            0.0,
+                            0.0,
+                            0.0,
+                            getActualPadding()
+                    )
+                    .zoom(zoom)
+                    .build()));
+        }
+    }
+
     // drawer
 
     @Override
@@ -1774,7 +1948,6 @@ public class MainActivity extends BaseActivity implements
     public void onActionUp(LatLng point) {
         lastPoint = point;
         if (CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
-
             isDragging = false;
             theLastLatitude = point.getLatitude();
             theLastLongitude = point.getLongitude();
@@ -1790,7 +1963,7 @@ public class MainActivity extends BaseActivity implements
     public void onActionDown() {
         if (CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
             isDragging = true;
-            setStartAddress(null);
+            setStartAddress((SearchAddress) null);
         } else if (CURRENT_STATUS.equalsIgnoreCase(MAP)) {
             if (mapSelectFragment != null) {
                 mapSelectFragment.onActionDown();
