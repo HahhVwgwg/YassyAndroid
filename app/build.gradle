@@ -17,7 +17,7 @@ android {
         applicationId "kz.yassy.taxi"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 9
+        versionCode 12
         versionName "1.5"
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -34,7 +34,7 @@ android {
         buildConfigField "String", "TERMS_CONDITIONS", '"https://yassy.taxi/privacy"'
         buildConfigField "String", "SITE_URL", '"https://yassy.taxi/"'
 
-        buildConfigField "String", "DRIVER_PACKAGE", '"kz.yassy.taxi.driver"'
+        buildConfigField "String", "DRIVER_PACKAGE", 'kz.yassy.driver'
         buildConfigField "String", "CLIENT_SECRET", '"nMljNEA3v4ZQzrsrBk31xz5nXz0moM2hrieFbDG8"'
         buildConfigField "String", "CLIENT_ID", '"3"'
         buildConfigField "String", "DEVICE_TYPE", '"android"'

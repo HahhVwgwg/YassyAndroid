@@ -243,7 +243,7 @@
     <string name="send_my_loc">Send My Location</string>
     <string name="no_thanks">No thanks, i\'ll try later</string>
     <string name="current_loc_sms">Tap the button below to send your \n current location by SMS</string>
-    <string name="current_alternative">Please check your internet connection </string>
+    <string name="current_alternative">Пожалуйста, проверьте подключение к Интернету</string>
     <string name="coupon_code_applied">Coupon code applied successfully!</string>
     <string name="coupon_code_not_valid">Coupon code is not valid</string>
     <string name="card_deleted_successfully">Card Deleted Successfully</string>

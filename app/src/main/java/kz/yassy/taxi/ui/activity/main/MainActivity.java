@@ -61,6 +61,8 @@ import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,6 +74,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnFocusChange;
+import es.dmoral.toasty.Toasty;
 import kz.yassy.taxi.BuildConfig;
 import kz.yassy.taxi.MvpApplication;
 import kz.yassy.taxi.R;
@@ -121,6 +124,8 @@ import kz.yassy.taxi.ui.fragment.sos.SosFragment;
 import kz.yassy.taxi.ui.utils.DisplayUtils;
 import kz.yassy.taxi.ui.utils.KeyboardUtils;
 import kz.yassy.taxi.ui.utils.ListOffset;
+import okhttp3.ResponseBody;
+import retrofit2.HttpException;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static kz.yassy.taxi.MvpApplication.DATUM;
@@ -877,24 +882,7 @@ public class MainActivity extends BaseActivity implements
         alertDialog.show();
     }
 
-    private void requestPlacesByDelay(Editable s) {
-        timer.cancel();
-        timerTask.cancel();
-        timer = new Timer();
-        timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                runOnUiThread(() -> {
-//                    if (isEditable && !s.toString().trim().isEmpty()) {
-//                        mainPresenter.startSearch(s.toString());
-//                    }
-                    Log.e("startSearch", s.toString());
-                    mainPresenter.startSearch(s.toString());
-                });
-            }
-        };
-        timer.schedule(timerTask, REQUEST_PLACES_DELAY);
-    }
+    private int counter = 0;
 
     private void alertBecomeDriver() {
         Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -1263,6 +1251,25 @@ public class MainActivity extends BaseActivity implements
         }
     }
 
+    private void requestPlacesByDelay(Editable s) {
+        timer.cancel();
+        timerTask.cancel();
+        timer = new Timer();
+        timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(() -> {
+//                    if (isEditable && !s.toString().trim().isEmpty()) {
+//                        mainPresenter.startSearch(s.toString());
+//                    }
+                    Log.e("actionUp", "startSearch");
+                    mainPresenter.startSearch(s.toString());
+                });
+            }
+        };
+        timer.schedule(timerTask, REQUEST_PLACES_DELAY);
+    }
+
     private void getDeviceLocation() {
         try {
             if (isLocationPermissionGranted) {
@@ -1272,9 +1279,15 @@ public class MainActivity extends BaseActivity implements
                         mLastKnownLocation = task.getResult();
                         SharedHelper.putKey(getApplicationContext(), "lastKnownLocationLat", mLastKnownLocation.getLatitude());
                         SharedHelper.putKey(getApplicationContext(), "lastKnownLocationLong", mLastKnownLocation.getLongitude());
-                        handleLocation(true);
+                        if (counter < 1) {
+                            handleLocation(true);
+                            counter++;
+                        }
                     } else {
-                        handleLocation(false);
+                        if (counter < 1) {
+                            handleLocation(false);
+                            counter++;
+                        }
                     }
                 });
             }
@@ -1285,6 +1298,7 @@ public class MainActivity extends BaseActivity implements
 
     private void handleLocation(boolean success) {
         if (mapFragment != null) {
+            Log.e("mapFragment", "handleLocation" + success + " isMapmoved" + isMapMoved);
             if (success) {
                 if (mLastKnownLocation != null) {
                     if (!isMapMoved) {
@@ -1762,6 +1776,19 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void onErrorCheckStatus(Throwable e) {
         Log.e("onErrorCheckStatus", e.getMessage());
+        try {
+            ResponseBody responseBody = ((HttpException) e).response().errorBody();
+            int responseCode = ((HttpException) e).response().code();
+            JSONObject jsonObject = new JSONObject(responseBody.string());
+            if (responseCode == 401) {
+                if (jsonObject.has("error") && jsonObject.getString("error").equals("Unauthenticated.")) {
+                    Toasty.error(this, "Вы вошли с другого устройства", Toast.LENGTH_SHORT).show();
+                    LogoutApp();
+                }
+            }
+        } catch (Exception d) {
+            d.getMessage();
+        }
 
     }
 
@@ -1947,6 +1974,7 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void onActionUp(LatLng point) {
         lastPoint = point;
+        Log.e("actionUp", "actionUp");
         if (CURRENT_STATUS.equalsIgnoreCase(EMPTY)) {
             isDragging = false;
             theLastLatitude = point.getLatitude();

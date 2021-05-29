@@ -330,7 +330,7 @@ public class ServiceFlowFragment extends BaseFragment
         } catch (Exception e) {
             ((MainActivity) Objects.requireNonNull(getActivity())).deleteAndDrawRoute(new LatLng((double) RIDE_REQUEST.get(SRC_LAT), (double) RIDE_REQUEST.get(SRC_LONG)), new LatLng((double) RIDE_REQUEST.get(DEST_LAT), (double) RIDE_REQUEST.get(DEST_LONG)));
         }
-//        initChatView(String.valueOf(DATUM.getId()));
+        initChatView(String.valueOf(DATUM.getId()));
     }
 
     public void secondSplitUp(long biggy, TextView tvTimer) {

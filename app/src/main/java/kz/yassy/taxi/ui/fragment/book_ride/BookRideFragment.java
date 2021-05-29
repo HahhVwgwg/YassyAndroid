@@ -78,22 +78,6 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
     RecyclerView serviceRv;
     @BindView(R.id.estimated_payment_mode)
     TextView estimatedPaymentMode;
-
-    private final ServiceTypesFragment.ServiceListener mListener = pos -> {
-        System.out.println(pos + " position");
-        if (pos == 0) {
-            if (mPrices.size() == 0) {
-                mPrices.add(0);
-                mPrices.add(0);
-            } else if (mPrices.size() == 1) {
-                mPrices.add(0);
-            }
-            ServiceTypesFragment serviceTypesFragment = ServiceTypesFragment.create(mServices, mPrices, pos);
-            serviceTypesFragment.show(getChildFragmentManager(), SERVICE);
-        } else {
-            Toast.makeText(getContext(), "Пока этот тариф не доступен", Toast.LENGTH_SHORT).show();
-        }
-    };
     private boolean isCash = true;
     private String paymentMode;
     private String noteLocal = "";
@@ -320,6 +304,22 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
         super.onResume();
 //        initPayment(estimatedPaymentMode);
     }
+
+    private final ServiceTypesFragment.ServiceListener mListener = pos -> {
+        System.out.println(pos + " position");
+        if (pos == 0) {
+            if (mPrices.size() == 0) {
+                mPrices.add(0);
+                mPrices.add(0);
+            } else if (mPrices.size() == 1) {
+                mPrices.add(0);
+            }
+            ServiceTypesFragment serviceTypesFragment = ServiceTypesFragment.create(mServices, mPrices, pos);
+            serviceTypesFragment.show(getChildFragmentManager(), SERVICE);
+        } else {
+            Toast.makeText(getContext(), "Пока этот тариф не доступен", Toast.LENGTH_SHORT).show();
+        }
+    };
 
     public interface CouponListener {
         void couponClicked(int pos, PromoList promoList, String promoStatus);

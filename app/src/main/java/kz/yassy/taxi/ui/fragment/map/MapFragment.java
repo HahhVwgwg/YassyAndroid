@@ -1121,12 +1121,11 @@ public class MapFragment extends Fragment implements
 
     @Override
     public void onCameraMoveCanceled() {
-
+        Log.e("mapFragment", "onCameraMoveCancelled");
     }
 
     @Override
     public void onCameraMove() {
-
     }
 
     @Override
@@ -1141,7 +1140,7 @@ public class MapFragment extends Fragment implements
 
     @Override
     public void onFling() {
-
+        Log.e("mapFragment", "onFling");
     }
 
     @Override
@@ -1149,6 +1148,7 @@ public class MapFragment extends Fragment implements
         if (mapBoxMap == null) {
             return;
         }
+        Log.e("mapFragment", "onCameraIdle");
         LatLng point = mapBoxMap.getCameraPosition().target;
         if (point != null) {
             if (!isScaling) {
@@ -1157,7 +1157,6 @@ public class MapFragment extends Fragment implements
                 }
             }
         }
-        Log.e("eeeeeeeeeeeee", "eeeeeeeeeeee");
     }
 
     @Override
@@ -1200,7 +1199,7 @@ public class MapFragment extends Fragment implements
         if (mapBoxMap == null) {
             return false;
         }
-
+        Log.e("mapFragment", "mapClick");
         if (listener != null) {
             listener.onMapMoved(true);
             listener.onActionUp(point);

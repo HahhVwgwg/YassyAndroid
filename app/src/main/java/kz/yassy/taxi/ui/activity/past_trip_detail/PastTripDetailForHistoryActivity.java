@@ -124,7 +124,7 @@ public class PastTripDetailForHistoryActivity extends BaseActivity implements Pa
             status.setText(pastTrip.getCancelledBy().equals("user") ? "Вы отменили" : "Водитель отменил");
         }
         presenter.getRoute(pastTrip.getsLatitude(), pastTrip.getsLongitude(), pastTrip.getdLatitude(), pastTrip.getdLongitude());
-        String strCurrentDate = pastTrip.getFinishedAt().getDate();
+        String strCurrentDate = pastTrip.getAssignedAt().getDate();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", new Locale("ru"));
         SimpleDateFormat timeFormat;
         Date newDate = null;

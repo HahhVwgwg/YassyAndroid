@@ -124,7 +124,7 @@ public class PastTripFragment extends BaseFragment implements PastTripIView {
                     holder.status.setText("Водитель отменил");
                     break;
             }
-            holder.timestamp.setText(datum.getFinishedAt());
+            holder.timestamp.setText(datum.getCreatedAt());
             holder.dAddress.setText(datum.getDAddress());
             holder.sAddress.setText(datum.getSAddress());
         }

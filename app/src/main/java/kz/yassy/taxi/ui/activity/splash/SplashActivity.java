@@ -9,6 +9,10 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -39,10 +43,12 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import es.dmoral.toasty.Toasty;
 import kz.yassy.taxi.BuildConfig;
 import kz.yassy.taxi.MvpApplication;
 import kz.yassy.taxi.R;
 import kz.yassy.taxi.base.BaseActivity;
+import kz.yassy.taxi.common.ConnectivityReceiver;
 import kz.yassy.taxi.common.Constants;
 import kz.yassy.taxi.common.LocaleHelper;
 import kz.yassy.taxi.data.SharedHelper;
@@ -131,13 +137,39 @@ public class SplashActivity extends BaseActivity implements SplashIView,
 //        startActivity(nextScreen);
 //        finishAffinity();
         //Log.d("FCM", "FCM Token: " + SharedHelper.getKey(baseActivity(), "device_token"));
-        redirectionToHome();
+        if (!ConnectivityReceiver.isConnected()) {
+            Toasty.error(getApplicationContext(), getString(R.string.current_alternative), Toast.LENGTH_SHORT).show();
+            ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
+                @Override
+                public void onAvailable(Network network) {
+                    redirectionToHome();
+                }
+
+                @Override
+                public void onLost(Network network) {
+                    // network unavailable
+                }
+            };
+
+            ConnectivityManager connectivityManager =
+                    (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                connectivityManager.registerDefaultNetworkCallback(networkCallback);
+            } else {
+                NetworkRequest request = new NetworkRequest.Builder()
+                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build();
+                connectivityManager.registerNetworkCallback(request, networkCallback);
+            }
+        } else redirectionToHome();
+
     }
 
     @BindView(R.id.english)
     RadioButton english;
     @BindView(R.id.arabic)
     RadioButton arabic;
+
     private void languageReset() {
         String dd = LocaleHelper.getLanguage(getApplicationContext());
         switch (dd) {

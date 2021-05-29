@@ -11,7 +11,7 @@ public class PastTrip implements Serializable {
     public FinishedAt finishedAt;
     @SerializedName("assigned_at")
     @Expose
-    public FinishedAt assignedAt;
+    public AssignedAt assignedAt;
     @SerializedName("id")
     @Expose
     private int id;
@@ -161,11 +161,11 @@ public class PastTrip implements Serializable {
         this.finishedAt = finishedAt;
     }
 
-    public FinishedAt getAssignedAt() {
+    public AssignedAt getAssignedAt() {
         return assignedAt;
     }
 
-    public void setAssignedAt(FinishedAt assignedAt) {
+    public void setAssignedAt(AssignedAt assignedAt) {
         this.assignedAt = assignedAt;
     }
 
@@ -386,6 +386,13 @@ public class PastTrip implements Serializable {
     }
 
     public class FinishedAt implements Serializable {
+        @Override
+        public String toString() {
+            return "FinishedAt{" +
+                    "date='" + date + '\'' +
+                    '}';
+        }
+
         @SerializedName("date")
         @Expose
         public String date;
@@ -400,6 +407,13 @@ public class PastTrip implements Serializable {
     }
 
     public class AssignedAt implements Serializable {
+        @Override
+        public String toString() {
+            return "AssignedAt{" +
+                    "date='" + date + '\'' +
+                    '}';
+        }
+
         @SerializedName("date")
         @Expose
         public String date;

@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_toStartOf="@id/status"
-            android:text="Сегодня, 16:45"
+            tools:text="Сегодня, 16:45"
             android:textColor="@color/app_black" />
 
         <TextView
@@ -40,7 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:text="Водитель отменил"
+            tools:text="Водитель отменил"
             android:textAllCaps="true"
             android:textColor="@color/app_orange" />
     </RelativeLayout>
