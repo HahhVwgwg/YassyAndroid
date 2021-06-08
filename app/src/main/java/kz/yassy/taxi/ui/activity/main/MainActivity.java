@@ -420,6 +420,12 @@ public class MainActivity extends BaseActivity implements
                 mainPresenter.checkStatus();
             }
             mainPresenter.checkStatus();
+            if (CURRENT_STATUS.equals(EMPTY)) {
+                try {
+                    mapFragment.deleteRouteMine();
+                } catch (Exception ignored) {
+                }
+            }
             if (CURRENT_STATUS.equals(SERVICE) || CURRENT_STATUS.equals(EMPTY)) {
                 mapFragment.hideTaxiAnimation();
                 if (lastPoint != null) {
@@ -441,6 +447,7 @@ public class MainActivity extends BaseActivity implements
                     mapFragment.clearAllMarker();
                     isFirstCallOfDriver = false;
                 }
+                mapFragment.setVisibleTaxiSymbol();
                 if ((CURRENT_STATUS.equals(STARTED) || CURRENT_STATUS.equals(ARRIVED)) && DATUM != null) {
 //                        mapFragment.clearAllMarker();
 //                        mapFragment.addMarker(new LatLng(DATUM.getProviderLatitude(), DATUM.getProviderLongitude()), DATUM.getServiceType().getId() != 1, DATUM.getProviderId());
@@ -1015,7 +1022,7 @@ public class MainActivity extends BaseActivity implements
                 if (DATUM != null)
                     FirebaseMessaging.getInstance().unsubscribeFromTopic(String.valueOf(DATUM.getId()));
                 showRatingDialogFragment = false;
-                mapFragment.setStartPosition(null);
+//                mapFragment.setStartPosition(null);
                 mapFragment.clearAllMarker();
                 mapFragment.hideTaxiAnimation();
                 hashSetA.clear();
@@ -1515,6 +1522,9 @@ public class MainActivity extends BaseActivity implements
             Log.e("StatusChange", "status clear - " + CURRENT_STATUS);
         } else {
             Log.e("StatusChange", "status clear - " + CURRENT_STATUS);
+            if (CURRENT_STATUS.equals(SEARCHING)) {
+                showError(3);
+            }
             if (!CURRENT_STATUS.equals(EMPTY)) {
                 MvpApplication.RIDE_REQUEST.remove(DEST_ADD);
                 MvpApplication.RIDE_REQUEST.remove(DEST_LAT);
@@ -1596,6 +1606,10 @@ public class MainActivity extends BaseActivity implements
             case 2:
                 errorMain.setText("Все водидели заняты");
                 error.setText("Ваша заявка отменена. Попробуйте позже.");
+                break;
+            case 3:
+                errorMain.setText("Водитель отменил заявку.");
+                error.setText("Попробуйте заново.");
                 break;
         }
         errorContainer.clearAnimation();

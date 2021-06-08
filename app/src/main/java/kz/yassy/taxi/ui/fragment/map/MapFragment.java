@@ -644,6 +644,11 @@ public class MapFragment extends Fragment implements
         }
     }
 
+    public void setVisibleTaxiSymbol() {
+        if (symbol != null)
+            symbol.setIconOpacity(1f);
+    }
+
     private void stopTaxiAnimation() {
         if (handler != null) {
             valueAnimator.removeAllListeners();
