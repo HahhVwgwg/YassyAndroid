@@ -19,6 +19,8 @@ public class ErrorFragment extends BaseBottomSheetDialogFragment {
 
     public static final int LOCATION = 0;
     public static final int AREA = 1;
+    public static final int NOT_FOUND = 2;
+    public static final int CANCELLED_BY_DRIVER = 3;
     private static final String TYPE = "type.extra";
 
     @BindView(R.id.form_title)
@@ -27,7 +29,7 @@ public class ErrorFragment extends BaseBottomSheetDialogFragment {
     TextView errorDesc;
 
 
-    public static ErrorFragment newInstance(@IntRange(from = 0, to = 1) int type) {
+    public static ErrorFragment newInstance(@IntRange(from = 0, to = 4) int type) {
         ErrorFragment fragment = new ErrorFragment();
         Bundle bundle = new Bundle();
         bundle.putInt(TYPE, type);
@@ -61,6 +63,12 @@ public class ErrorFragment extends BaseBottomSheetDialogFragment {
                 errorDesc.setText(R.string.error_location_desc);
             } else if (type == AREA) {
                 errorTitle.setText(R.string.error_area_title);
+                errorDesc.setText("");
+            } else if (type == NOT_FOUND) {
+                errorTitle.setText("К сожалению все водители заняты, попробуйте ещё раз");
+                errorDesc.setText("");
+            } else if (type == CANCELLED_BY_DRIVER) {
+                errorTitle.setText("К сожалению водитель отменил заказ, попробуйте ещё раз");
                 errorDesc.setText("");
             }
         }

@@ -1,69 +1,60 @@
 package kz.yassy.taxi.ui.countrypicker;
 
 import android.annotation.SuppressLint;
-import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ListView;
-
-import androidx.fragment.app.DialogFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import kz.yassy.taxi.R;
+import kz.yassy.taxi.base.BaseActivity;
+import kz.yassy.taxi.data.SharedHelper;
 
-public class CountryPicker extends DialogFragment {
+public class CountryPicker extends BaseActivity {
 
     private CountryListAdapter adapter;
     private List<Country> countriesList = new ArrayList<>();
     private List<Country> selectedCountriesList = new ArrayList<>();
     private CountryPickerListener listener;
 
-    public CountryPicker() {
-        setCountriesList(Country.getAllCountries());
-    }
+//    public static CountryPicker newInstance(String dialogTitle) {
+//        CountryPicker picker = new CountryPicker();
+//        Bundle bundle = new Bundle();
+//        bundle.putString("dialogTitle", dialogTitle);
+//        picker.setArguments(bundle);
+//        return picker;
+//    }
 
-    public static CountryPicker newInstance(String dialogTitle) {
-        CountryPicker picker = new CountryPicker();
-        Bundle bundle = new Bundle();
-        bundle.putString("dialogTitle", dialogTitle);
-        picker.setArguments(bundle);
-        return picker;
-    }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle bundle) {
-        View view = inflater.inflate(R.layout.country_picker, null);
-        Bundle args = getArguments();
-        if (args != null) {
-            String dialogTitle = args.getString("dialogTitle");
-            getDialog().setTitle(dialogTitle);
-            int width = getResources().getDimensionPixelSize(R.dimen._300sdp);
-            int height = getResources().getDimensionPixelSize(R.dimen._400sdp);
-            getDialog().getWindow().setLayout(width, height);
-        }
-        EditText searchEditText = view.findViewById(R.id.country_code_picker_search);
-        ListView countryListView = view.findViewById(R.id.country_code_picker_listview);
+    protected int getLayoutId() {
+        return R.layout.country_picker;
+    }
 
+
+    @Override
+    protected void initView() {
+        setCountriesList(Country.getAllCountries());
+        EditText searchEditText = findViewById(R.id.country_code_picker_search);
+        ListView countryListView = findViewById(R.id.country_code_picker_listview);
+        findViewById(R.id.back_btn).setOnClickListener(view -> finish());
         selectedCountriesList = new ArrayList<>(countriesList.size());
         selectedCountriesList.addAll(countriesList);
 
-        adapter = new CountryListAdapter(getActivity(), selectedCountriesList);
+        adapter = new CountryListAdapter(this, selectedCountriesList);
         countryListView.setAdapter(adapter);
+        countryListView.setDivider(null);
 
         countryListView.setOnItemClickListener((parent, view1, position, id) -> {
-            if (listener != null) {
-                Country country = selectedCountriesList.get(position);
-                listener.onSelectCountry(country.getName(), country.getCode(), country.getDialCode(),
-                        country.getFlag());
-            }
+            Country country = selectedCountriesList.get(position);
+            SharedHelper.putKey(getApplicationContext(), "countrySelected", country.getName());
+            finish();
         });
+
 
         searchEditText.addTextChangedListener(new TextWatcher() {
 
@@ -80,8 +71,6 @@ public class CountryPicker extends DialogFragment {
                 search(s.toString());
             }
         });
-
-        return view;
     }
 
     public void setListener(CountryPickerListener listener) {

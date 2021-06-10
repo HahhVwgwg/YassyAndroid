@@ -55,6 +55,7 @@ public class PastTripFragment extends BaseFragment implements PastTripIView {
         unbinder = ButterKnife.bind(this, view);
         presenter.attachView(this);
         error.setText(getString(R.string.no_past_found));
+
         adapter = new TripAdapter(list);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager
                 (getActivity(), LinearLayoutManager.VERTICAL, false);
@@ -69,6 +70,13 @@ public class PastTripFragment extends BaseFragment implements PastTripIView {
     @Override
     public void onSuccess(List<Datum> datumList) {
         hideLoading();
+        for (int i = 0; i < datumList.size(); i++) {
+            Datum p = datumList.get(i);
+            if (p.getCancelledBy().equals("NOT_FOUND")) {
+                datumList.remove(p);
+                i--;//decrease the counter by one
+            }
+        }
         list.clear();
         list.addAll(datumList);
         adapter.notifyDataSetChanged();
@@ -110,19 +118,24 @@ public class PastTripFragment extends BaseFragment implements PastTripIView {
         @Override
         public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
             Datum datum = list.get(position);
-            if (datum.getCancelledBy().equals("NOT_FOUND"))
-                return;
 
-            switch (datum.getCancelledBy()) {
-                case "NONE":
-                    holder.status.setText("Поездка завершена");
-                    break;
-                case "USER":
-                    holder.status.setText("Вы отменили");
-                    break;
-                case "PROVIDER":
-                    holder.status.setText("Водитель отменил");
-                    break;
+            if (datum.getStatus().equals("COMPLETED")) {
+                holder.status.setText("Поездка завершена");
+            } else {
+                switch (datum.getCancelledBy()) {
+                    case "NONE":
+                        holder.status.setText("Поездка завершена");
+                        break;
+                    case "USER":
+                        holder.status.setText("Вы отменили");
+                        break;
+                    case "DISPATCHER":
+                        holder.status.setText("Отменен диспетчером");
+                        break;
+                    case "PROVIDER":
+                        holder.status.setText("Водитель отменил");
+                        break;
+                }
             }
             holder.timestamp.setText(datum.getCreatedAt());
             holder.dAddress.setText(datum.getDAddress());

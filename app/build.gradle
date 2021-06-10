@@ -142,4 +142,7 @@ dependencies {
     implementation 'com.yandex.android:mobmetricalib:3.20.1'
     //paybox
     implementation 'com.github.PayBox:SDK_Android_input:1.0.3.5@aar'
+    //autofill
+    implementation 'com.google.android.gms:play-services-auth:17.0.0'
+    implementation 'com.google.android.gms:play-services-auth-api-phone:17.4.0'
 }

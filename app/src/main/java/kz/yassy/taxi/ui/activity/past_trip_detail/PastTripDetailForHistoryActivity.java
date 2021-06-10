@@ -121,7 +121,20 @@ public class PastTripDetailForHistoryActivity extends BaseActivity implements Pa
         if (pastTrip.getStatus().equals("COMPLETED")) {
             status.setText("Поездка завершена");
         } else {
-            status.setText(pastTrip.getCancelledBy().equals("user") ? "Вы отменили" : "Водитель отменил");
+            switch (pastTrip.getCancelledBy()) {
+                case "NONE":
+                    status.setText("Поездка завершена");
+                    break;
+                case "USER":
+                    status.setText("Вы отменили");
+                    break;
+                case "DISPATCHER":
+                    status.setText("Отменен диспетчером");
+                    break;
+                case "PROVIDER":
+                    status.setText("Водитель отменил");
+                    break;
+            }
         }
         presenter.getRoute(pastTrip.getsLatitude(), pastTrip.getsLongitude(), pastTrip.getdLatitude(), pastTrip.getdLongitude());
         String strCurrentDate = pastTrip.getAssignedAt().getDate();

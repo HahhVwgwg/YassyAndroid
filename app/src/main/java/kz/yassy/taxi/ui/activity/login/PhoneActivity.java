@@ -1,5 +1,6 @@
 package kz.yassy.taxi.ui.activity.login;
 
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
@@ -21,6 +22,7 @@ import kz.yassy.taxi.data.network.model.Token;
 import kz.yassy.taxi.data.network.model.TokenOtp;
 import kz.yassy.taxi.ui.activity.main.MainActivity;
 import kz.yassy.taxi.ui.adapter.LoginAdapter;
+import kz.yassy.taxi.ui.countrypicker.Country;
 
 public class PhoneActivity extends BaseActivity implements LoginIView {
 
@@ -51,7 +53,7 @@ public class PhoneActivity extends BaseActivity implements LoginIView {
     public void onNext(String phone) {
         loginAdapter.getPhoneFragment().showLoading();
         this.phone = phone;
-        presenter.sendPhone(phone.substring(1), "+7");
+        presenter.sendPhone(phone, "+7");
     }
 
     public void onComplete(String code) {
@@ -73,10 +75,15 @@ public class PhoneActivity extends BaseActivity implements LoginIView {
         map.put("login_by", "whatsapp");
         map.put("first_name", "");
         map.put("last_name", "");
-        map.put("country_code", "7");
-        map.put("mobile", phone.substring(1));
-        map.put("email", phone.substring(1));
+        Country country = getDeviceCountry(getApplicationContext());
+        map.put("country_code", country.getDialCode().substring(1));
+        map.put("mobile", phone);
+        map.put("email", phone);
         presenter.loginByOtp(map);
+    }
+
+    protected Country getDeviceCountry(Context context) {
+        return Country.getCountryByName(SharedHelper.getKey(context, "countrySelected", "Kazakhstan"));
     }
 
     @Override

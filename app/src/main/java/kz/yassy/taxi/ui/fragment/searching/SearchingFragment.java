@@ -45,6 +45,7 @@ public class SearchingFragment extends BaseFragment implements SearchingIView {
     @SuppressLint("NonConstantResourceId")
     @BindView(R.id.search)
     RippleSearchView search;
+    private boolean stop = false;
     private int index = 0;
 
     @Override
@@ -71,7 +72,7 @@ public class SearchingFragment extends BaseFragment implements SearchingIView {
         Log.e("Providers", objects.toString());
         handler = new Handler();
         runnable = () -> {
-            if (index >= objects.size()) {
+            if (index >= objects.size() || stop) {
                 handler.removeCallbacks(runnable);
                 Log.e("indexMine", "return ");
                 return;
@@ -124,13 +125,14 @@ public class SearchingFragment extends BaseFragment implements SearchingIView {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        stop = true;
         if (handler != null) handler.removeCallbacks(runnable);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-
+        stop = true;
         if (handler != null) handler.removeCallbacks(runnable);
     }
 

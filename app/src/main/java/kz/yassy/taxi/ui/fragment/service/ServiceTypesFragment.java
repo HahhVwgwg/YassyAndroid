@@ -112,7 +112,8 @@ public class ServiceTypesFragment extends BaseBottomSheetDialogFragment implemen
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.ride_now:
-                sendRequest();
+                dismiss();
+//                sendRequest();
                 break;
             default:
                 break;

@@ -409,14 +409,14 @@
     <string name="welcome_desc_2">Выполняйте все свои дела быстро, указав несколько точек в заказе</string>
     <string name="welcome_desc_3">Наслаждайтесь комфортной поездкой, выбирая нужный вам тариф</string>
 
-    <string name="auth_phone_hint">+7 ХХХ ХХХ ХХХХ</string>
+    <string name="auth_phone_hint">ХХХ ХХХ ХХХХ</string>
     <string name="auth_code_hint">* * * * * *</string>
     <string name="auth_phone_btn">Отправить код</string>
     <string name="auth_phone_title">Введите номер телефона</string>
-    <string name="auth_phone_desc">На ваш WhatsApp номер будет\nотправлен код</string>
+    <string name="auth_phone_desc">На ваш номер будет\nотправлен код</string>
     <string name="auth_code_btn">Продолжить</string>
     <string name="auth_code_title">Введите код</string>
-    <string name="auth_code_desc">На ваш WhatsApp номер\nотправлен код. Введите его.</string>
+    <string name="auth_code_desc">На ваш номер\nотправлен код. Введите его.</string>
     <string name="auth_code_error">Неправильно введён код.\nПопробуйте ещё раз.</string>
 
     <string name="drawer_menu_profile">Мой профиль</string>

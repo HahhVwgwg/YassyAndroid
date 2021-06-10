@@ -35,14 +35,17 @@ import kz.yassy.taxi.data.network.model.Tariffs;
 import kz.yassy.taxi.data.network.model.User;
 import kz.yassy.taxi.ui.activity.main.MainActivity;
 import kz.yassy.taxi.ui.adapter.ServiceAdapter;
+import kz.yassy.taxi.ui.fragment.error.ErrorFragment;
 import kz.yassy.taxi.ui.fragment.payment.NotesFragment;
 import kz.yassy.taxi.ui.fragment.payment.PaymentFragment;
 import kz.yassy.taxi.ui.fragment.schedule.ScheduleFragment;
 import kz.yassy.taxi.ui.fragment.service.ServiceTypesFragment;
 import kz.yassy.taxi.ui.utils.DisplayUtils;
 import kz.yassy.taxi.ui.utils.ListOffset;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 import static kz.yassy.taxi.MvpApplication.RIDE_REQUEST;
@@ -224,13 +227,21 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
 
     private Tariffs mEstimateFare;
 
-    @Override
-    public void onError(Throwable e) {
-//        handleError(e);
-        hideLoading();
-        Log.e("BookRideFragment", e.getMessage());
-        ((MainActivity) Objects.requireNonNull(getActivity())).showError(1);
-    }
+    private final ServiceTypesFragment.ServiceListener mListener = pos -> {
+        System.out.println(pos + " position");
+//        if (pos == 0) {
+        if (mPrices.size() == 0) {
+            mPrices.add(0);
+            mPrices.add(0);
+        } else if (mPrices.size() == 1) {
+            mPrices.add(0);
+        }
+        ServiceTypesFragment serviceTypesFragment = ServiceTypesFragment.create(mServices, mPrices, pos);
+        serviceTypesFragment.show(getChildFragmentManager(), SERVICE);
+//        } else {
+//            Toast.makeText(getContext(), "Пока этот тариф не доступен", Toast.LENGTH_SHORT).show();
+//        }
+    };
 
     private void estimatedApiCall() {
         HashMap<String, Object> request = new HashMap<>();
@@ -305,21 +316,25 @@ public class BookRideFragment extends BaseFragment implements BookRideIView {
 //        initPayment(estimatedPaymentMode);
     }
 
-    private final ServiceTypesFragment.ServiceListener mListener = pos -> {
-        System.out.println(pos + " position");
-        if (pos == 0) {
-            if (mPrices.size() == 0) {
-                mPrices.add(0);
-                mPrices.add(0);
-            } else if (mPrices.size() == 1) {
-                mPrices.add(0);
+    @Override
+    public void onError(Throwable e) {
+//        handleError(e);
+        hideLoading();
+        Log.e("BookRideFragment", e.getMessage());
+        try {
+            ResponseBody responseBody = ((HttpException) e).response().errorBody();
+            int responseCode = ((HttpException) e).response().code();
+            JSONObject jsonObject = new JSONObject(responseBody.string());
+            if (responseCode == 422) {
+                ((MainActivity) Objects.requireNonNull(getActivity())).showError(1);
+            } else {
+                assert getFragmentManager() != null;
+                ErrorFragment.newInstance(ErrorFragment.AREA).show(getFragmentManager(), null);
             }
-            ServiceTypesFragment serviceTypesFragment = ServiceTypesFragment.create(mServices, mPrices, pos);
-            serviceTypesFragment.show(getChildFragmentManager(), SERVICE);
-        } else {
-            Toast.makeText(getContext(), "Пока этот тариф не доступен", Toast.LENGTH_SHORT).show();
+        } catch (Exception d) {
+            d.getMessage();
         }
-    };
+    }
 
     public interface CouponListener {
         void couponClicked(int pos, PromoList promoList, String promoStatus);

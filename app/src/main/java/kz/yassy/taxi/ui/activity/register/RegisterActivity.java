@@ -96,7 +96,7 @@ public class RegisterActivity extends BaseActivity implements RegisterIView {
 
         clickFunctions();
 
-        setCountryList();
+//        setCountryList();
 
         TextView termsLink = findViewById(R.id.tv_terms_link);
         termsLink.setOnClickListener(new View.OnClickListener() {
@@ -127,7 +127,7 @@ public class RegisterActivity extends BaseActivity implements RegisterIView {
     }
 
     private void setCountryList() {
-        mCountryPicker = CountryPicker.newInstance("Select Country");
+//        mCountryPicker = CountryPicker.newInstance("Select Country");
         List<Country> countryList = Country.getAllCountries();
         Collections.sort(countryList, (s1, s2) -> s1.getName().compareToIgnoreCase(s2.getName()));
         mCountryPicker.setCountriesList(countryList);
@@ -141,12 +141,12 @@ public class RegisterActivity extends BaseActivity implements RegisterIView {
             countryNumber.setText(dialCode);
             countryDialCode = dialCode;
             countryImage.setImageResource(flagDrawableResID);
-            mCountryPicker.dismiss();
+//            mCountryPicker.dismiss();
         });
 
-        countryImage.setOnClickListener(v -> mCountryPicker.show(getSupportFragmentManager(), "COUNTRY_PICKER"));
-
-        countryNumber.setOnClickListener(v -> mCountryPicker.show(getSupportFragmentManager(), "COUNTRY_PICKER"));
+//        countryImage.setOnClickListener(v -> mCountryPicker.show(getSupportFragmentManager(), "COUNTRY_PICKER"));
+//
+//        countryNumber.setOnClickListener(v -> mCountryPicker.show(getSupportFragmentManager(), "COUNTRY_PICKER"));
 
         getUserCountryInfo();
     }

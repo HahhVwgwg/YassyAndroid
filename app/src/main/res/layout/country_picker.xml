@@ -3,18 +3,48 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 
+    <RelativeLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp">
+
+        <ImageView
+            android:id="@+id/back_btn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="20dp"
+            android:background="@drawable/ripple_square_btn"
+            android:elevation="1dp"
+            android:padding="12dp"
+            android:src="@drawable/ic_back_main"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/title"
+            style="@style/TextSubTitle.20"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginHorizontal="90dp"
+            android:gravity="center"
+            android:text="Выберите код страны" />
+
+    </RelativeLayout>
     <LinearLayout
         android:layout_width="match_parent"
+        android:layout_marginHorizontal="@dimen/_16sdp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_5sdp"
         android:orientation="horizontal">
 
         <ImageView
             android:layout_width="@dimen/_25sdp"
             android:layout_height="match_parent"
             android:padding="@dimen/_6sdp"
-            android:visibility="gone"
             app:srcCompat="@drawable/ic_search" />
 
         <EditText
@@ -22,7 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:hint="Country name"
+            android:hint="Поиск страны"
             android:imeOptions="actionSearch"
             android:maxLines="1" />
 

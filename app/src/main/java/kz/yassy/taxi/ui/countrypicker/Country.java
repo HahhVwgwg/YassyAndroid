@@ -13,7 +13,7 @@ import kz.yassy.taxi.R;
 
 public class Country {
     private static final Country[] COUNTRIES = {
-            /*new Country("AD", "Andorra", "+376", R.drawable.flag_ad),
+            new Country("AD", "Andorra", "+376", R.drawable.flag_ad),
             new Country("AE", "United Arab Emirates", "+971", R.drawable.flag_ae),
             new Country("AF", "Afghanistan", "+93", R.drawable.flag_af),
             new Country("AG", "Antigua and Barbuda", "+1", R.drawable.flag_ag),
@@ -262,12 +262,9 @@ public class Country {
             new Country("YT", "Mayotte", "+262", R.drawable.flag_yt),
             new Country("ZA", "South Africa", "+27", R.drawable.flag_za),
             new Country("ZM", "Zambia", "+260", R.drawable.flag_zm),
-            new Country("ZW", "Zimbabwe", "+263", R.drawable.flag_zw),*/
-            //new Country("FR", "France", "+33", R.drawable.flag_fr),
-
-            //new Country("FR", "France", "+33", R.drawable.flag_fr),
-
-            //new Country("DJ", "Djibouti", "+253", R.drawable.flag_dj),
+            new Country("ZW", "Zimbabwe", "+263", R.drawable.flag_zw),
+            new Country("FR", "France", "+33", R.drawable.flag_fr),
+            new Country("DJ", "Djibouti", "+253", R.drawable.flag_dj),
             new Country("IN", "India", "+91", R.drawable.flag_in),
     };
     private static List<Country> allCountriesList;

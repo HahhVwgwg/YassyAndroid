@@ -337,6 +337,12 @@
             android:label="@string/invite_friend"
             android:parentActivityName="kz.yassy.taxi.ui.activity.main.MainActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name="kz.yassy.taxi.ui.countrypicker.CountryPicker"
+            android:label="@string/invite_friend"
+            android:parentActivityName="kz.yassy.taxi.ui.activity.login.PhoneActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
             android:name="kz.yassy.taxi.ui.activity.notification_manager.NotificationManagerActivity"

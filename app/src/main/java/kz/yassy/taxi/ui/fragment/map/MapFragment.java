@@ -455,6 +455,12 @@ public class MapFragment extends Fragment implements
                 mapBoxMap.addOnCameraMoveStartedListener(MapFragment.this);
                 mapBoxMap.getUiSettings().setLogoGravity(Gravity.BOTTOM | Gravity.START);
                 mapBoxMap.getUiSettings().setAttributionTintColor(Color.LTGRAY);
+//                mapBoxMap.getUiSettings().setAllGesturesEnabled(true);
+                mapBoxMap.getUiSettings().setRotateGesturesEnabled(true);
+                mapBoxMap.getUiSettings().setDisableRotateWhenScaling(true);
+//                mapBoxMap.getUiSettings().setCompassEnabled(false);
+                mapBoxMap.getUiSettings().setCompassMargins(0, 120, 40, 0);
+//                mapBoxMap.getUiSettings().setCompassImage();
                 mapBoxMap.getUiSettings().setAttributionGravity(Gravity.BOTTOM | Gravity.END);
                 mapBoxMap.getUiSettings().setLogoMargins(DisplayUtils.dpToPx(10), 0, 0, 0);
                 mapBoxMap.getUiSettings().setAttributionMargins(0, 0, DisplayUtils.dpToPx(10), 0);
@@ -556,6 +562,7 @@ public class MapFragment extends Fragment implements
 
         symbolManager.setIconAllowOverlap(true);
         symbolManager.setIconOptional(true);
+        symbolManager.setIconRotationAlignment("map");
         symbolManager.setTextAllowOverlap(true);
         symbol = symbolManager.create(new SymbolOptions()
                 .withLatLng(new LatLng(43.2973300, 68.2517500))

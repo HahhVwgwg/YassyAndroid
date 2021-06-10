@@ -52,6 +52,7 @@ public class CountryListAdapter extends BaseAdapter {
 
         Cell cell = Cell.from(view);
         cell.textView.setText(country.getName());
+        cell.code.setText(country.getDialCode());
 
         country.loadFlagByCode(mContext);
         if (country.getFlag() != -1)
@@ -62,6 +63,7 @@ public class CountryListAdapter extends BaseAdapter {
     static class Cell {
         public TextView textView;
         public ImageView imageView;
+        public TextView code;
 
         static Cell from(View view) {
             if (view == null)
@@ -71,6 +73,7 @@ public class CountryListAdapter extends BaseAdapter {
                 Cell cell = new Cell();
                 cell.textView = (TextView) view.findViewById(R.id.row_title);
                 cell.imageView = (ImageView) view.findViewById(R.id.row_icon);
+                cell.code = view.findViewById(R.id.row_code);
                 view.setTag(cell);
                 return cell;
             } else {

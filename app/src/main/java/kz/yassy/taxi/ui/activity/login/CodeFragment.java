@@ -1,5 +1,7 @@
 package kz.yassy.taxi.ui.activity.login;
 
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -9,9 +11,15 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.auth.api.phone.SmsRetriever;
+import com.google.android.gms.auth.api.phone.SmsRetrieverClient;
 import com.google.android.material.button.MaterialButton;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -20,6 +28,8 @@ import butterknife.OnTextChanged;
 import kz.yassy.taxi.R;
 import kz.yassy.taxi.base.BaseFragment;
 import kz.yassy.taxi.common.SpaceSpan;
+
+import static android.app.Activity.RESULT_OK;
 
 public class CodeFragment extends BaseFragment {
 
@@ -34,6 +44,10 @@ public class CodeFragment extends BaseFragment {
     @BindView(R.id.auth_root)
     ViewGroup root;
 
+    private static final int REQ_USER_CONSENT = 200;
+    SmsBroadcastReceiver smsBroadcastReceiver;
+
+
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_code;
@@ -43,7 +57,83 @@ public class CodeFragment extends BaseFragment {
     protected View initView(View view) {
         ButterKnife.bind(this, view);
         next.setEnabled(false);
+        startSmartUserConsent();
         return view;
+    }
+
+    private void startSmartUserConsent() {
+
+        SmsRetrieverClient client = SmsRetriever.getClient(getContext());
+        client.startSmsUserConsent(null);
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQ_USER_CONSENT) {
+
+            if ((resultCode == RESULT_OK) && (data != null)) {
+
+                String message = data.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE);
+                getOtpFromMessage(message);
+
+
+            }
+
+
+        }
+
+    }
+
+    private void getOtpFromMessage(String message) {
+
+        Pattern otpPattern = Pattern.compile("(|^)\\d{6}");
+        Matcher matcher = otpPattern.matcher(message);
+        if (matcher.find()) {
+
+            code.setText(matcher.group(0));
+
+        }
+
+
+    }
+
+    private void registerBroadcastReceiver() {
+
+        smsBroadcastReceiver = new SmsBroadcastReceiver();
+
+        smsBroadcastReceiver.smsBroadcastReceiverListener = new SmsBroadcastReceiver.SmsBroadcastReceiverListener() {
+            @Override
+            public void onSuccess(Intent intent) {
+
+                startActivityForResult(intent, REQ_USER_CONSENT);
+
+            }
+
+            @Override
+            public void onFailure() {
+
+            }
+        };
+
+        IntentFilter intentFilter = new IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION);
+        getActivity().registerReceiver(smsBroadcastReceiver, intentFilter);
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        registerBroadcastReceiver();
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        getActivity().unregisterReceiver(smsBroadcastReceiver);
     }
 
     @OnClick(R.id.next)

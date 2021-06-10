@@ -251,6 +251,7 @@ public class MainActivity extends BaseActivity implements
                 isEditable = true;
                 hashSetA.clear();
                 hashSetB.clear();
+                mapFragment.deleteRouteMine();
                 Log.e("af;ldjfalk;fdja;lf", "inside");
                 changeFlow("EMPTY", true);
                 SharedHelper.putKey(getApplicationContext(), "cancelRideActivity", false);
@@ -1523,7 +1524,10 @@ public class MainActivity extends BaseActivity implements
         } else {
             Log.e("StatusChange", "status clear - " + CURRENT_STATUS);
             if (CURRENT_STATUS.equals(SEARCHING)) {
-                showError(3);
+                ErrorFragment.newInstance(ErrorFragment.NOT_FOUND).show(getSupportFragmentManager(), null);
+            }
+            if (CURRENT_STATUS.equals(STARTED) || CURRENT_STATUS.equals(PICKED_UP) || CURRENT_STATUS.equals(ARRIVED)) {
+                ErrorFragment.newInstance(ErrorFragment.CANCELLED_BY_DRIVER).show(getSupportFragmentManager(), null);
             }
             if (!CURRENT_STATUS.equals(EMPTY)) {
                 MvpApplication.RIDE_REQUEST.remove(DEST_ADD);
@@ -1604,7 +1608,7 @@ public class MainActivity extends BaseActivity implements
                 error.setText("Рядом нет свободных машин");
                 break;
             case 2:
-                errorMain.setText("Все водидели заняты");
+                errorMain.setText("Все водители заняты");
                 error.setText("Ваша заявка отменена. Попробуйте позже.");
                 break;
             case 3:

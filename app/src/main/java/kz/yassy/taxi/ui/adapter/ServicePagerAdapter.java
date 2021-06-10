@@ -24,6 +24,6 @@ public class ServicePagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return serviceData.getServices().size();
+        return serviceData.getPrices().size();
     }
 }

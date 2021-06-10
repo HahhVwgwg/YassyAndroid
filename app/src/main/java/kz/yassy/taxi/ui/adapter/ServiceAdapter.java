@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,6 +21,7 @@ import kz.yassy.taxi.ui.fragment.service.ServiceTypesFragment;
 
 import static kz.yassy.taxi.MvpApplication.RIDE_REQUEST;
 import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.ESTIMATED_FARE;
+import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SERVICE_TYPE;
 
 public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHolder> {
 
@@ -100,13 +102,17 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.MyViewHo
                 Service object = list.get(position);
                 if (object != null) {
                     if (view.getId() == R.id.item_view) {
-                        if (lastCheckedPos == position) {
-                            mListener.whenClicked(position);
+                        if (obj.getStatus() == 1) {
+                            if (lastCheckedPos == position) {
+                                mListener.whenClicked(position);
+                            } else {
+                                lastCheckedPos = position;
+                                RIDE_REQUEST.put(SERVICE_TYPE, object.getId());
+                                notifyDataSetChanged();
+//                                mListener.whenClicked(position);
+                            }
                         } else {
-//                            lastCheckedPos = position;
-//                            RIDE_REQUEST.put(SERVICE_TYPE, object.getId());
-//                            notifyDataSetChanged();
-                            mListener.whenClicked(position);
+                            Toast.makeText(view.getContext(), "Пока этот тариф не доступен", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
