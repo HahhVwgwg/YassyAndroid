@@ -103,7 +103,7 @@ public class NotificationManagerActivity extends BaseActivity implements Notific
                             .dontAnimate().error(R.drawable.ic_document_placeholder))
                     .into(holder.ivNotificationImg);
 //        Log.e("notification",notifications.get(position).toString());
-            holder.ivNotificationDesc.setText(notifications.get(position).getDescription());
+            holder.ivNotificationDesc.setText(notifications.get(position).getTitle());
             holder.time.setText(notifications.get(position).getExpiryDate());
             holder.ivNotificationImg.setClipToOutline(true);
             holder.ivNotificationDesc.post(() -> {
@@ -159,6 +159,7 @@ public class NotificationManagerActivity extends BaseActivity implements Notific
                     intent.putExtra("time", notificationManager.getExpiryDate());
                     intent.putExtra("imageUrl", notificationManager.getImage());
                     intent.putExtra("description", notificationManager.getDescription());
+                    intent.putExtra("title", notificationManager.getTitle());
                     startActivity(intent, options.toBundle());
                 }
             }

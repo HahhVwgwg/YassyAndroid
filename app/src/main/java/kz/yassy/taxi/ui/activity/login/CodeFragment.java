@@ -1,7 +1,9 @@
 package kz.yassy.taxi.ui.activity.login;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -18,6 +20,7 @@ import com.google.android.gms.auth.api.phone.SmsRetriever;
 import com.google.android.gms.auth.api.phone.SmsRetrieverClient;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,9 +31,11 @@ import butterknife.OnTextChanged;
 import kz.yassy.taxi.R;
 import kz.yassy.taxi.base.BaseFragment;
 import kz.yassy.taxi.common.SpaceSpan;
+import kz.yassy.taxi.data.SharedHelper;
 
 import static android.app.Activity.RESULT_OK;
 
+@SuppressLint({"SetTextI18n", "DefaultLocale", "NonConstantResourceId"})
 public class CodeFragment extends BaseFragment {
 
     @BindView(R.id.auth_code)
@@ -39,6 +44,8 @@ public class CodeFragment extends BaseFragment {
     TextView codeHint;
     @BindView(R.id.auth_error)
     TextView codeError;
+    public final String TIMER_SECONDS = "TIMER_SECONDS";
+    public final String BAN_COUNT = "BAN_COUNT";
     @BindView(R.id.next)
     MaterialButton next;
     @BindView(R.id.auth_root)
@@ -46,6 +53,11 @@ public class CodeFragment extends BaseFragment {
 
     private static final int REQ_USER_CONSENT = 200;
     SmsBroadcastReceiver smsBroadcastReceiver;
+    @BindView(R.id.send_code_again)
+    TextView sendCodeAgain;
+    @BindView(R.id.auth_desc)
+    TextView authDesc;
+    private CountDownTimer timer;
 
 
     @Override
@@ -58,7 +70,72 @@ public class CodeFragment extends BaseFragment {
         ButterKnife.bind(this, view);
         next.setEnabled(false);
         startSmartUserConsent();
+        sendCodeAgain.setOnClickListener(view1 -> {
+            if (sendCodeAgain.getText().equals("Отправить повторно")) {
+                saveData();
+                ((PhoneActivity) baseActivity()).onNextFromCodeFragment();
+                resetTimer();
+            }
+        });
+
         return view;
+    }
+
+    private void saveData() {
+        SharedHelper.putKey(getContext(), "BAN_TIME", System.currentTimeMillis());
+        SharedHelper.putKey(getContext(), BAN_COUNT, SharedHelper.getKey(getContext(), BAN_COUNT, 0) + 1);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        resetTimer();
+    }
+
+    public void setWhatsAppSms() {
+        authDesc.setText(getString(R.string.auth_code_desc_whatsapp));
+    }
+
+    private void resetTimer() {
+        int secondsMilli = SharedHelper.getKey(getContext(), TIMER_SECONDS, 80000);
+        if (timer != null)
+            timer.cancel();
+        if (SharedHelper.getKey(getContext(), BAN_COUNT, 0) >= 3) {
+            System.out.println(SharedHelper.getKeyLong(getContext(), "BAN_TIME", 0L) + "time");
+            secondsMilli = SharedHelper.getKeyLong(getContext(), "BAN_TIME", 0L) == 0L ? 2700000 : 2700000 - (int) (System.currentTimeMillis() - SharedHelper.getKeyLong(getContext(), "BAN_TIME", 0L));
+            timer = new CountDownTimer(secondsMilli, 1000) {
+
+                public void onTick(long millisUntilFinished) {
+                    int seconds = (int) (millisUntilFinished / 1000);
+                    sendCodeAgain.setText("Отправить повторно через " + String.format("%02d", seconds / 60) + ":" + String.format("%02d", seconds % 60) + " сек");
+                    sendCodeAgain.setBackground(null);
+                    SharedHelper.putKey(getContext(), TIMER_SECONDS, (int) (millisUntilFinished));
+                }
+
+                public void onFinish() {
+                    sendCodeAgain.setText("Отправить повторно");
+                    sendCodeAgain.setBackground(ContextCompat.getDrawable(Objects.requireNonNull(getActivity()), R.drawable.card_chooser_btn_bbg));
+                    SharedHelper.putKey(getContext(), TIMER_SECONDS, 2700000);
+                }
+            }.start();
+        } else {
+            timer = new CountDownTimer(secondsMilli, 1000) {
+
+                @SuppressLint("SetTextI18n")
+                public void onTick(long millisUntilFinished) {
+                    sendCodeAgain.setText("Отправить повторно через " + millisUntilFinished / 1000 + " сек");
+                    sendCodeAgain.setBackground(null);
+                    SharedHelper.putKey(getContext(), TIMER_SECONDS, (int) (millisUntilFinished));
+                }
+
+                public void onFinish() {
+                    sendCodeAgain.setText("Отправить повторно");
+                    sendCodeAgain.setBackground(ContextCompat.getDrawable(Objects.requireNonNull(getActivity()), R.drawable.card_chooser_btn_bbg));
+                    SharedHelper.putKey(getContext(), TIMER_SECONDS, 80000);
+                }
+            }.start();
+        }
+
     }
 
     private void startSmartUserConsent() {
@@ -134,6 +211,13 @@ public class CodeFragment extends BaseFragment {
     public void onStop() {
         super.onStop();
         getActivity().unregisterReceiver(smsBroadcastReceiver);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (timer != null)
+            timer.cancel();
     }
 
     @OnClick(R.id.next)

@@ -464,4 +464,5 @@
 
     <string name="find_on_map">Указать на карте</string>
     <string name="mapbox_access_token">sk.eyJ1IjoieWFzc3ktdGF4aSIsImEiOiJja21idnp0dWcxYmdjMndwaHQ2OWVrNXo0In0.PeBoVsfxaNMfF_344xbApw</string>
+    <string name="auth_code_desc_whatsapp">На ваш WhatsApp номер\nотправлен код. Введите его.</string>
 </resources>

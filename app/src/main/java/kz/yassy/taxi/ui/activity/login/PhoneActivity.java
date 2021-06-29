@@ -30,6 +30,7 @@ public class PhoneActivity extends BaseActivity implements LoginIView {
     ViewPager2 slider;
 
     private LoginAdapter loginAdapter;
+    private final String LAST_PHONE_NUMBER = "LAST_PHONE_NUMBER";
 
     private loginPresenter<PhoneActivity> presenter = new loginPresenter<>();
 
@@ -51,9 +52,21 @@ public class PhoneActivity extends BaseActivity implements LoginIView {
     }
 
     public void onNext(String phone) {
-        loginAdapter.getPhoneFragment().showLoading();
         this.phone = phone;
-        presenter.sendPhone(phone, "+7");
+        if (SharedHelper.getKey(getApplicationContext(), LAST_PHONE_NUMBER, "-1").equals(phone))
+            slider.setCurrentItem(1, false);
+        else {
+            loginAdapter.getPhoneFragment().showLoading();
+            Country country = getDeviceCountry(getApplicationContext());
+            SharedHelper.putKey(getApplicationContext(), LAST_PHONE_NUMBER, phone);
+            initialState();
+            presenter.sendPhone(phone, country.getDialCode());
+        }
+    }
+
+    public void onNextFromCodeFragment() {
+        Country country = getDeviceCountry(getApplicationContext());
+        presenter.sendPhone(phone, country.getDialCode());
     }
 
     public void onComplete(String code) {
@@ -71,11 +84,11 @@ public class PhoneActivity extends BaseActivity implements LoginIView {
         map.put("device_token", SharedHelper.getKey(this, "device_token", "No device"));
         map.put("device_id", SharedHelper.getKey(this, "device_id", "123"));
         map.put("device_type", BuildConfig.DEVICE_TYPE);
+        Country country = getDeviceCountry(getApplicationContext());
         map.put("otp", code);
         map.put("login_by", "whatsapp");
         map.put("first_name", "");
         map.put("last_name", "");
-        Country country = getDeviceCountry(getApplicationContext());
         map.put("country_code", country.getDialCode().substring(1));
         map.put("mobile", phone);
         map.put("email", phone);
@@ -107,6 +120,14 @@ public class PhoneActivity extends BaseActivity implements LoginIView {
         SharedHelper.putKey(this, "logged_in", true);
         finishAffinity();
         startActivity(new Intent(this, MainActivity.class));
+        SharedHelper.putKey(getApplicationContext(), LAST_PHONE_NUMBER, "-1");
+        initialState();
+    }
+
+    private void initialState() {
+        SharedHelper.putKey(getApplicationContext(), "TIMER_SECONDS", 80000);
+        SharedHelper.putKey(getApplicationContext(), "BAN_COUNT", 0);
+        SharedHelper.putKey(getApplicationContext(), "BAN_TIME", 0L);
     }
 
     @Override
@@ -118,6 +139,8 @@ public class PhoneActivity extends BaseActivity implements LoginIView {
     public void onSuccess(OtpResponse object) {
         loginAdapter.getPhoneFragment().hideLoading();
         slider.setCurrentItem(1, false);
+        if (object.getStatus().equals("whatsapp"))
+            loginAdapter.getCodeFragment().setWhatsAppSms();
     }
 
     @Override
@@ -136,3 +159,4 @@ public class PhoneActivity extends BaseActivity implements LoginIView {
         }
     }
 }
+

@@ -6,15 +6,21 @@ import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 
 public class PastTrip implements Serializable {
-    @SerializedName("finished_at")
-    @Expose
-    public FinishedAt finishedAt;
     @SerializedName("assigned_at")
     @Expose
-    public AssignedAt assignedAt;
+    public String assignedAt;
     @SerializedName("id")
     @Expose
     private int id;
+
+    public String getAssignedAt() {
+        return assignedAt;
+    }
+
+    public void setAssignedAt(String assignedAt) {
+        this.assignedAt = assignedAt;
+    }
+
     @SerializedName("booking_id")
     @Expose
     private String bookingId;
@@ -104,7 +110,6 @@ public class PastTrip implements Serializable {
     public String toString() {
         return "PastTrip{" +
                 "id=" + id +
-                ", finishedAt=" + finishedAt +
                 ", assignedAt=" + assignedAt +
                 ", bookingId='" + bookingId + '\'' +
                 ", status='" + status + '\'' +
@@ -151,22 +156,6 @@ public class PastTrip implements Serializable {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public FinishedAt getFinishedAt() {
-        return finishedAt;
-    }
-
-    public void setFinishedAt(FinishedAt finishedAt) {
-        this.finishedAt = finishedAt;
-    }
-
-    public AssignedAt getAssignedAt() {
-        return assignedAt;
-    }
-
-    public void setAssignedAt(AssignedAt assignedAt) {
-        this.assignedAt = assignedAt;
     }
 
     public String getBookingId() {
@@ -384,46 +373,5 @@ public class PastTrip implements Serializable {
     public void setEstimatedFare(String estimatedFare) {
         this.estimatedFare = estimatedFare;
     }
-
-    public class FinishedAt implements Serializable {
-        @Override
-        public String toString() {
-            return "FinishedAt{" +
-                    "date='" + date + '\'' +
-                    '}';
-        }
-
-        @SerializedName("date")
-        @Expose
-        public String date;
-
-        public String getDate() {
-            return date;
-        }
-
-        public void setDate(String date) {
-            this.date = date;
-        }
-    }
-
-    public class AssignedAt implements Serializable {
-        @Override
-        public String toString() {
-            return "AssignedAt{" +
-                    "date='" + date + '\'' +
-                    '}';
-        }
-
-        @SerializedName("date")
-        @Expose
-        public String date;
-
-        public String getDate() {
-            return date;
-        }
-
-        public void setDate(String date) {
-            this.date = date;
-        }
-    }
 }
+

@@ -26,6 +26,8 @@ public class NotificationManagerDetailsActivity extends BaseActivity implements 
     TextView tvShowMore;
     @BindView(R.id.time)
     TextView time;
+    @BindView(R.id.title)
+    TextView title;
 
 
     private NotificationManagerPresenter<NotificationManagerDetailsActivity> presenter = new NotificationManagerPresenter<>();
@@ -47,6 +49,7 @@ public class NotificationManagerDetailsActivity extends BaseActivity implements 
                     .into(ivNotificationImg);
             ivNotificationDesc.setText(getIntent().getExtras().getString("description"));
             time.setText(getIntent().getExtras().getString("time"));
+            title.setText(getIntent().getExtras().getString("title"));
         }
     }
 

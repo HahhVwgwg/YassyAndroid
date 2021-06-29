@@ -25,8 +25,6 @@ public class PastTripDetailsPresenter<V extends PastTripDetailsIView> extends Ba
                 .doRoute("frontend", lat + "," + lon, finishLat + "," + finishLon)
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(r -> {
-                    getMvpView().onSuccessRoute(r);
-                }, getMvpView()::onRouteError));
+                .subscribe(r -> getMvpView().onSuccessRoute(r), getMvpView()::onRouteError));
     }
 }

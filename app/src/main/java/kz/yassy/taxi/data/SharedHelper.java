@@ -32,9 +32,9 @@ public class SharedHelper {
         editor.apply();
     }
 
-    public static long getKeyLong(Context context, String Key) {
+    public static long getKeyLong(Context context, String Key, long defaultValue) {
         sharedPreferences = context.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
-        return sharedPreferences.getLong(Key, 0);
+        return sharedPreferences.getLong(Key, defaultValue);
     }
 
     public static String getKey(Context context, String Key) {

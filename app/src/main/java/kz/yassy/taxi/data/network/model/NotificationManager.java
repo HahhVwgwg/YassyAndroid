@@ -11,6 +11,19 @@ public class NotificationManager {
     @SerializedName("notify_type")
     @Expose
     private String notifyType;
+
+    @SerializedName("title")
+    @Expose
+    private String title;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     @SerializedName("image")
     @Expose
     private String image;

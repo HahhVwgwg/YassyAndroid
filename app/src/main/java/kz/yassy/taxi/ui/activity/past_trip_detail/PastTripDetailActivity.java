@@ -92,10 +92,10 @@ public class PastTripDetailActivity extends BaseActivity implements PastTripDeta
         dAddress.setText(pastTrip.getdAddress());
         name.setText(String.format("%s %s", pastTrip.getProviderFirstName(), pastTrip.getProviderLastName()));
         phoneNumber.setText(pastTrip.getProviderNumber());
-        tarif.setText(pastTrip.getServiceTypeName());
+        tarif.setText(pastTrip.getServiceTypeName().equals("Стандарт") ? "Комфорт" : "Бизнес");
         paymentMode.setText(pastTrip.getPaymentMode().equals("CASH") ? "Наличными" : "Бизнес аккаунт");
         payable.setText(pastTrip.getTotal() + " ₸");
-        String strCurrentDate = pastTrip.getAssignedAt().getDate();
+        String strCurrentDate = pastTrip.getAssignedAt();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", new Locale("ru"));
         SimpleDateFormat timeFormat;
         Date newDate = null;

@@ -252,6 +252,7 @@ public class MainActivity extends BaseActivity implements
                 hashSetA.clear();
                 hashSetB.clear();
                 mapFragment.deleteRouteMine();
+                mapFragment.clearAllMarker();
                 Log.e("af;ldjfalk;fdja;lf", "inside");
                 changeFlow("EMPTY", true);
                 SharedHelper.putKey(getApplicationContext(), "cancelRideActivity", false);
@@ -433,6 +434,7 @@ public class MainActivity extends BaseActivity implements
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("latitude", lastPoint.getLatitude());
                     map.put("longitude", lastPoint.getLongitude());
+                    map.put("ver", BuildConfig.VERSION_NAME);
                     mainPresenter.getProviders(map);
                 } else if (mLastKnownLocation != null) {
                     HashMap<String, Object> map = new HashMap<>();
@@ -1834,7 +1836,7 @@ public class MainActivity extends BaseActivity implements
 
     // clicks
 
-    @OnClick({R.id.on_map, R.id.sos, R.id.erase_src, R.id.erase_dest, R.id.btn_home, R.id.btn_work, R.id.menu_app, R.id.gps, R.id.source, R.id.destination, R.id.menu_back, R.id.doNotShowBetaVersion, R.id.form_dash})
+    @OnClick({R.id.on_map, R.id.sos, R.id.erase_src, R.id.erase_dest, R.id.btn_home, R.id.btn_work, R.id.menu_app, R.id.gps, R.id.source, R.id.destination, R.id.menu_back, R.id.doNotShowBetaVersion, R.id.form_dash, R.id.form_background})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.on_map:
@@ -1852,10 +1854,11 @@ public class MainActivity extends BaseActivity implements
                     }
                     drawerLayout.openDrawer(GravityCompat.START);
                 }
-
                 break;
             case R.id.form_dash:
-                topLayout.transitionToEnd();
+            case R.id.form_background:
+                Log.e("Blablablabla", "really here");
+                topLayout.transitionToStart();
                 break;
             case R.id.sos:
                 SosFragment sosFragment = new SosFragment();

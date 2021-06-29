@@ -10,6 +10,8 @@ import androidx.fragment.app.Fragment;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -20,7 +22,6 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import kz.yassy.taxi.R;
 import kz.yassy.taxi.base.BaseActivity;
-import kz.yassy.taxi.data.network.model.Datum;
 import kz.yassy.taxi.data.network.model.MenuDrawer;
 import kz.yassy.taxi.data.network.model.PastTrip;
 import kz.yassy.taxi.data.network.model.SearchRoute;
@@ -32,8 +33,10 @@ import kz.yassy.taxi.ui.fragment.map.MapFragment;
 
 import static kz.yassy.taxi.MvpApplication.DATUM;
 
+@SuppressLint("NonConstantResourceId")
 public class PastTripDetailForHistoryActivity extends BaseActivity implements PastTripDetailsIView, DisputeCallBack, IMapView,
         DrawerMenuListener {
+
 
     @BindView(R.id.name)
     TextView name;
@@ -58,7 +61,6 @@ public class PastTripDetailForHistoryActivity extends BaseActivity implements Pa
     @BindView(R.id.finished_at_time)
     TextView finishedAtTime;
 
-    private Datum datum;
     private MapFragment mapFragment;
 
     private PastTripDetailsPresenter<PastTripDetailForHistoryActivity> presenter = new PastTripDetailsPresenter();
@@ -87,16 +89,14 @@ public class PastTripDetailForHistoryActivity extends BaseActivity implements Pa
     }
 
     @Override
-    public void onAttachFragment(Fragment fragment) {
+    public void onAttachFragment(@NotNull Fragment fragment) {
         if (fragment instanceof DisputeFragment) ((DisputeFragment) fragment).setCallBack(this);
     }
 
     @OnClick({R.id.back_btn})
     public void onViewClicked(View view) {
-        switch (view.getId()) {
-            case R.id.back_btn:
-                finish();
-                break;
+        if (view.getId() == R.id.back_btn) {
+            finish();
         }
     }
 
@@ -115,7 +115,7 @@ public class PastTripDetailForHistoryActivity extends BaseActivity implements Pa
         dAddress.setText(pastTrip.getdAddress());
         name.setText(String.format("%s %s", pastTrip.getProviderFirstName(), pastTrip.getProviderLastName()));
         phoneNumber.setText(pastTrip.getProviderNumber());
-        tarif.setText(pastTrip.getServiceTypeName());
+        tarif.setText(pastTrip.getServiceTypeName().equals("Стандарт") ? "Комфорт" : "Бизнес");
         paymentMode.setText(pastTrip.getPaymentMode().equals("CASH") ? "Наличными" : "Бизнес аккаунт");
         payable.setText(pastTrip.getTotal() + " ₸");
         if (pastTrip.getStatus().equals("COMPLETED")) {
@@ -137,7 +137,7 @@ public class PastTripDetailForHistoryActivity extends BaseActivity implements Pa
             }
         }
         presenter.getRoute(pastTrip.getsLatitude(), pastTrip.getsLongitude(), pastTrip.getdLatitude(), pastTrip.getdLongitude());
-        String strCurrentDate = pastTrip.getAssignedAt().getDate();
+        String strCurrentDate = pastTrip.getAssignedAt();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", new Locale("ru"));
         SimpleDateFormat timeFormat;
         Date newDate = null;
@@ -146,15 +146,15 @@ public class PastTripDetailForHistoryActivity extends BaseActivity implements Pa
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        format = new SimpleDateFormat("dd MMM yyyy");
         timeFormat = new SimpleDateFormat("HH:mm");
-        String date = format.format(newDate);
+        assert newDate != null;
         String time = timeFormat.format(newDate);
         finishedAtTime.setText(time);
     }
 
     @Override
     public void onError(Throwable e) {
+        System.out.println("MineMine" + e.getMessage());
         handleError(e);
     }
 
