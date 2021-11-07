@@ -17,8 +17,8 @@ android {
         applicationId "kz.yassy.taxi"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 15
-        versionName "1.6"
+        versionCode 21
+        versionName "2.0.0"
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         //applicationIdSuffix '.app'
@@ -142,6 +142,7 @@ dependencies {
     implementation 'com.yandex.android:mobmetricalib:3.20.1'
     //payBox
     implementation 'com.github.PayBox:SDK_Android_input:1.0.3.5@aar'
+    implementation 'com.google.code.gson:gson:2.8.8'
     //autofill
     implementation 'com.google.android.gms:play-services-auth:17.0.0'
     implementation 'com.google.android.gms:play-services-auth-api-phone:17.4.0'

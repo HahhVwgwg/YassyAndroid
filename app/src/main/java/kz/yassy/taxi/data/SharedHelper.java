@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import java.util.ArrayList;
@@ -120,9 +119,9 @@ public class SharedHelper {
 
     public static List<Provider> getProviders(Context context) {
         sharedPreferences = context.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
-        return new Gson().fromJson(sharedPreferences.getString("Services", ""),
-                new TypeToken<ArrayList<Provider>>() {
-                }.getType());
+        List<Provider> providers = new Gson().fromJson(sharedPreferences.getString("Services", ""),
+                ArrayList.class);
+        return providers;
     }
 
     public static void putCurrentLocation(Context context, LatLng latLng) {

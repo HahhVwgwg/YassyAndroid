@@ -4,7 +4,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -52,11 +51,11 @@ public class APIClient {
                     .newBuilder()
                     .connectTimeout(10, TimeUnit.MINUTES)
                     .addNetworkInterceptor(new AddHeaderInterceptor())
-                    .addNetworkInterceptor(new StethoInterceptor())
+//                    .addNetworkInterceptor(new StethoInterceptor())
                     .readTimeout(10, TimeUnit.MINUTES)
                     .writeTimeout(10, TimeUnit.MINUTES)
                     .retryOnConnectionFailure(true)
-                    .addInterceptor(interceptor)
+//                    .addInterceptor(interceptor)
                     .build();
 
         } catch (Exception e) {

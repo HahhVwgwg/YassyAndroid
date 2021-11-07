@@ -5,6 +5,18 @@
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/ad11eb7fe52245e4e60743ada7af42a3/jetified-SDK_Android_input-1.0.3.5/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/ad11eb7fe52245e4e60743ada7af42a3/jetified-SDK_Android_input-1.0.3.5/AndroidManifest.xml" />
       <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/ad11eb7fe52245e4e60743ada7af42a3/jetified-SDK_Android_input-1.0.3.5/jars/libs/json.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/01f39aed7eaec3ae241e9bd2e5427a19/jetified-SDK_Android_input-1.0.3.5/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/01f39aed7eaec3ae241e9bd2e5427a19/jetified-SDK_Android_input-1.0.3.5/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/01f39aed7eaec3ae241e9bd2e5427a19/jetified-SDK_Android_input-1.0.3.5/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/01f39aed7eaec3ae241e9bd2e5427a19/jetified-SDK_Android_input-1.0.3.5/jars/libs/json.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/69dffa8375d1b6bca35b192c7121b1ed/transformed/jetified-SDK_Android_input-1.0.3.5/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/69dffa8375d1b6bca35b192c7121b1ed/transformed/jetified-SDK_Android_input-1.0.3.5/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/69dffa8375d1b6bca35b192c7121b1ed/transformed/jetified-SDK_Android_input-1.0.3.5/jars/libs/json.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/69dffa8375d1b6bca35b192c7121b1ed/transformed/jetified-SDK_Android_input-1.0.3.5/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/f11b470c6e5c39dcd2791ca27a8a4f48/transformed/jetified-SDK_Android_input-1.0.3.5/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/f11b470c6e5c39dcd2791ca27a8a4f48/transformed/jetified-SDK_Android_input-1.0.3.5/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/f11b470c6e5c39dcd2791ca27a8a4f48/transformed/jetified-SDK_Android_input-1.0.3.5/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/f11b470c6e5c39dcd2791ca27a8a4f48/transformed/jetified-SDK_Android_input-1.0.3.5/jars/libs/json.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

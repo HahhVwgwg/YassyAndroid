@@ -4,6 +4,18 @@
       <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b052b7358f484321d9fdaaf8d60fa90a/jetified-EasyImage-2.0.4/jars/classes.jar!/" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b052b7358f484321d9fdaaf8d60fa90a/jetified-EasyImage-2.0.4/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b052b7358f484321d9fdaaf8d60fa90a/jetified-EasyImage-2.0.4/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/af350a0a6708281aac7304bd4c690c51/jetified-EasyImage-2.0.4/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/af350a0a6708281aac7304bd4c690c51/jetified-EasyImage-2.0.4/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/af350a0a6708281aac7304bd4c690c51/jetified-EasyImage-2.0.4/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/a6e7a0fd7f4c1d3ef866d5f088c670c0/transformed/jetified-EasyImage-2.0.4/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/a6e7a0fd7f4c1d3ef866d5f088c670c0/transformed/jetified-EasyImage-2.0.4/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/a6e7a0fd7f4c1d3ef866d5f088c670c0/transformed/jetified-EasyImage-2.0.4/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/1d6b79137a848116271ee924cf6c592f/transformed/jetified-EasyImage-2.0.4/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/1d6b79137a848116271ee924cf6c592f/transformed/jetified-EasyImage-2.0.4/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/1d6b79137a848116271ee924cf6c592f/transformed/jetified-EasyImage-2.0.4/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/f0a369ef9868c972140b6c220373c7d2/transformed/jetified-EasyImage-2.0.4/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/f0a369ef9868c972140b6c220373c7d2/transformed/jetified-EasyImage-2.0.4/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/f0a369ef9868c972140b6c220373c7d2/transformed/jetified-EasyImage-2.0.4/res" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.jkwiecien/EasyImage/2.0.4/4e50b08a8b4d99cf5c678cbb292273ff2c7b05f7/EasyImage-2.0.4-javadoc.jar!/" />

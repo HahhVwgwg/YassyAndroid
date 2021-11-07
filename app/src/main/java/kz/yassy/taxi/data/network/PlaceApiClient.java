@@ -1,7 +1,5 @@
 package kz.yassy.taxi.data.network;
 
-import com.facebook.stetho.okhttp3.StethoInterceptor;
-
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -35,11 +33,11 @@ public class PlaceApiClient {
                     .newBuilder()
                     //.cache(new Cache(MvpApplication.getInstance().getCacheDir(), 10 * 1024 * 1024)) // 10 MB
                     .connectTimeout(10, TimeUnit.MINUTES)
-                    .addNetworkInterceptor(new StethoInterceptor())
+//                    .addNetworkInterceptor(new StethoInterceptor())
                     .readTimeout(10, TimeUnit.MINUTES)
                     .writeTimeout(10, TimeUnit.MINUTES)
                     .retryOnConnectionFailure(true)
-                    .addInterceptor(interceptor)
+//                    .addInterceptor(interceptor)
                     .build();
 
         } catch (Exception e) {

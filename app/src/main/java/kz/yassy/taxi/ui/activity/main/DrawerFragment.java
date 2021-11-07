@@ -106,7 +106,6 @@ public class DrawerFragment extends Fragment {
         result.add(new MenuDrawer.MenuHistory());
         result.add(new MenuDrawer.MenuHelp());
         result.add(new MenuDrawer.MenuSettings());
-        result.add(new MenuDrawer.MenuDriver());
         result.add(new MenuDrawer.MenuNews());
         result.add(new MenuDrawer.MenuInfo());
         return result;

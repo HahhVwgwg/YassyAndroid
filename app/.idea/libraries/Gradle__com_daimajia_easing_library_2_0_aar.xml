@@ -4,6 +4,9 @@
       <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/3f183b73e15c7cecb874f9cac03dc3ab/jetified-library-2.0/jars/classes.jar!/" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/3f183b73e15c7cecb874f9cac03dc3ab/jetified-library-2.0/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/3f183b73e15c7cecb874f9cac03dc3ab/jetified-library-2.0/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/c15fd362d9415a9741004e067bbe5cd8/transformed/jetified-library-2.0/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/c15fd362d9415a9741004e067bbe5cd8/transformed/jetified-library-2.0/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/c15fd362d9415a9741004e067bbe5cd8/transformed/jetified-library-2.0/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.daimajia.easing/library/2.0/f955748ec0b64ca3445ddbea13beb9b2ed11b93d/library-2.0-javadoc.jar!/" />

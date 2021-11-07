@@ -4,6 +4,16 @@
       <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/7b5094a569653954cad1a50df4bfeed2/jetified-core-2.18.1/jars/classes.jar!/" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/7b5094a569653954cad1a50df4bfeed2/jetified-core-2.18.1/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/7b5094a569653954cad1a50df4bfeed2/jetified-core-2.18.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/539e3030671142a7331e09fb47f838c2/jetified-core-2.18.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/539e3030671142a7331e09fb47f838c2/jetified-core-2.18.1/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/539e3030671142a7331e09fb47f838c2/jetified-core-2.18.1/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/c62693bacd6803e4cdfe1a1ddcf22ede/transformed/jetified-core-2.18.1/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/c62693bacd6803e4cdfe1a1ddcf22ede/transformed/jetified-core-2.18.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/c62693bacd6803e4cdfe1a1ddcf22ede/transformed/jetified-core-2.18.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/4491852f92c2a797500498e304c7f462/transformed/jetified-core-2.18.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/7c81d92de5519eb7465ec7f222745ca4/transformed/jetified-core-2.18.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/7c81d92de5519eb7465ec7f222745ca4/transformed/jetified-core-2.18.1/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/7c81d92de5519eb7465ec7f222745ca4/transformed/jetified-core-2.18.1/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.braintreepayments.api/core/2.18.1/b22632c920938db3687bf564e2f6d58d200cf4f6/core-2.18.1-javadoc.jar!/" />

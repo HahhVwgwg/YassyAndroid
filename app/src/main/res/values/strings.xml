@@ -416,7 +416,7 @@
     <string name="auth_phone_desc">На ваш номер будет\nотправлен код</string>
     <string name="auth_code_btn">Продолжить</string>
     <string name="auth_code_title">Введите код</string>
-    <string name="auth_code_desc">На ваш номер\nотправлен код. Введите его.</string>
+    <string name="auth_code_desc">Мы отправили код на Ваш WhatsApp. Если код не будет доставлен на WhatsApp, ожидайте СМС код.</string>
     <string name="auth_code_error">Неправильно введён код.\nПопробуйте ещё раз.</string>
 
     <string name="drawer_menu_profile">Мой профиль</string>

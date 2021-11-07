@@ -2,11 +2,23 @@
   <library name="Gradle: com.braintreepayments.api:braintree:2.18.1@aar">
     <ANNOTATIONS>
       <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/ce7a9a21a828ec7542ff11caa889844a/jetified-braintree-2.18.1/annotations.zip!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b89af63500fb5c6732af5c51fcd9f0b0/jetified-braintree-2.18.1/annotations.zip!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/1e5d491d6734b9c38b6318f26e69ce8b/transformed/jetified-braintree-2.18.1/annotations.zip!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/d55261937854f0baf8a924114c6331eb/transformed/jetified-braintree-2.18.1/annotations.zip!/" />
     </ANNOTATIONS>
     <CLASSES>
       <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/ce7a9a21a828ec7542ff11caa889844a/jetified-braintree-2.18.1/jars/classes.jar!/" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/ce7a9a21a828ec7542ff11caa889844a/jetified-braintree-2.18.1/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/ce7a9a21a828ec7542ff11caa889844a/jetified-braintree-2.18.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b89af63500fb5c6732af5c51fcd9f0b0/jetified-braintree-2.18.1/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b89af63500fb5c6732af5c51fcd9f0b0/jetified-braintree-2.18.1/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/b89af63500fb5c6732af5c51fcd9f0b0/jetified-braintree-2.18.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/1e5d491d6734b9c38b6318f26e69ce8b/transformed/jetified-braintree-2.18.1/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/1e5d491d6734b9c38b6318f26e69ce8b/transformed/jetified-braintree-2.18.1/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/1e5d491d6734b9c38b6318f26e69ce8b/transformed/jetified-braintree-2.18.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d55261937854f0baf8a924114c6331eb/transformed/jetified-braintree-2.18.1/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/d55261937854f0baf8a924114c6331eb/transformed/jetified-braintree-2.18.1/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d55261937854f0baf8a924114c6331eb/transformed/jetified-braintree-2.18.1/res" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.braintreepayments.api/braintree/2.18.1/7e75d031446fc431f1ffd413c845ef370a04e949/braintree-2.18.1-javadoc.jar!/" />

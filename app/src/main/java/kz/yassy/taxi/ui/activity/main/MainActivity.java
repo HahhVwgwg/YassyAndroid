@@ -1,5 +1,30 @@
 package kz.yassy.taxi.ui.activity.main;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static kz.yassy.taxi.MvpApplication.DATUM;
+import static kz.yassy.taxi.MvpApplication.RIDE_REQUEST;
+import static kz.yassy.taxi.MvpApplication.canGoToChatScreen;
+import static kz.yassy.taxi.MvpApplication.isChatScreenOpen;
+import static kz.yassy.taxi.common.Constants.BroadcastReceiver.INTENT_FILTER;
+import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.DEST_ADD;
+import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.DEST_LAT;
+import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.DEST_LONG;
+import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_ADD;
+import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_LAT;
+import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_LONG;
+import static kz.yassy.taxi.common.Constants.Status.ARRIVED;
+import static kz.yassy.taxi.common.Constants.Status.COMPLETED;
+import static kz.yassy.taxi.common.Constants.Status.EMPTY;
+import static kz.yassy.taxi.common.Constants.Status.MAP;
+import static kz.yassy.taxi.common.Constants.Status.PICKED_UP;
+import static kz.yassy.taxi.common.Constants.Status.RATING;
+import static kz.yassy.taxi.common.Constants.Status.SEARCHING;
+import static kz.yassy.taxi.common.Constants.Status.SERVICE;
+import static kz.yassy.taxi.common.Constants.Status.SOS;
+import static kz.yassy.taxi.common.Constants.Status.STARTED;
+import static kz.yassy.taxi.data.SharedHelper.key.PROFILE_IMG;
+import static kz.yassy.taxi.data.SharedHelper.key.SOS_NUMBER;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -12,7 +37,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -126,31 +150,6 @@ import kz.yassy.taxi.ui.utils.KeyboardUtils;
 import kz.yassy.taxi.ui.utils.ListOffset;
 import okhttp3.ResponseBody;
 import retrofit2.HttpException;
-
-import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-import static kz.yassy.taxi.MvpApplication.DATUM;
-import static kz.yassy.taxi.MvpApplication.RIDE_REQUEST;
-import static kz.yassy.taxi.MvpApplication.canGoToChatScreen;
-import static kz.yassy.taxi.MvpApplication.isChatScreenOpen;
-import static kz.yassy.taxi.common.Constants.BroadcastReceiver.INTENT_FILTER;
-import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.DEST_ADD;
-import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.DEST_LAT;
-import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.DEST_LONG;
-import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_ADD;
-import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_LAT;
-import static kz.yassy.taxi.common.Constants.RIDE_REQUEST.SRC_LONG;
-import static kz.yassy.taxi.common.Constants.Status.ARRIVED;
-import static kz.yassy.taxi.common.Constants.Status.COMPLETED;
-import static kz.yassy.taxi.common.Constants.Status.EMPTY;
-import static kz.yassy.taxi.common.Constants.Status.MAP;
-import static kz.yassy.taxi.common.Constants.Status.PICKED_UP;
-import static kz.yassy.taxi.common.Constants.Status.RATING;
-import static kz.yassy.taxi.common.Constants.Status.SEARCHING;
-import static kz.yassy.taxi.common.Constants.Status.SERVICE;
-import static kz.yassy.taxi.common.Constants.Status.SOS;
-import static kz.yassy.taxi.common.Constants.Status.STARTED;
-import static kz.yassy.taxi.data.SharedHelper.key.PROFILE_IMG;
-import static kz.yassy.taxi.data.SharedHelper.key.SOS_NUMBER;
 
 @SuppressLint("NonConstantResourceId")
 public class MainActivity extends BaseActivity implements
@@ -893,15 +892,6 @@ public class MainActivity extends BaseActivity implements
     }
 
     private int counter = 0;
-
-    private void alertBecomeDriver() {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=" + BuildConfig.DRIVER_PACKAGE));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                | Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        startActivity(intent);
-    }
 
     public void changeFlow(String status, boolean rollbackTransition) {
         Log.d("TRIP_INFO", "status - " + status + ", " + rollbackTransition);
@@ -1976,8 +1966,6 @@ public class MainActivity extends BaseActivity implements
             startActivity(new Intent(this, FavoritesActivity.class));
         } else if (menu instanceof MenuDrawer.MenuNews) {
             startActivity(new Intent(this, NotificationManagerActivity.class));
-        } else if (menu instanceof MenuDrawer.MenuDriver) {
-            alertBecomeDriver();
         } else if (menu instanceof MenuDrawer.MenuInfo) {
             startActivity(new Intent(this, InfoActivity.class));
         } else if (menu instanceof MenuDrawer.MenuLogout) {
